@@ -1,0 +1,80 @@
+{
+  "name": "yuchang",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "debug": "electron . --debug --enable-logging",
+    "publish": "electron-packager ./ yuchang --platform=mas --arch=x64 --app_version=1.0.0 --electron_version=2.0.2  --out=dist/ --overwrite --ignore=node_modules/electron* --ignore=node_mudules/.bin --ignore=.git --ignore=dist --prune",
+    "test": "mocha"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "bluebird": "^3.5.2",
+    "body-parser": "^1.18.3",
+    "connect-flash": "^0.1.1",
+    "cookie-parser": "^1.4.3",
+    "crypto-js": "^3.1.9-1",
+    "ejs": "^2.6.1",
+    "express": "^4.16.3",
+    "express-formidable": "^1.0.0",
+    "express-partials": "^0.3.0",
+    "express-session": "^1.15.6",
+    "express-winston": "^2.6.0",
+    "method-override": "^2.3.10",
+    "morgan": "^1.9.1",
+    "mysql": "^2.16.0",
+    "nodemailer": "^4.6.8",
+    "serve-favicon": "^2.5.0",
+    "superagent": "^3.8.3",
+    "uuid": "^3.3.2",
+    "winston": "^2.4.4"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-loader": "^8.0.2",
+    "babel-preset-env": "^1.7.0",
+    "chai": "^4.1.2",
+    "css-loader": "^1.0.0",
+    "electron": "^2.0.9",
+    "electron-packager": "^12.1.2",
+    "extract-text-webpack-plugin": "^3.0.2",
+    "file-loader": "^2.0.0",
+    "html-loader": "^0.5.5",
+    "html-webpack-plugin": "^3.2.0",
+    "jshint": "^2.9.6",
+    "mocha": "^5.2.0",
+    "url-loader": "^1.1.1",
+    "webpack": "^4.19.0",
+    "webpack-cli": "^3.1.0",
+    "webpack-dev-middleware": "^3.3.0",
+    "webpack-dev-server": "^3.1.8"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended"
+    ],
+    "rules": {},
+    "parserOptions": {
+      "parser": "babel-eslint"
+    }
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ]
+}
