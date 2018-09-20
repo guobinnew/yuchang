@@ -49,9 +49,9 @@ yuchg.isNumber = function (val) {
  * 根据字符串名字获取对象
  */
 yuchg.getObjectByName = function (name, opt_obj) {
-  var parts = name.split('.')
-  var cur = opt_obj || yuchg.global
-  for (var i = 0; i < parts.length; i++) {
+  let parts = name.split('.')
+  let cur = opt_obj || yuchg.global
+  for (let i = 0; i < parts.length; i++) {
     cur = cur[parts[i]]
     if (!goog.isDefAndNotNull(cur)) {
       return null
@@ -86,7 +86,7 @@ yuchg.abstractMethod = function () {
  * 改进typeof
  */
 yuchg.typeOf = function (value) {
-  var s = typeof value
+  let s = typeof value
   if (s == 'object') {
     if (value) {
       if (value instanceof Array) {
@@ -95,7 +95,7 @@ yuchg.typeOf = function (value) {
         return s
       }
 
-      var className = Object.prototype.toString.call(/** @type {!Object} */(value))
+      let className = Object.prototype.toString.call(/** @type {!Object} */(value))
       if (className == '[object Window]') {
         return 'object'
       }

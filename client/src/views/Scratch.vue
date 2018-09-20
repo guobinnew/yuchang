@@ -250,11 +250,11 @@
   import $ from 'jquery'
   import * as d3 from 'd3'
 
-  var grapPoint = {x: 0, y: 0}
-  var lastPoint = {x: 0, y: 0}
-  var $selected = null
-  var currentZoomFactor = 1.0
-  var startDrag = false
+  let grapPoint = {x: 0, y: 0}
+  let lastPoint = {x: 0, y: 0}
+  let $selected = null
+  let currentZoomFactor = 1.0
+  let startDrag = false
 
   export default {
     name: 'scracth',
@@ -269,7 +269,7 @@
     created: function () {
     },
     mounted: function () {
-      var that = this
+      let that = this
       const $svg = $(".blocklySvg")
       const svg = d3.select(that.$el).select(".blocklySvg")
 
@@ -280,8 +280,8 @@
 
       console.log(svg.size())
 
-      var resizeCanvas = function () {
-        var $main = $('.el-main')
+      let resizeCanvas = function () {
+        let $main = $('.el-main')
         that.width = $main[0].clientWidth
         that.height = $main[0].clientHeight
         d3.select(that.$el).select('svg.canvas')
@@ -300,7 +300,7 @@
       }
 
       function isInArray(arr, value) {
-        for (var i = 0; i < arr.length; i++) {
+        for (let i = 0; i < arr.length; i++) {
           if (value === arr[i]) {
             return true;
           }
@@ -314,11 +314,11 @@
       const backDrop = d3.select(that.$el).select("#BackDrop")
 
       blocks.selectAll('g').filter(function (d, i) {
-        var type = d3.select(this).attr("data-shapes")
+        let type = d3.select(this).attr("data-shapes")
         if (!type) {
           return false
         }
-        var types = type.split(' ')
+        let types = type.split(' ')
         return isInArray(types, 'argument')
       }).on('mouseover', function () {
         d3.select(this).classed("blocklyReplaceable", true)
@@ -341,19 +341,19 @@
             setCanvasTransfrom("translate(0,0) scale(1.0)")
             return
           }
-          var m = $blockcanvas[0].getCTM()
-          var trans = "translate(" + Number(m.e) + "," + Number(m.f) + ") " + "scale(" + currentZoomFactor + ")"
+          let m = $blockcanvas[0].getCTM()
+          let trans = "translate(" + Number(m.e) + "," + Number(m.f) + ") " + "scale(" + currentZoomFactor + ")"
           setCanvasTransfrom(trans)
         })
       })
 
       blocks.on('mousedown', function () {
         $selected = $(this)
-        var m = this.getCTM()
-        var pm = $blockcanvas[0].getCTM()
+        let m = this.getCTM()
+        let pm = $blockcanvas[0].getCTM()
 
-        var X = $svg.offset().left;
-        var Y = $svg.offset().top;
+        let X = $svg.offset().left;
+        let Y = $svg.offset().top;
 
         lastPoint.x = event.pageX
         lastPoint.y = event.pageY
@@ -369,19 +369,19 @@
         startDrag = true
         return false
       }).on('mousemove',function () {
-        var X = $svg.offset().left;
-        var Y = $svg.offset().top;
+        let X = $svg.offset().left;
+        let Y = $svg.offset().top;
         that.location.x = event.pageX - X
         that.location.y = event.pageY - Y
 
-        var deltaX = event.pageX - lastPoint.x
-        var deltaY = event.pageY - lastPoint.y
+        let deltaX = event.pageX - lastPoint.x
+        let deltaY = event.pageY - lastPoint.y
 
         if (!$selected && startDrag) {
           lastPoint.x = event.pageX
           lastPoint.y = event.pageY
-          var m = $blockcanvas[0].getCTM();
-          var trans = "translate(" + (Number(m.e) + deltaX) + "," + (Number(m.f) + deltaY) + ") " + "scale(" + currentZoomFactor + ")"
+          let m = $blockcanvas[0].getCTM();
+          let trans = "translate(" + (Number(m.e) + deltaX) + "," + (Number(m.f) + deltaY) + ") " + "scale(" + currentZoomFactor + ")"
           setCanvasTransfrom(trans)
         }
         else if ($selected && $selected.hasClass("blocklySelected")) {
@@ -404,13 +404,13 @@
         if ($selected && $selected.hasClass("blocklySelected")) {
           if ($selected.hasClass("blocklyDragging")) {
             // 插入占位
-            var $marker = $blockcanvas.find(".blocklyInsertionMarker")
+            let $marker = $blockcanvas.find(".blocklyInsertionMarker")
             $selected.insertBefore($marker)
             $selected.removeClass("blocklyDragging")
             $marker.remove()
             // 更新变换
-            var dm = $dragsurface.css("transform").replace(/[^0-9\-,]/g, '').split(',')
-            var m = $selected[0].getCTM()
+            let dm = $dragsurface.css("transform").replace(/[^0-9\-,]/g, '').split(',')
+            let m = $selected[0].getCTM()
             $selected.attr("transform", "translate(" + (Number(dm[4]) + grapPoint.x) / Number(m.a) + "," + (Number(dm[5]) + grapPoint.y) / Number(m.d) + ")")
             $dragsurface.attr('style', 'display: none;')
           }

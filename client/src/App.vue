@@ -69,7 +69,9 @@
                 <el-main>
                     <router-view/>
                 </el-main>
-                <el-footer>Footer</el-footer>
+                <el-footer>
+                    <h4>@2018 Unique 版权所有</h4>
+                </el-footer>
             </el-container>
         </el-container>
     </div>
@@ -152,6 +154,12 @@
 
     .el-container:nth-child(7) .el-aside {
         line-height: 320px;
+    }
+
+    .el-footer{
+        text-align: right;
+        padding-right: 20px;
+        color: #666;
     }
 
 </style>
