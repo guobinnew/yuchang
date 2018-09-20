@@ -166,6 +166,7 @@
 
 <script>
   import ElContainer from '../node_modules/element-ui/packages/container/src/main'
+
   export default {
     components: {ElContainer},
     data () {

@@ -9,6 +9,7 @@
     "test:unit": "vue-cli-service test:unit"
   },
   "dependencies": {
+    "axios": "^0.18.0",
     "d3": "^5.7.0",
     "element-ui": "^2.4.7",
     "font-awesome": "^4.7.0",

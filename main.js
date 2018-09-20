@@ -8,7 +8,9 @@ const path = require('path')
 const url = require('url')
 
 // 启动后台服务
-var server = require('./dist/wrapper.js');
+var backend = require('./server')
+// 启动前台服务
+var frontend = require('./dist/wrapper')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -24,7 +26,7 @@ function createWindow() {
     })
 
     // and load the index.html of the app.
-    mainWindow.loadURL(server.url);
+    mainWindow.loadURL(frontend.url);
 
     if(debug){
         // Open the DevTools.
