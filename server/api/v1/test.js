@@ -136,24 +136,20 @@ router.route('/getinterfacetree').get((req, res) => {
       {"uid": 18, "name": "10.0.0", "parent": 0, "group": 6},
       {"uid": 19, "name": "11.0.0", "parent": 0, "group": 6},
       {"uid": 20, "name": "11.1.0", "parent": 0, "group": 6},
-      {"uid": 21, "name": "11.1.1", "parent": 0, "group": 6},
-      {"uid": 22, "name": "12.0.0", "parent": 0, "group": 6},
-      {"uid": 23, "name": "13.0.0", "parent": 0, "group": 6},
-      {"uid": 24, "name": "14.0.0", "parent": 0, "group": 6},
       {"uid": 101, "name": "2", "parent": 3, "group": 5, "groupid": 101},
       {"uid": 102, "name": "4", "parent": 2, "group": 5, "groupid": 102},
       {"uid": 103, "name": "4", "parent": 4, "group": 5, "groupid": 103},
-      {"uid": 104, "name": "4", "parent": 5, "group": 5, "groupid": 104},
+      {"uid": 104, "name": "10", "parent": 5, "group": 5, "groupid": 104},
       {"uid": 105, "name": "4", "parent": 6, "group": 5, "groupid": 105},
-      {"uid": 106, "name": "4", "parent": 7, "group": 5, "groupid": 106},
+      {"uid": 106, "name": "10", "parent": 7, "group": 5, "groupid": 106},
     ],
     groups: {
       "_101": {"uid": 101, "name": "2", "parent": 3, "group": 5, "groupid": 101},
       "_102": {"uid": 102, "name": "4", "parent": 2, "group": 5, "groupid": 102},
       "_103": {"uid": 103, "name": "4", "parent": 4, "group": 5, "groupid": 103},
-      "_104": {"uid": 104, "name": "4", "parent": 5, "group": 5, "groupid": 104},
+      "_104": {"uid": 104, "name": "10", "parent": 5, "group": 5, "groupid": 104},
       "_105": {"uid": 105, "name": "4", "parent": 6, "group": 5, "groupid": 105},
-      "_106": {"uid": 106, "name": "4", "parent": 7, "group": 5, "groupid": 106}
+      "_106": {"uid": 106, "name": "10", "parent": 7, "group": 5, "groupid": 106}
     },
     models: {
       "_101": [
@@ -176,7 +172,15 @@ router.route('/getinterfacetree').get((req, res) => {
         {"uid": 1011, "id": 1, "name": "Destroyer", "parent": 5, "group": 1, "groupid": 104},
         {"uid": 1012, "id": 2, "name": "Missile", "parent": 5, "group": 1, "groupid": 104},
         {"uid": 1013, "id": 3, "name": "Carrier", "parent": 5, "group": 1, "groupid": 104},
-        {"uid": 1014, "id": 4, "name": "Submarine", "parent": 5, "group": 1, "groupid": 104}
+        {"uid": 1014, "id": 4, "name": "Submarine", "parent": 5, "group": 1, "groupid": 104},
+        {"uid": 1124, "id": 5, "name": "Submarine", "parent": 5, "group": 1, "groupid": 104},
+        {"uid": 1125, "id": 6, "name": "Submarine", "parent": 5, "group": 1, "groupid": 104},
+        {"uid": 1126, "id": 7, "name": "Submarine", "parent": 5, "group": 1, "groupid": 104},
+        {"uid": 1127, "id": 8, "name": "Submarine", "parent": 5, "group": 1, "groupid": 104},
+        {"uid": 1128, "id": 9, "name": "Submarine", "parent": 5, "group": 1, "groupid": 104},
+        {"uid": 1129, "id": 10, "name": "Submarine", "parent": 5, "group": 1, "groupid": 104},
+        {"uid": 1130, "id": 11, "name": "Submarine", "parent": 5, "group": 1, "groupid": 104},
+        {"uid": 1131, "id": 12, "name": "Submarine", "parent": 5, "group": 1, "groupid": 104}
       ],
       "_105": [
         {"uid": 1015, "id": 1, "name": "Destroyer", "parent": 6, "group": 1, "groupid": 105},
@@ -188,7 +192,15 @@ router.route('/getinterfacetree').get((req, res) => {
         {"uid": 1019, "id": 1, "name": "Destroyer", "parent": 7, "group": 1, "groupid": 106},
         {"uid": 1020, "id": 2, "name": "Missile", "parent": 7, "group": 1, "groupid": 106},
         {"uid": 1021, "id": 3, "name": "Carrier", "parent": 7, "group": 1, "groupid": 106},
-        {"uid": 1022, "id": 4, "name": "Submarine", "parent": 7, "group": 1, "groupid": 106}
+        {"uid": 1023, "id": 4, "name": "Submarine", "parent": 7, "group": 1, "groupid": 106},
+        {"uid": 1024, "id": 5, "name": "Submarine", "parent": 7, "group": 1, "groupid": 106},
+        {"uid": 1025, "id": 6, "name": "Submarine", "parent": 7, "group": 1, "groupid": 106},
+        {"uid": 1026, "id": 7, "name": "Submarine", "parent": 7, "group": 1, "groupid": 106},
+        {"uid": 1027, "id": 8, "name": "Submarine", "parent": 7, "group": 1, "groupid": 106},
+        {"uid": 1028, "id": 9, "name": "Submarine", "parent": 7, "group": 1, "groupid": 106},
+        {"uid": 1029, "id": 10, "name": "Submarine", "parent": 7, "group": 1, "groupid": 106},
+        {"uid": 1030, "id": 11, "name": "Submarine", "parent": 7, "group": 1, "groupid": 106},
+        {"uid": 1031, "id": 12, "name": "Submarine", "parent": 7, "group": 1, "groupid": 106}
       ]
     }
   }

@@ -111,7 +111,6 @@
 
   var grapPoint = {x: 0, y: 0}
   var startDrag = false
-  var testdata = null
   var serverurl = 'http://localhost:3030/api/v1/test/'
 
   var instance = axios.create({
@@ -149,6 +148,7 @@
 
       resizeCanvas()
 
+      var currentOffset = {x: 0, y:0 }
       var currentZoomFactor = svg.currentScale ? svg.currentScale : 1.0
       var zoomBtn = $(".blocklyZoom image")
       const zoomRate = 1.1
@@ -167,6 +167,8 @@
           }
           else if (index == 2) {
             currentZoomFactor = 1.0
+            currentOffset.x = 0
+            currentOffset.y =  0
             $(".workspace").each(function () {
               const m = this.getCTM();
               $(this).attr("transform", "translate(0,0) scale(1.0)")
@@ -179,14 +181,17 @@
           }
           else {
             clearWS()
-            netgraph = prepareNetworkGraph()
+            currentOffset.x = 0
+            currentOffset.y =  0
             init(netgraph)
             return
           }
 
           $(".workspace").each(function () {
             const m = this.getCTM();
-            $(this).attr("transform", "translate(" + Number(m.e) + "," + Number(m.f) + ") " + "scale(" + currentZoomFactor + ")")
+            currentOffset.x = Number(m.e)
+            currentOffset.y =  Number(m.f)
+            $(this).attr("transform", "translate(" + currentOffset.x + "," + currentOffset.y + ") " + "scale(" + currentZoomFactor + ")")
           });
 
         })
@@ -211,7 +216,9 @@
 
           $(".workspace").each(function () {
             var m = this.getCTM();
-            $(this).attr("transform", "translate(" + (Number(m.e) + deltaX) + "," + (Number(m.f) + deltaY) + ") " + "scale(" + currentZoomFactor + ")")
+            currentOffset.x = Number(m.e) + deltaX
+            currentOffset.y = Number(m.f) + deltaY
+            $(this).attr("transform", "translate(" + currentOffset.x + "," + currentOffset.y + ") " + "scale(" + currentZoomFactor + ")")
           });
         }
       }).on('mouseup', function (e) {
@@ -382,6 +389,7 @@
       function init(graph) {
         ws = svg.append("g")
           .attr("class", "workspace")
+          .attr("transform", "translate(" + currentOffset.x + "," + currentOffset.y + ") " + "scale(" + currentZoomFactor + ")")
 
         simulation = d3.forceSimulation()
           .force("link", d3.forceLink().id(function (d) {
@@ -543,12 +551,12 @@
         return graph
       }
 
-      function initLocal(graph) {
+      function initLocal(graph, offset = false) {
         clearWS()
 
         ws = svg.append("g")
           .attr("class", "workspace")
-          .attr("transform", "translate(" + (that.width / 2) + "," + (that.height / 2) + ")");
+          .attr("transform", (offset ? "translate(" + currentOffset.x + "," + currentOffset.y + ") "  : "translate(" + (that.width / 2) + "," + (that.height / 2) + ")") + "scale(" + currentZoomFactor + ")" )
 
         var data = d3.stratify()
           .id(function (d) {
@@ -663,7 +671,7 @@
             // 替换集合
             treegraph.nodes = newnodes
 
-            initLocal(treegraph)
+            initLocal(treegraph, true)
           })
           .on('dblclick', function (d) {
             if (d.id == 0) return
@@ -676,7 +684,7 @@
             else if (d.data.group < 5) {
               treegraph = prepareInterfaceTreeGraph(d.data.id)
             }
-            initLocal(treegraph)
+            initLocal(treegraph, true)
           })
 
         var rnode = node.filter(function (d) {
