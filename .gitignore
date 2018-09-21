@@ -3,4 +3,6 @@ node_modules/
 logs/
 temp/
 bin/
+client/public/models/
+client/public/textures/
 .DS_Store

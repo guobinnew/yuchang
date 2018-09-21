@@ -14,6 +14,9 @@
     "element-ui": "^2.4.7",
     "font-awesome": "^4.7.0",
     "jquery": "^3.3.1",
+    "three": "^0.96.0",
+    "three-gltf-loader": "^1.96.0",
+    "three-orbitcontrols": "^2.96.2",
     "vue": "^2.5.17",
     "vue-router": "^3.0.1",
     "vuex": "^3.0.1"
