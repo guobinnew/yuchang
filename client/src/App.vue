@@ -181,7 +181,7 @@
           this.$router.push({ name: 'home' })
         }
         else if (key == 4) {
-          this.$router.push({ name: 'scratch' })
+          this.$router.push({ name: 'scripteditor' })
         }
         else if (key == 3) {
           this.$router.push({ name: 'nomview' })

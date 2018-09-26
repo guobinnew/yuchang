@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Home from './views/Home.vue'
 import NomView from './views/NomView.vue'
-import Scratch from './views/Scratch.vue'
+import Editor from './views/ScriptEditor.vue'
 
 Vue.use(Router)
 
@@ -19,9 +19,9 @@ export default new Router({
       component: NomView
     },
     {
-      path: '/scratch',
-      name: 'scratch',
-      component: Scratch
+      path: '/scripteditor',
+      name: 'scripteditor',
+      component: Editor
     },
     {
       path: '/about',

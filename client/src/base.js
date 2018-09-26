@@ -209,4 +209,13 @@ yuchg.inherits = function (childCtor, parentCtor) {
   }
 }
 
+/**
+ * 计算中英文字节长度, 中文算2个字节
+ */
+yuchg.strByteLength = function (str) {
+  var arr = str.match(/[^\x00-\xff]/ig)
+  return str.length + (arr == null ? 0 : arr.length)
+}
+
+
 export default yuchg
