@@ -85,27 +85,22 @@
              version="1.1" xmlns="http://www.w3.org/2000/svg">
         </svg>
         <svg class="ycBlockFlyout" :width="flyout.width" :height="size.height">
+            <defs>
+                <clipPath id="ycBlockMenuClipPath">
+                    <rect id="ycBlockMenuClipRect" :height="size.height" :width="flyout.width" y="0" x="0"></rect>
+                </clipPath>
+            </defs>
             <path class="ycBlockFlyoutBackground" d="M 0,0 h 250 a 0 0 0 0 1 0 0 v 606 a 0 0 0 0 1 0 0 h -250 z"></path>
-            <g class="ycBlockWorkspace" clip-path="url(#blocklyBlockMenuClipPath)">
-                <g class="ycBlockCanvas" transform="translate(0,-6.100000000000001) scale(0.675)">
-                    <rect fill-opacity="0" x="12" y="1960" height="56" width="95.99996185302734"></rect>
+            <g class="ycBlockWorkspace" clip-path="url(#ycBlockMenuClipPath)">
+                <g class="ycBlockCanvas" transform="translate(0,0) scale(0.675)">
+                    <rect fill-opacity="0" x="12" y="1960" height="56" width="96"></rect>
+                </g>
+                <g class="ycBlockBubbleCanvas" transform="translate(0,0) scale(0.675)">
                 </g>
             </g>
         </svg>
-        <div class="ycBlockToolboxDiv" dir="LTR" :height="size.height">
+        <div class="ycBlockToolbox" dir="LTR" :height="size.height">
             <div class="ycBlockCategoryMenu">
-                <div class="ycBlockCategoryMenuRow">
-                    <div class="ycBlockCategoryMenuItem categorySelected">
-                        <div class="ycBlockCategoryItemBubble" style="background-color: rgb(76, 151, 255); border-color: rgb(51, 115, 204);"></div>
-                        <div class="ycBlockCategoryMenuItemLabel">运动</div>
-                    </div>
-                </div>
-                <div class="ycBlockCategoryMenuRow">
-                    <div class="ycBlockCategoryMenuItem">
-                        <div class="ycBlockCategoryItemBubble" style="background-color: rgb(153, 102, 255); border-color: rgb(119, 77, 203);"></div>
-                        <div class="ycBlockCategoryMenuItemLabel">外观</div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -156,16 +151,20 @@
 
     .ycBlockFlyout {
         border-right: 1px solid hsla(0, 0%, 0%, 0.15);
-        -webkit-box-sizing: content-box;
+        border-left: 1px solid hsla(0, 0%, 0%, 0.15);
         box-sizing: content-box;
         position: absolute;
         top:0;
         right:60px;
-        opacity: 0.5;
     }
 
-    .ycBlockToolboxDiv {
-        border-right: 1px solid hsla(0, 0%, 0%, 0.15);
+    .ycBlockFlyoutBackground {
+        fill: #F9F9F9;
+        fill-opacity: .8;
+    }
+
+    .ycBlockToolbox {
+        border-left: 1px solid hsla(0, 0%, 0%, 0.15);
         border-bottom: 1px solid hsla(0, 0%, 0%, 0.15);
         -webkit-box-sizing: content-box;
         box-sizing: content-box;
@@ -206,6 +205,21 @@
 
     .ycBlockCategoryMenuItemLabel {
         font-size: 0.65rem;
+    }
+
+    .ycBlockFlyoutLabel {
+        cursor: default;
+    }
+
+    .ycBlockFlyoutLabelBackground {
+        opacity: 0;
+    }
+
+    .ycBlockFlyoutLabelText {
+        font-family: "Helvetica Neue", Helvetica, sans-serif;
+        font-size: 14pt;
+        fill: #575E75;
+        font-weight: bold;
     }
 </style>
 
@@ -277,6 +291,7 @@
       console.log(editor)
 
       editor.setOption({})
+      //
 
       // 测试
       editor.addBlock({

@@ -92,7 +92,7 @@ const ShapeUtils = {
   markerPath: function (option) {
     var path = document.createElementNS(ycSvgNS, "path")
     var $elem =  $(path)
-     $elem.attr('stroke', option.stroke)
+    $elem.attr('stroke', option.stroke)
     $elem.attr('fill', option.fill)
     $elem.attr('fill-opacity', option.opacity)
     $elem.addClass('ycBlockPath ycBlockBackground' + (option.classes ? (' ' + option.classes) : ''))
@@ -114,7 +114,7 @@ const ShapeUtils = {
     var $elem = $(text)
     $elem.addClass('ycBlockText' + (option.classes ? (' ' + option.classes) : ''))
     $elem.attr('text-anchor', option.anchor ? option.anchor : "middle")
-    $elem.attr('dominant-baseline', option.baseline ? option.baseline :"middle")
+    $elem.attr('dominant-baseline', option.baseline ? option.baseline :"central")
     $elem.attr('dy', "0")
     $elem.attr('x', ''+option.offset.x)
     $elem.attr('y', ''+option.offset.y)
@@ -143,6 +143,45 @@ const ShapeUtils = {
       $elem.addClass('ycBlockDraggable')
     }
     $elem.addClass((option.classes ? (' ' + option.classes) : ''))
+    return $elem
+  },
+
+  /*
+   {
+   classes: ''
+   text: ''
+   translate:{ x:0, y:0 }
+   width:
+   height:
+   }
+   */
+  flyoutLabel: function (option) {
+    var g = document.createElementNS(ycSvgNS, "g")
+    var $elem = $(g)
+    $elem.attr('display', 'block')
+    $elem.attr('transform',`translate(${option.translate.x}, ${option.translate.y})`)
+    $elem.addClass('ycBlockFlyoutLabel' + (option.classes ? (' ' + option.classes) : ''))
+
+    var rect = document.createElementNS(ycSvgNS, "rect")
+    var $rect = $(rect)
+    $rect.attr('rx', '4')
+    $rect.attr('ry', '4')
+    $rect.attr('width', option.width)
+    $rect.attr('height', option.height)
+    $rect.addClass('ycBlockFlyoutLabelBackground')
+    $elem.append($rect)
+
+    var text = document.createElementNS(ycSvgNS, "text")
+    var $text = $(text)
+    $text.attr('x', '0')
+    $text.attr('y',  option.height / 2)
+    $text.attr('dy',  '0')
+    $text.attr('text-anchor', 'start')
+    $text.attr('dominant-baseline', 'central')
+    $text.addClass('ycBlockFlyoutLabelText')
+    $text.html(option.text ? option.text : '')
+    $elem.append($text)
+
     return $elem
   }
 }
@@ -184,6 +223,10 @@ class Block {
     this.name = name
     this.def = def
     this.prototypeElement = this.createElement()
+    if( this.prototypeElement ){
+      this.prototypeElement.attr('data-block', this.name)
+    }
+
     this.instances = []  // 实例列表
   }
 
@@ -212,6 +255,7 @@ class BlockMarker extends Block {
 
   createElement() {
     var $g =  ShapeUtils.group(this.def)
+
     if( this.name == 'insertmarker'){
       $g.addClass('ycBlockInsertionMarker')
     }
@@ -236,6 +280,7 @@ class BlockVariant extends Block{
 
   createElement() {
     var $g =  ShapeUtils.group(this.def)
+
     var radius = 20  // 半圆半径
     var minLen = 16  // 最小长度
 
@@ -266,7 +311,7 @@ class BlockVariant extends Block{
       },
       translate:{
         x: 0,
-        y: 22
+        y: radius
       }
     }))
 
@@ -286,8 +331,8 @@ class BlockStack extends BlockVariant{
   }
 
   createElement() {
-
     var $g =  ShapeUtils.group(this.def)
+
     var space = this.def.space ? this.def.space : 8  // section间距
     var minLen = 64
 
@@ -331,7 +376,7 @@ class BlockStack extends BlockVariant{
           },
           translate:{
             x: 0,
-            y: 26
+            y: 24
           }
         }))
       }
@@ -404,6 +449,11 @@ class Panel {
     this.dom.$dragcanvas = dom.find(".ycBlockDragCanvas")
     this.dom.$canvasList = [this.dom.$canvas, this.dom.$bubblecanvas, this.dom.$dragcanvas]
 
+    this.dom.$flyout = dom.find('.ycBlockFlyout')
+    this.dom.$flyoutws = this.dom.$flyout.find('.ycBlockWorkspace')
+    this.dom.$flyoutcanvas = this.dom.$flyoutws.find('.ycBlockCanvas')
+    this.dom.$menu = dom.find('.ycBlockCategoryMenu')
+    
     this.marker = null
 
     this.registries = {}  // block注册列表
@@ -486,6 +536,11 @@ class Panel {
       }
     })
 
+    // 鼠标事件
+    this.dom.$flyout.on('mousedown',function () {
+
+    })
+
   }
 
   updateInfo(info){
@@ -509,6 +564,10 @@ class Panel {
     //注册Block, 创建Block对象
     var defs = this.option.blocks.blocks
 
+    $.each(that.option.blocks.categories, function(key, val) {
+      val.blocks = []
+    })
+
     $.each(defs, function(key, val){
       that.registries[key] = createPrototype({
         name: key,
@@ -519,6 +578,7 @@ class Panel {
         console.log('block registered failed: ' + key)
       }
       else{
+        that.option.blocks.categories[val.category].blocks.push(key)
         console.log('block registered successed: ' + key)
       }
     })
@@ -528,6 +588,77 @@ class Panel {
 
   prepare(){
     this.marker = this.createBlockInstance('insertmarker')
+    // 初始化toolbox
+    this.initCategoryToolbox()
+  }
+  
+  initCategoryToolbox(){
+    var categories = this.option.blocks.categories
+    var dom = this.dom
+    var registries = this.registries
+
+    function createMenu(key) {
+      var cate = categories[key]
+      if(!cate){
+        console.log('category can not found: ' + key)
+        return
+      }
+      var $menurow = $('<div class="ycBlockCategoryMenuRow"></div>')
+      var $menuitem = $(`<div class="ycBlockCategoryMenuItem" data-id="${key}"></div>`)
+      $menuitem.append($(`<div class="ycBlockCategoryItemBubble" style="background-color: ${ cate.background.fill }; border-color: ${ cate.background.stroke };"></div>`))
+      $menuitem.append($(`<div class="ycBlockCategoryMenuItemLabel">${ cate.name }</div>`))
+      $menurow.append($menuitem)
+
+      $menuitem.on('click',function () {
+        console.log('click ----- ' + $(this).data('id'))
+      })
+
+      return $menurow
+    }
+
+    let offsety = 12
+    let toolboxspace = 64
+    $.each(categories, function (key, val) {
+      if( !val.display || val.display != 'none'){
+        // 创建菜单
+        let $menuitem = createMenu(key)
+        categories[key].$menuitem = $menuitem
+        dom.$menu.append($menuitem)
+
+
+        // 创建Label
+        let labellen = computeTextLength(val.name) + 16
+
+        let $label = ShapeUtils.flyoutLabel({
+          text: val.name,
+          width: labellen,
+          height: 40,
+          translate: {
+            x: 12,
+            y: offsety
+          }
+        })
+        categories[key].$flyoutlable = $label
+        dom.$flyoutcanvas.append($label)
+        offsety += toolboxspace
+
+        // 创建列表
+        if( val.blocks ){
+          $.each(val.blocks, function (index, block) {
+            let proto = registries[block]
+            if( proto && proto.prototypeElement ){
+              let $elem = $(proto.prototypeElement).clone()
+              $elem.attr('transform', `translate(12, ${offsety})`)
+              dom.$flyoutcanvas.append($elem)
+              offsety += toolboxspace
+            }
+            else{
+              console.log('block registry is corrupted:' + block)
+            }
+          })
+        }
+      }
+    })
   }
 
   createBlockInstance(type, states){

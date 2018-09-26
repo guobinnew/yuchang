@@ -1,6 +1,8 @@
 export default {
   categories:{
     'internal':{
+      name: '内部',
+      display: 'none',
       background: {
         stroke: '#000000',
         fill: '#000000',
@@ -8,6 +10,7 @@ export default {
       },
     },
     'sensing':{
+      name: '感知',
       background: {
         stroke: '#2E8EB8',
         fill: '#5CB1D6',
@@ -15,6 +18,7 @@ export default {
       },
     },
     'motion':{
+      name: '运动',
       background: {
         stroke: '#3373CC',
         fill: '#4C97FF',
@@ -22,6 +26,7 @@ export default {
       },
     },
     'data':{
+      name: '数据',
       background: {
         stroke: '#DB6E00',
         fill: '#FF8C1A',
