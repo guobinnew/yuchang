@@ -53,7 +53,7 @@
                         <path class="ycBlockPath ycBlockBackground" stroke="#3373CC" fill="#4C97FF" fill-opacity="1" d="m 0,4 A 4,4 0 0,1 4,0 H 12 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H 116 a 4,4 0 0,1 4,4 v 40  a 4,4 0 0,1 -4,4 H 48   c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 H 4 a 4,4 0 0,1 -4,-4 z"></path>
                         <g data-argument-type="text number" data-shapes="argument round" transform="translate(48,8)">
                             <path class="ycBlockPath ycBlockBackground" stroke="#3373CC" fill="#FFFFFF" fill-opacity="1" d="m 0,0 m 16,0 H 24 a 16 16 0 0 1 0 32 H 16 a 16 16 0 0 1 0 -32 z"></path>
-                            <g class="ycBlockEditableText" transform="translate(8, 0) " style="cursor: text;">
+                            <g class="ycBlockEditableText" transform="translate(8, 0) ">
                                 <text class="ycBlockText" x="12" y="18" dominant-baseline="middle" dy="0" text-anchor="middle">10</text>
                             </g>
                         </g>
@@ -189,6 +189,10 @@
         -ms-user-select: none;
     }
 
+    .ycBlockCategoryMenuRow{
+        padding-top: 8px;
+    }
+
     .ycBlockCategoryMenuItem {
         padding: 0.375rem 0px;
         cursor: pointer;
@@ -220,6 +224,10 @@
         font-size: 14pt;
         fill: #575E75;
         font-weight: bold;
+    }
+
+    .ycBlockEditableText{
+        cursor: text;
     }
 </style>
 

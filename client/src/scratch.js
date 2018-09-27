@@ -1,38 +1,38 @@
 import yuchg from './base'
 import $ from 'jquery'
 import uuidv4 from 'uuid/v4'
-import blocks from './blocks'
+import blocks from './blocks/index'
 
 // 缺省文字字体大小
-const ycFontSize = 12  // ASCII
-const ycUnicodeFontSize = 16  // UNICODE
+const ycFontSize = 12 // ASCII
+const ycUnicodeFontSize = 16 // UNICODE
 // 计算文字长度
-function computeTextLength(txt) {
+function computeTextLength (txt) {
   // 根据文字计算长度
-  if( !yuchg.isString(txt)){
+  if (!yuchg.isString(txt)) {
     return 0
   }
 
   var length = txt.length * ycFontSize
   var bytes = yuchg.strByteLength(txt) - txt.length
-  length += bytes * ( ycUnicodeFontSize -  ycFontSize )
+  length += bytes * (ycUnicodeFontSize - ycFontSize)
   return length
 }
 
-function acquireCategoryContext(cate) {
-  if( blocks.categories ){
+function acquireCategoryContext (cate) {
+  if (blocks.categories) {
     return blocks.categories[cate]
   }
   return null
 }
 
 // SVG命名空间
-const ycSvgNS = "http://www.w3.org/2000/svg"
+const ycSvgNS = 'http://www.w3.org/2000/svg'
 
 const ShapeUtils = {
   section: function (def) {
-    if( def.type == 'variant'){
-      if( def.shape == 'round'){
+    if (def.type === 'variant') {
+      if (def.shape === 'round') {
         return ShapeUtils.roundRect(def)
       }
     }
@@ -47,13 +47,13 @@ const ShapeUtils = {
    }
    */
   slot: function (option) {
-    var path = document.createElementNS(ycSvgNS, "path")
-    var $elem =  $(path)
+    var path = document.createElementNS(ycSvgNS, 'path')
+    var $elem = $(path)
     var height = 40
     var headlen = 48
 
-    var d=`m 0,4 A 4,4 0 0,1 4,0 H 12 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H ${ option.length } a 4,4 0 0,1 4,4 v ${ height }  a 4,4 0 0,1 -4,4 H ${ headlen }   c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 H 4 a 4,4 0 0,1 -4,-4 z`
-    $elem.attr('d', d )
+    var d = `m 0,4 A 4,4 0 0,1 4,0 H 12 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H ${ option.length } a 4,4 0 0,1 4,4 v ${ height }  a 4,4 0 0,1 -4,4 H ${ headlen }   c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 H 4 a 4,4 0 0,1 -4,-4 z`
+    $elem.attr('d', d)
     $elem.attr('stroke', option.stroke)
     $elem.attr('fill', option.fill)
     $elem.attr('fill-opacity', option.opacity)
@@ -71,8 +71,8 @@ const ShapeUtils = {
     }
    */
   roundRect: function (option) {
-    var path = document.createElementNS(ycSvgNS, "path")
-    var $elem =  $(path)
+    var path = document.createElementNS(ycSvgNS, 'path')
+    var $elem = $(path)
     $elem.attr('d', `m 0,0 m ${option.radius},0 H ${option.radius + option.length} a ${option.radius} ${option.radius} 0 0 1 0 ${option.radius *2} H ${option.radius} a ${option.radius} ${option.radius} 0 0 1 0 ${option.radius * -2} z`)
     $elem.attr('stroke', option.stroke)
     $elem.attr('fill', option.fill)
@@ -90,8 +90,8 @@ const ShapeUtils = {
    }
    */
   markerPath: function (option) {
-    var path = document.createElementNS(ycSvgNS, "path")
-    var $elem =  $(path)
+    var path = document.createElementNS(ycSvgNS, 'path')
+    var $elem = $(path)
     $elem.attr('stroke', option.stroke)
     $elem.attr('fill', option.fill)
     $elem.attr('fill-opacity', option.opacity)
@@ -110,15 +110,15 @@ const ShapeUtils = {
    }
    */
   text: function (option) {
-    var text = document.createElementNS(ycSvgNS, "text")
+    var text = document.createElementNS(ycSvgNS, 'text')
     var $elem = $(text)
     $elem.addClass('ycBlockText' + (option.classes ? (' ' + option.classes) : ''))
-    $elem.attr('text-anchor', option.anchor ? option.anchor : "middle")
-    $elem.attr('dominant-baseline', option.baseline ? option.baseline :"central")
-    $elem.attr('dy', "0")
-    $elem.attr('x', ''+option.offset.x)
-    $elem.attr('y', ''+option.offset.y)
-    $elem.attr('transform',`translate(${option.translate.x}, ${option.translate.y})`)
+    $elem.attr('text-anchor', option.anchor ? option.anchor : 'middle')
+    $elem.attr('dominant-baseline', option.baseline ? option.baseline : 'central')
+    $elem.attr('dy', '0')
+    $elem.attr('x', '' + option.offset.x)
+    $elem.attr('y', '' + option.offset.y)
+    $elem.attr('transform', `translate(${option.translate.x}, ${option.translate.y})`)
     $elem.html(option.text ? option.text : '')
     return $elem
   },
@@ -133,13 +133,13 @@ const ShapeUtils = {
    }
    */
   group: function (option) {
-    var g = document.createElementNS(ycSvgNS, "g")
+    var g = document.createElementNS(ycSvgNS, 'g')
     var $elem = $(g)
     $elem.attr('data-type', option.type)
     $elem.attr('data-shape', option.shape)
     $elem.attr('data-category', option.category)
 
-    if(option.draggable === true){
+    if (option.draggable === true) {
       $elem.addClass('ycBlockDraggable')
     }
     $elem.addClass((option.classes ? (' ' + option.classes) : ''))
@@ -156,13 +156,13 @@ const ShapeUtils = {
    }
    */
   flyoutLabel: function (option) {
-    var g = document.createElementNS(ycSvgNS, "g")
+    var g = document.createElementNS(ycSvgNS, 'g')
     var $elem = $(g)
     $elem.attr('display', 'block')
-    $elem.attr('transform',`translate(${option.translate.x}, ${option.translate.y})`)
+    $elem.attr('transform', `translate(${option.translate.x}, ${option.translate.y})`)
     $elem.addClass('ycBlockFlyoutLabel' + (option.classes ? (' ' + option.classes) : ''))
 
-    var rect = document.createElementNS(ycSvgNS, "rect")
+    var rect = document.createElementNS(ycSvgNS, 'rect')
     var $rect = $(rect)
     $rect.attr('rx', '4')
     $rect.attr('ry', '4')
@@ -171,11 +171,11 @@ const ShapeUtils = {
     $rect.addClass('ycBlockFlyoutLabelBackground')
     $elem.append($rect)
 
-    var text = document.createElementNS(ycSvgNS, "text")
+    var text = document.createElementNS(ycSvgNS, 'text')
     var $text = $(text)
     $text.attr('x', '0')
-    $text.attr('y',  option.height / 2)
-    $text.attr('dy',  '0')
+    $text.attr('y', option.height / 2)
+    $text.attr('dy', '0')
     $text.attr('text-anchor', 'start')
     $text.attr('dominant-baseline', 'central')
     $text.addClass('ycBlockFlyoutLabelText')
@@ -183,54 +183,113 @@ const ShapeUtils = {
     $elem.append($text)
 
     return $elem
+  },
+
+  /*
+   {
+   translate:{ x:0, y:0 }
+   value:
+   offset:{x:0,y:0}
+   }
+   */
+  editableText: function (option) {
+    var g = document.createElementNS(ycSvgNS, 'g')
+    var $elem = $(g)
+    $elem.attr('transform', `translate(${option.translate.x}, ${option.translate.y})`)
+    $elem.addClass('ycBlockEditableText')
+
+    var text = document.createElementNS(ycSvgNS, 'text')
+    var $text = $(text)
+    $text.attr('x', option.offset.x)
+    $text.attr('y', option.offset.y)
+    $text.attr('text-anchor', 'middle')
+    $text.attr('dominant-baseline', 'central')
+    $text.attr('dy', '0')
+    $text.addClass('ycBlockText')
+    $elem.append($text)
+
+    return $elem
+  },
+
+  /*
+   {
+   argumentType: ''
+   translate:{ x:0, y:0 }
+   type:
+   value:
+   }
+   */
+  argumentText: function (option) {
+    var g = document.createElementNS(ycSvgNS, 'g')
+    var $elem = $(g)
+    $elem.attr('data-type', 'argument')
+    $elem.attr('data-shape', 'round')
+    $elem.attr('data-argument-type', 'text')
+    $elem.attr('transform', `translate(${option.translate.x}, ${option.translate.y})`)
+
+    var $path = ShapeUtils.markerPath({
+      stroke: '#3373CC',
+      fill: '#FFFFFF',
+      opacity: '1'
+    })
+    $path.attr('d', 'm 0,0 m 16,0 H 24 a 16 16 0 0 1 0 32 H 16 a 16 16 0 0 1 0 -32 z')
+    $elem.append($path)
+
+    // 根据value计算
+    $elem.append(ShapeUtils.editableText({
+
+    }))
   }
+
 }
 
 // 块实例
 class BlockInstance {
-  constructor(proto, states) {
+  constructor (proto, states) {
     this.uid = uuidv4() // 唯一标示
     this.proto = proto
     this.elem = null
     this.prev = null
     this.next = null
-    this.parent = null  // 父元素
-    this.children = []  // 内部子元素
+    this.parent = null // 父元素
+    this.children = [] // 内部子元素
 
     this.update(states)
   }
 
-  element(){
-    if( !this.elem ){
+  element () {
+    if (!this.elem) {
       this.elem = $(this.proto.prototypeElement).clone()
     }
     return this.elem
   }
 
   // 更新状态
-  update(states){
+  update (states) {
     this.states = states
     // 重新更新
     var $elem = this.element()
-    if(this.states){
-      $elem.attr('transform',`translate(${this.states.x},${this.states.y})`)
+    if (this.states) {
+      $elem.attr('transform', `translate(${this.states.x},${this.states.y})`)
     }
   }
 }
 
+/*
+Block基类
+*/
 class Block {
-  constructor(name, def) {
-    this.name = name
+  constructor (def) {
+    this.name = def.id // Block名称
     this.def = def
     this.prototypeElement = this.createElement()
-    if( this.prototypeElement ){
+    if (this.prototypeElement) {
       this.prototypeElement.attr('data-block', this.name)
     }
-
-    this.instances = []  // 实例列表
+    this.instances = [] // 实例列表
   }
 
-  createElement() {
+  createElement () {
     return null
   }
 
@@ -241,48 +300,71 @@ class Block {
      y: // Y坐标
   }
    */
-  instance(states){
+  instance (states) {
     var inst = new BlockInstance(this, states)
     this.instances.push(inst)
     return inst
   }
 }
 
-class BlockMarker extends Block {
-  constructor(name, def) {
-    super(name, def)
+/*
+Block基类
+*/
+class BlockArgument extends Block {
+  constructor (def) {
+    super(def)
+    this.value = ''
   }
 
-  createElement() {
-    var $g =  ShapeUtils.group(this.def)
-
-    if( this.name == 'insertmarker'){
-      $g.addClass('ycBlockInsertionMarker')
-    }
+  createElement () {
+    var $g = ShapeUtils.group(this.def)
 
     let cate = acquireCategoryContext(this.def.category)
     let opt = {
-      stroke:  '#000000',  // 线条颜色
-      fill: '#000000',  // 填充色
+      stroke: '#000000', // 线条颜色
+      fill: '#000000', // 填充色
       opacity: '0.2'
     }
     $.extend(opt, cate.background)
     $g.append(ShapeUtils.markerPath(opt))
     return $g
   }
-
 }
 
-class BlockVariant extends Block{
-  constructor(name, def) {
-    super(name, def)
+class BlockMarker extends Block {
+  constructor (def) {
+    super(def)
   }
 
-  createElement() {
-    var $g =  ShapeUtils.group(this.def)
+  createElement () {
+    var $g = ShapeUtils.group(this.def)
 
-    var radius = 20  // 半圆半径
-    var minLen = 16  // 最小长度
+    if (this.name === 'insertmarker') {
+      $g.addClass('ycBlockInsertionMarker')
+    }
+
+    let cate = acquireCategoryContext(this.def.category)
+    let opt = {
+      stroke: '#000000', // 线条颜色
+      fill: '#000000', // 填充色
+      opacity: '0.2'
+    }
+    $.extend(opt, cate.background)
+    $g.append(ShapeUtils.markerPath(opt))
+    return $g
+  }
+}
+
+class BlockVariant extends Block {
+  constructor (def) {
+    super(def)
+  }
+
+  createElement () {
+    var $g = ShapeUtils.group(this.def)
+
+    var radius = 20 // 半圆半径
+    var minLen = 16 // 最小长度
 
     // 根据文字计算长度
     var txt = this.def.text
@@ -291,13 +373,13 @@ class BlockVariant extends Block{
 
     let cate = acquireCategoryContext(this.def.category)
     let opt = {
-      stroke:  '#2E8EB8',  // 线条颜色
-      fill: '#5CB1D6',  // 填充色
-      opacity: '1'   // 透明度
+      stroke: '#2E8EB8', // 线条颜色
+      fill: '#5CB1D6', // 填充色
+      opacity: '1' // 透明度
     }
     $.extend(opt, cate.background)
 
-    if( this.def.shape == 'round' ){
+    if (this.def.shape === 'round') {
       opt.radius = radius
       opt.length = roundlength
       $g.append(ShapeUtils.roundRect(opt))
@@ -305,11 +387,11 @@ class BlockVariant extends Block{
 
     $g.append(ShapeUtils.text({
       text: this.def.text,
-      offset:{
+      offset: {
         x: radius + roundlength / 2,
-        y:0
+        y: 0
       },
-      translate:{
+      translate: {
         x: 0,
         y: radius
       }
@@ -317,35 +399,43 @@ class BlockVariant extends Block{
 
     return $g
   }
-
 }
 
+class BlockStack extends Block{
+  constructor (def) {
+    super(def)
+    this.arguments = []
+  }
+}
 
+class BlockExpress extends BlockStack{
+  constructor (def) {
+    super(def)
+  }
+}
 
-
-class BlockStack extends BlockVariant{
-  constructor(name, def) {
-    super(name, def)
+class BlockAction extends BlockStack {
+  constructor (def) {
+    super(def)
     this.prev = null // 上一个Block
-    this.next = null  // 下一个Block
+    this.next = null // 下一个Block
   }
 
-  createElement() {
-    var $g =  ShapeUtils.group(this.def)
+  createElement () {
+    var $g = ShapeUtils.group(this.def)
 
-    var space = this.def.space ? this.def.space : 8  // section间距
+    var space = this.def.space ? this.def.space : 8 // section间距
     var minLen = 64
 
     // 根据sections起始位置
     var secoffsets = []
-    secoffsets.push(space )
-    var length = (this.def.sections.length + 1 ) * space
+    secoffsets.push(space)
+    var length = (this.def.sections.length + 1) * space
     this.def.sections.forEach(function (sec, i) {
       let l = 0
-      if( sec.type == 'text'){
+      if (sec.type === 'text') {
         l = computeTextLength(sec.text)
-      }
-      else if( sec.type == 'argument') {
+      } else if (sec.type === 'argument') {
         l = sec.length ? sec.length : 0
       }
       secoffsets.push(secoffsets[i] + l + space)
@@ -356,9 +446,9 @@ class BlockStack extends BlockVariant{
 
     let cate = acquireCategoryContext(this.def.category)
     let opt = {
-      stroke: '#2E8EB8',  // 线条颜色
-      fill: '#5CB1D6',  // 填充色
-      opacity: '1',   // 透明度
+      stroke: '#2E8EB8', // 线条颜色
+      fill: '#5CB1D6', // 填充色
+      opacity: '1', // 透明度
       length: roundlength
     }
     $.extend(opt, cate.background)
@@ -366,128 +456,128 @@ class BlockStack extends BlockVariant{
     $g.append(ShapeUtils.slot(opt))
 
     this.def.sections.forEach(function (sec, i) {
-      if(sec.type == 'text'){
+      if (sec.type === 'text') {
         $g.append(ShapeUtils.text({
           text: sec.text,
           anchor: 'start',
-          offset:{
+          offset: {
             x: secoffsets[i],
             y: 0
           },
-          translate:{
+          translate: {
             x: 0,
             y: 24
           }
         }))
-      }
-      else if( sec.type == 'argument'){
+      } else if (sec.type === 'argument') {
 
       }
     })
 
     return $g
-
   }
 }
 
 
-class BlockControl extends BlockStack{
-  constructor(name, def) {
-    super(name, def)
+class BlockControl extends BlockStack {
+  constructor (def) {
+    super(def)
     this.success = []
   }
 
-  createElement() {
+  createElement () {
 
   }
-
 }
 
 
-class BlockControlTwo extends BlockStack{
-  constructor(name, def) {
-    super(name, def)
+class BlockControlTwo extends BlockStack {
+  constructor (def) {
+    super(def)
     this.fail = null
   }
 
-  createElement() {
+  createElement () {
 
   }
 }
 
 // 创建原型对象
-function createPrototype(opt) {
-  if( !opt.def.type ){
+function createPrototype (opt) {
+  if (!opt.type) {
     return null
   }
 
   var proto = null
-  if( opt.def.type == 'variant'){
-    proto = new BlockVariant(opt.name, opt.def)
-  }
-  else if( opt.def.type == 'marker'){
-    proto = new BlockMarker(opt.name, opt.def)
-  }
-  else if( opt.def.type == 'stack'){
-    proto = new BlockStack(opt.name, opt.def)
+  if (opt.type === 'variant') {
+    proto = new BlockVariant(opt)
+  } else if (opt.type === 'marker') {
+    proto = new BlockMarker(opt)
+  } else if (opt.type === 'action') {
+    proto = new BlockAction(opt)
   }
 
   return proto
 }
 
 class Panel {
-  constructor(dom) {
+  constructor (dom) {
     this.dom = {}
     this.dom.$root = dom
     this.dom.$svg = dom.find('.ycBlockSvg')
     this.dom.$info = this.dom.$svg.find('#ycBlockInfo')
     this.dom.$ws = this.dom.$svg.find('.ycBlockWorkspace')
-    this.dom.$canvas = this.dom.$ws.find(".ycBlockCanvas")
+    this.dom.$canvas = this.dom.$ws.find('.ycBlockCanvas')
 
-    this.dom.$bubblecanvas = dom.find(".ycBlockBubbleCanvas")
-    this.dom.$dragsurface = dom.find(".ycBlockDragSurface")
-    this.dom.$dragcanvas = dom.find(".ycBlockDragCanvas")
+    this.dom.$bubblecanvas = dom.find('.ycBlockBubbleCanvas')
+    this.dom.$dragsurface = dom.find('.ycBlockDragSurface')
+    this.dom.$dragcanvas = dom.find('.ycBlockDragCanvas')
     this.dom.$canvasList = [this.dom.$canvas, this.dom.$bubblecanvas, this.dom.$dragcanvas]
 
     this.dom.$flyout = dom.find('.ycBlockFlyout')
     this.dom.$flyoutws = this.dom.$flyout.find('.ycBlockWorkspace')
     this.dom.$flyoutcanvas = this.dom.$flyoutws.find('.ycBlockCanvas')
     this.dom.$menu = dom.find('.ycBlockCategoryMenu')
-    
+
     this.marker = null
 
-    this.registries = {}  // block注册列表
-    this.instances = []  // block实例数组
+    this.registries = {} // block注册列表
+    this.instances = [] // block实例数组
 
-    this.grapPoint = {x: 0, y: 0}
-    this.lastPoint = {x: 0, y: 0}
-    this.mousePoint = {x: 0, y: 0}
+    this.grapPoint = {
+      x: 0,
+      y: 0
+    }
+    this.lastPoint = {
+      x: 0,
+      y: 0
+    }
+    this.mousePoint = {
+      x: 0,
+      y: 0
+    }
     this.$selected = null
     this.currentZoomFactor = 1.0
     this.startDrag = false
 
     this.option = {
-      width: 800
-      , height: 600
-      , virtualWidth: 1600
-      , virtualHeight: 1200
-      // classed: ''  // 缺省ycBlockSvg 额外class
-      // defs: ['']
-      , blocks: blocks
+      width: 800,
+      height: 600,
+      virtualWidth: 1600,
+      virtualHeight: 1200,
+      blocks: blocks
     }
 
-    var that = this
-    var dom = this.dom
-
+    let that = this
     // 鼠标事件
-    this.dom.$svg.on('mousedown',function () {
+    this.dom.$svg.on('mousedown', function () {
       that.lastPoint.x = event.pageX
       that.lastPoint.y = event.pageY
       that.startDrag = true
       return false
-    }).on('mousemove',function () {
-      let X = dom.$svg.offset().left;
-      let Y = dom.$svg.offset().top;
+    }).on('mousemove', function () {
+      let X = $(this).offset().left
+      let Y = $(this).offset().top
       that.updateInfo({
         x: event.pageX - X,
         y: event.pageY - Y
@@ -499,107 +589,103 @@ class Panel {
       if (!that.$selected && that.startDrag) {
         that.lastPoint.x = event.pageX
         that.lastPoint.y = event.pageY
-        let m = dom.$canvas[0].getCTM();
-        let trans = "translate(" + (Number(m.e) + deltaX) + "," + (Number(m.f) + deltaY) + ") " + "scale(" + that.currentZoomFactor + ")"
+        let m = that.dom.$canvas[0].getCTM()
+        let trans = 'translate(' + (Number(m.e) + deltaX) + ',' + (Number(m.f) + deltaY) + ') ' + 'scale(' + that.currentZoomFactor + ')'
         that.setCanvasTransfrom(trans)
-      }
-      else if (that.$selected && that.$selected.hasClass("ycBlockSelected")) {
+      } else if (that.$selected && that.$selected.hasClass('ycBlockSelected')) {
         // 改变父节点
-        if (!that.$selected.hasClass("ycBlockDragging")) {
+        if (!that.$selected.hasClass('ycBlockDragging')) {
           // 插入占位
           var $marker = that.marker.element()
           $marker.insertAfter(that.$selected)
-          dom.$dragsurface.css("display", "block")
-          dom.$dragcanvas.append(that.$selected)
-          that.$selected.addClass("ycBlockDragging")
+          that.dom.$dragsurface.css('display', 'block')
+          that.dom.$dragcanvas.append(that.$selected)
+          that.$selected.addClass('ycBlockDragging')
         }
         // 根据鼠标位置调整surface
-        dom.$dragsurface.attr("style", "display: block; transform: translate3d(" + deltaX + "px," + deltaY + "px,0px)")
+        that.dom.$dragsurface.attr('style', 'display: block; transform: translate3d(' + deltaX + 'px,' + deltaY + 'px,0px)')
       }
-    }).on('mouseup',function () {
+    }).on('mouseup mouseout', function () {
       that.startDrag = false
-      if (that.$selected && that.$selected.hasClass("ycBlockSelected")) {
-        if (that.$selected.hasClass("ycBlockDragging")) {
+      if (that.$selected && that.$selected.hasClass('ycBlockSelected')) {
+        if (that.$selected.hasClass('ycBlockDragging')) {
           // 插入占位
           var $marker = that.marker.element()
           that.$selected.insertBefore($marker)
-          that.$selected.removeClass("ycBlockDragging")
+          that.$selected.removeClass('ycBlockDragging')
           $marker.remove()
           // 更新变换
-          let dm = dom.$dragsurface.css("transform").replace(/[^0-9\-,]/g, '').split(',')
+          let dm = that.dom.$dragsurface.css('transform').replace(/[^0-9\-,]/g, '').split(',')
           let m = that.$selected[0].getCTM()
-          that.$selected.attr("transform", "translate(" + (Number(dm[4]) + that.grapPoint.x) / Number(m.a) + "," + (Number(dm[5]) + that.grapPoint.y) / Number(m.d) + ")")
-          dom.$dragsurface.css('display', 'none;')
+          that.$selected.attr('transform', 'translate(' + (Number(dm[4]) + that.grapPoint.x) / Number(m.a) + ',' + (Number(dm[5]) + that.grapPoint.y) / Number(m.d) + ')')
+          that.dom.$dragsurface.css('display', 'none;')
         }
-        that.$selected.removeClass("ycBlockSelected")
+        that.$selected.removeClass('ycBlockSelected')
         that.$selected = null
       }
     })
 
     // 鼠标事件
-    this.dom.$flyout.on('mousedown',function () {
+    this.dom.$flyout.on('mousedown', function () {
 
     })
-
   }
 
-  updateInfo(info){
+  updateInfo (info) {
     this.mousePoint.x = info.x
     this.mousePoint.y = info.y
     this.dom.$info.html('X: ' + info.x + '  Y: ' + info.y)
   }
 
   // 统一设置canvas变换矩阵（平移，缩放）
-  setCanvasTransfrom(trans) {
+  setCanvasTransfrom (trans) {
     this.dom.$canvasList.forEach(function (item) {
-      item.attr("transform", trans)
+      item.attr('transform', trans)
     })
   }
 
-  setOption(opt) {
-    var that = this
+  setOption (opt) {
     // 合并
     $.extend(true, this.option, opt)
 
-    //注册Block, 创建Block对象
-    var defs = this.option.blocks.blocks
-
-    $.each(that.option.blocks.categories, function(key, val) {
+    // 注册Block, 创建Block对象
+    let registries = this.registries
+    let defs = this.option.blocks.blocks
+    let cates = this.option.blocks.categories
+    for (let val of Object.values(cates)) {
       val.blocks = []
-    })
+    }
 
-    $.each(defs, function(key, val){
-      that.registries[key] = createPrototype({
-        name: key,
-        def: val
-      })
-
-      if( !that.registries[key]){
-        console.log('block registered failed: ' + key)
+    for (let [type, val] of Object.entries(defs)) {
+      for (let def of val.members.values()) {
+        def.type = type
+        registries[def.id] = createPrototype(def)
+        if (!registries[def.id]) {
+          console.log('block registered failed: ' + def.id)
+        } else {
+          cates[def.category].blocks.push(def.id)
+          console.log('block registered successed: ' + def.id)
+        }
       }
-      else{
-        that.option.blocks.categories[val.category].blocks.push(key)
-        console.log('block registered successed: ' + key)
-      }
-    })
+    }
 
     this.prepare()
   }
 
-  prepare(){
+  prepare () {
     this.marker = this.createBlockInstance('insertmarker')
     // 初始化toolbox
     this.initCategoryToolbox()
   }
-  
-  initCategoryToolbox(){
+
+  initCategoryToolbox () {
     var categories = this.option.blocks.categories
     var dom = this.dom
     var registries = this.registries
 
-    function createMenu(key) {
+    function createMenu (key) {
       var cate = categories[key]
-      if(!cate){
+      if (!cate) {
         console.log('category can not found: ' + key)
         return
       }
@@ -609,7 +695,7 @@ class Panel {
       $menuitem.append($(`<div class="ycBlockCategoryMenuItemLabel">${ cate.name }</div>`))
       $menurow.append($menuitem)
 
-      $menuitem.on('click',function () {
+      $menuitem.on('click', function () {
         console.log('click ----- ' + $(this).data('id'))
       })
 
@@ -619,12 +705,11 @@ class Panel {
     let offsety = 12
     let toolboxspace = 64
     $.each(categories, function (key, val) {
-      if( !val.display || val.display != 'none'){
+      if (!val.display || val.display !== 'none') {
         // 创建菜单
         let $menuitem = createMenu(key)
         categories[key].$menuitem = $menuitem
         dom.$menu.append($menuitem)
-
 
         // 创建Label
         let labellen = computeTextLength(val.name) + 16
@@ -634,7 +719,7 @@ class Panel {
           width: labellen,
           height: 40,
           translate: {
-            x: 12,
+            x: 20,
             y: offsety
           }
         })
@@ -643,16 +728,15 @@ class Panel {
         offsety += toolboxspace
 
         // 创建列表
-        if( val.blocks ){
+        if (val.blocks) {
           $.each(val.blocks, function (index, block) {
             let proto = registries[block]
-            if( proto && proto.prototypeElement ){
+            if (proto && proto.prototypeElement) {
               let $elem = $(proto.prototypeElement).clone()
-              $elem.attr('transform', `translate(12, ${offsety})`)
+              $elem.attr('transform', `translate(36, ${offsety})`)
               dom.$flyoutcanvas.append($elem)
               offsety += toolboxspace
-            }
-            else{
+            } else {
               console.log('block registry is corrupted:' + block)
             }
           })
@@ -661,9 +745,9 @@ class Panel {
     })
   }
 
-  createBlockInstance(type, states){
+  createBlockInstance (type, states) {
     // 坚持类型是否注册
-    if(!this.hasRegistered(type)){
+    if (!this.hasRegistered(type)) {
       console.error('block registered failed: ' + type)
       return
     }
@@ -676,15 +760,13 @@ class Panel {
     return inst
   }
 
-
-
-  addBlock(states, parent){
-    if(!states || !states.type){
+  addBlock (states, parent) {
+    if (!states || !states.type) {
       return
     }
 
     let inst = this.createBlockInstance(states.type, states)
-    if(!inst){
+    if (!inst) {
       return
     }
 
@@ -698,75 +780,66 @@ class Panel {
       let m = this.getCTM()
       let pm = dom.$canvas[0].getCTM()
 
-      let X = dom.$svg.offset().left;
-      let Y = dom.$svg.offset().top;
-
       that.lastPoint.x = event.pageX
       that.lastPoint.y = event.pageY
       that.grapPoint.x = (Number(m.e) - Number(pm.e))
       that.grapPoint.y = (Number(m.f) - Number(pm.f))
-      that.$selected.addClass("ycBlockSelected")
+      that.$selected.addClass('ycBlockSelected')
       return false
-    }).on('mouseup',function () {
+    }).on('mouseup', function () {
 
     })
 
-    if(parent){
+    if (parent) {
       parent.append(inst.element())
-    }
-    else{
+    } else {
       this.dom.$canvas.append(inst.element())
     }
   }
-  
-  addBlocks(blocks) {
-    
-    if( yuchg.isArray(blocks) ){
+
+  addBlocks (blocks) {
+    if (yuchg.isArray(blocks)) {
       var that = this
       // 创建多个Block
       $.each(blocks, function (i, elem) {
         that.addBlock(elem)
       })
-    }
-    else if( yuchg.isObject(blocks)) {
+    } else if (yuchg.isObject(blocks)) {
       // 创建单个Block
       this.addBlock(blocks)
     }
+  }
+
+  findBlock (id) {
 
   }
 
-  findBlock(id) {
+  findBlocksByType (type) {
 
   }
 
-
-  findBlocksByType(type) {
-
-  }
-
-  removeBlocks(ids) {
+  removeBlocks (ids) {
 
   }
 
-  removeBlocksByTypes(types) {
+  removeBlocksByTypes (types) {
 
   }
 
-  registerBlock(defs) {
+  registerBlock (defs) {
 
   }
 
-  unregisterBlock(types) {
+  unregisterBlock (types) {
 
   }
 
-  hasRegistered(type){
-    if( this.registries.hasOwnProperty(type) && this.registries[type] ){
+  hasRegistered (type) {
+    if (this.registries.hasOwnProperty(type) && this.registries[type]) {
       return true
     }
     return false
   }
-
 }
 
 const Scratch = {
