@@ -28,6 +28,9 @@ export default {
       name: '布尔值',
       shape: 'boolean',
       category: 'argument',
+      background: {
+        fill: '#389438'
+      },
       exports: {
         json: function (elem) {
           return {}
