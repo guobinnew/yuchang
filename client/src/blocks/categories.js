@@ -8,6 +8,15 @@ export default {
       opacity: '0.2'
     }
   },
+  'argument': {
+    name: '参数',
+    display: 'none',
+    background: {
+      stroke: '#333333',
+      fill: '#FFFFFF',
+      opacity: '1'
+    }
+  },
   'sensing': {
     name: '感知',
     background: {

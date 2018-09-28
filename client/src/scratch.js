@@ -175,6 +175,64 @@ const ShapeUtils = {
   },
 
   /*
+    {
+       height: 32  // 高度
+       contentWidth: 16  // 内容宽度
+       stroke:  '#2E8EB8'  // 线条颜色
+       fill: '#5CB1D6'  // 填充色
+       opacity: '1'   // 透明度
+       classes: ''
+    }
+   */
+  diamondRect: function (option) {
+    let path = document.createElementNS(ycSvgNS, 'path')
+    let $elem = $(path)
+    let minContentWidth = 16
+    let minRadius = 16
+
+    if (!option) {
+      option = {}
+    }
+
+    let size = {
+      radius: option.height ? option.height / 2 : minRadius,
+      contentWidth: option.contentWidth ? option.contentWidth : minContentWidth
+    }
+    let d = '`m 0,0 m ${size.radius},0 H ${size.radius + size.contentWidth} l ${size.radius} ${size.radius} l ${-size.radius} ${size.radius} H ${size.radius} l ${-size.radius} ${-size.radius} l ${size.radius} ${-size.radius} z`'
+    let dfunc = new Function('size', 'return ' + d)
+    $elem.attr('d', dfunc(size))
+
+    option.stroke && $elem.attr('stroke', option.stroke)
+    option.fill && $elem.attr('fill', option.fill)
+    option.opacity && $elem.attr('fill-opacity', option.opacity)
+    $elem.addClass('ycBlockPath ycBlockBackground' + (option.classes ? (' ' + option.classes) : ''))
+    // 自定义事件
+    $elem.on(ycEvents.resize, function (event, opt) {
+      const $this = $(this)
+      const log = `slot ${ycEvents.resize} event: `
+      if (!opt) {
+        console.log(log + `event: opt is null`)
+        return
+      }
+
+      if (!yuchg.isNumber(opt.height)) {
+        console.log(log + `radius is not number`)
+      } else {
+        size.radius = Math.max(opt.height / 2, minRadius)
+      }
+
+      if (!yuchg.isNumber(opt.contentWidth)) {
+        console.log(log + `width is not number`)
+      } else {
+        size.contentWidth = Math.max(opt.contentWidth, minContentWidth)
+      }
+
+      $this.attr('d', dfunc(size))
+    })
+    return $elem
+  },
+
+  /*
    {
    stroke:  '#000000'  // 线条颜色
    fill: '#000000'  // 填充色
@@ -284,7 +342,6 @@ const ShapeUtils = {
     $elem.addClass((option.classes ? (' ' + option.classes) : ''))
     return $elem
   },
-
 
   /*
    {
@@ -561,11 +618,15 @@ class BlockArgument extends Block {
 
   createElement() {
     var $g = ShapeUtils.arguGroup(this.def)
-    let opt = $.extend({}, this.def.background)
+
+    let cate = acquireCategoryContext(this.def.category)
+    let opt = {}
+    $.extend(opt, cate.background)
     $g.append(ShapeUtils.markerPath(opt))
 
     if (this.def.shape === 'boolean') {
       this.state.value = this.def.value ? !!this.def.value : false
+      $g.append(ShapeUtils.diamondRect(opt))
     } else if (this.def.shape === 'dropdown') {
       this.state.currentIndex = this.def.currentIndex ? parseInt(this.def.currentIndex) : -1
       this.state.values = this.def.values
@@ -598,7 +659,7 @@ class BlockArgument extends Block {
       // 根据文字计算长度
       let txt = '' + this.value
       let length = computeTextLength(txt)
-      let roundlength = length < this.display.minWidth ? this.display.minWidth : length
+      let roundlength = length < this.display.minContentWidth ? this.display.minContentWidth : length
 
       let $path = dom.children('path')
       $path.trigger(ycEvents.resize, [{
@@ -644,17 +705,17 @@ class BlockVariant extends Block {
 
   createElement() {
     this.display.minHeight = 40
-    this.display.height = 40
+    this.state.height = 40
 
     let $g = ShapeUtils.group(this.def)
     let cate = acquireCategoryContext(this.def.category)
     this.def.background = cate.background
     let opt = {
-      height: this.display.height
+      height: this.state.height
     }
     $.extend(opt, cate.background)
     if (this.def.shape === 'boolean') { // 布尔类型
-
+      $g.append(ShapeUtils.diamondRect(opt))
     } else {
       // 缺省外形
       $g.append(ShapeUtils.roundRect(opt))
@@ -672,22 +733,20 @@ class BlockVariant extends Block {
     // 根据文字计算长度
     let txt = this.def.text
     let length = computeTextLength(txt)
-    let roundlength = length < this.display.minContentWidth ? this.display.minContentWidth : length
+    this.state.contentWidth = length < this.display.minContentWidth ? this.display.minContentWidth : length
 
     let $path = dom.children('path')
-    if (this.def.shape === 'round') {
-      $path.trigger(ycEvents.resize, [{
-        contentWidth: roundlength,
-        height: this.display.height
-      }])
-    }
-
+    $path.trigger(ycEvents.resize, [{
+      contentWidth: this.state.contentWidth,
+      height: this.state.height
+    }])
+    
     let $text = dom.children('text')
     $text.trigger(ycEvents.position, [{
-      x: this.display.height / 2 + roundlength / 2,
+      x: this.state.height / 2 + this.state.contentWidth / 2,
       y: 0,
       translatex: 0,
-      translatey: this.display.height / 2
+      translatey: this.state.height / 2
     }])
   }
 }
@@ -1053,7 +1112,7 @@ class Panel {
         // 根据鼠标位置调整surface
         that.dom.$dragsurface.attr('style', 'display: block; transform: translate3d(' + deltaX + 'px,' + deltaY + 'px,0px)')
       }
-    }).on('mouseup mouseout', function () {
+    }).on('mouseup mouseleave', function () {
       that.startDrag = false
       if (that.$selected && that.$selected.hasClass('ycBlockSelected')) {
         if (that.$selected.hasClass('ycBlockDragging')) {
@@ -1106,7 +1165,7 @@ class Panel {
     }
 
     // 注册参数
-    for (let def of args.values()) {
+    for (let def of args.members.values()) {
       def.type = 'argument'
       // 提示重复
       if (registries[def.id]) {

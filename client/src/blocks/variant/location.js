@@ -24,5 +24,18 @@ export default [
         return {}
       }
     }
+  },
+  {
+    id: 'origin',
+    name: '是否在原点',
+    shape: 'boolean',
+    category: 'sensing',
+    draggable: true,
+    text: '是否在原点',
+    exports: {
+      json: function (elem) {
+        return {}
+      }
+    }
   }
 ]
