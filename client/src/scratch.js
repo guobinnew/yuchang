@@ -192,17 +192,17 @@ const ShapeUtils = {
     let path = document.createElementNS(ycSvgNS, 'path')
     let $elem = $(path)
     let minContentWidth = 8
-    let minRadius = 16
+    let minSide = 16
 
     if (!option) {
       option = {}
     }
 
     let size = {
-      radius: option.height ? option.height / 2 : minRadius,
+      side: option.height ? option.height / 2 : minSide,
       contentWidth: option.contentWidth ? option.contentWidth : minContentWidth
     }
-    let d = '`m 0,0 m ${size.radius},0 H ${size.radius + size.contentWidth} l ${size.radius} ${size.radius} l ${-size.radius} ${size.radius} H ${size.radius} l ${-size.radius} ${-size.radius} l ${size.radius} ${-size.radius} z`'
+    let d = '`m 0,0 m ${size.side},0 H ${size.side + size.contentWidth} l ${size.side} ${size.side} l ${-size.side} ${size.side} H ${size.side} l ${-size.side} ${-size.side} l ${size.side} ${-size.side} z`'
     let dfunc = new Function('size', 'return ' + d)
     $elem.attr('d', dfunc(size))
 
@@ -222,7 +222,7 @@ const ShapeUtils = {
       if (!yuchg.isNumber(opt.height)) {
         console.log(log + `radius is not number`)
       } else {
-        size.radius = Math.max(opt.height / 2, minRadius)
+        size.side = Math.max(opt.height / 2, minSide)
       }
 
       if (!yuchg.isNumber(opt.contentWidth)) {
@@ -611,6 +611,16 @@ class Block {
     }
     $.extend(this.display, this.def.display)
 
+    let cate = acquireCategoryContext(this.def.category)
+    let background = {}
+    if (cate && cate.background) {
+      $.extend(background, cate.background)
+    }
+    if (this.def.background) {
+      $.extend(background, this.def.background)
+    }
+    this.def.background = background
+
     this.state = {
       contentWidth: 8,
       height: 32,
@@ -667,20 +677,15 @@ class BlockArgument extends Block {
 
   createElement() {
     var $g = ShapeUtils.arguGroup(this.def)
-    let cate = acquireCategoryContext(this.def.category)
-    let background = $.extend({}, cate.background)
-
-    if (this.def.background) {
-      $.extend(background, this.def.background)
-    }
     let opt = {
       contentWidth: this.state.width,
       height: this.state.height
     }
-    $.extend(opt, background)
+    $.extend(opt, this.def.background)
 
     if (this.def.shape === 'boolean') {
       this.state.value = this.def.value ? !!this.def.value : false
+      opt.contentWidth = 16
       $g.append(ShapeUtils.diamondRect(opt))
     } else if (this.def.shape === 'dropdown') {
       this.state.currentIndex = this.def.currentIndex ? parseInt(this.def.currentIndex) : -1
@@ -708,8 +713,13 @@ class BlockArgument extends Block {
     if (this.def.shape === 'dropdown') {
 
     } else {
+      let txt = ''
       // 根据文字计算长度
-      let txt = '' + this.state.value
+      if (this.def.shape !== 'boolean') {
+        txt = '' + this.state.value
+      } else {
+        this.display.minContentWidth = 16
+      }
       let length = computeTextLength(txt)
       this.state.contentWidth = length < this.display.minContentWidth ? this.display.minContentWidth : length
       this.state.width = this.state.contentWidth + this.padding() * 2
@@ -742,9 +752,8 @@ class BlockMarker extends Block {
       $g.addClass('ycBlockInsertionMarker')
     }
 
-    let cate = acquireCategoryContext(this.def.category)
     let opt = {}
-    $.extend(opt, cate.background)
+    $.extend(opt, this.def.background)
     $g.append(ShapeUtils.markerPath(opt))
     return $g
   }
@@ -760,12 +769,11 @@ class BlockVariant extends Block {
     this.state.height = 40
 
     let $g = ShapeUtils.group(this.def)
-    let cate = acquireCategoryContext(this.def.category)
-    this.def.background = cate.background
+
     let opt = {
       height: this.state.height
     }
-    $.extend(opt, cate.background)
+    $.extend(opt, this.def.background)
     if (this.def.shape === 'boolean') { // 布尔类型
       $g.append(ShapeUtils.diamondRect(opt))
     } else {
@@ -819,7 +827,6 @@ class BlockStack extends Block {
     this.display.space = 4
     this.state.height = 40
 
-    let cate = acquireCategoryContext(this.def.category)
     let $elem = this.createContainer()
     this.sections = []
     // 创建Section
@@ -831,10 +838,10 @@ class BlockStack extends Block {
         console.log('block' + this.name + 'createSection failed:' + sec)
         continue
       }
-      //
-      if (cate && cate.background && cate.background.stroke) {
+      // 修改边框颜色
+      if (this.def.background && this.def.background.stroke) {
         $child.trigger(ycEvents.background, [{
-          stroke: cate.background.stroke
+          stroke: this.def.background.stroke
         }])
       }
 
@@ -935,12 +942,10 @@ class BlockExpress extends BlockStack {
 
   createContainer() {
     let $g = ShapeUtils.group(this.def)
-    let cate = acquireCategoryContext(this.def.category)
-    this.def.background = cate.background
     let opt = {}
-    $.extend(opt, cate.background)
+    $.extend(opt, this.def.background)
     if (this.def.shape === 'boolean') { // 布尔类型
-
+      $g.append(ShapeUtils.diamondRect(opt))
     } else {
       // 缺省外形
       $g.append(ShapeUtils.roundRect(opt))
@@ -956,10 +961,8 @@ class BlockEvent extends BlockStack {
 
   createContainer() {
     let $g = ShapeUtils.group(this.def)
-    let cate = acquireCategoryContext(this.def.category)
-    this.def.background = cate.background
     let opt = {}
-    $.extend(opt, cate.background)
+    $.extend(opt, this.def.background)
     // 缺省外形
     $g.append(ShapeUtils.event(opt))
     this.adjust($g)
@@ -995,14 +998,13 @@ class BlockAction extends BlockStack {
 
     var roundlength = length < minLen ? minLen : length
 
-    let cate = acquireCategoryContext(this.def.category)
     let opt = {
       stroke: '#2E8EB8', // 线条颜色
       fill: '#5CB1D6', // 填充色
       opacity: '1', // 透明度
       length: roundlength
     }
-    $.extend(opt, cate.background)
+    $.extend(opt, this.def.background)
 
     $g.append(ShapeUtils.slot(opt))
 
@@ -1030,10 +1032,9 @@ class BlockAction extends BlockStack {
 
   createContainer() {
     let $g = ShapeUtils.group(this.def)
-    let cate = acquireCategoryContext(this.def.category)
-    this.def.background = cate.background
+
     let opt = {}
-    $.extend(opt, cate.background)
+    $.extend(opt, this.def.background)
     if (this.def.shape === 'boolean') { // 布尔类型
 
     } else {
