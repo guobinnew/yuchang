@@ -24,6 +24,14 @@ export default {
       opacity: '1'
     }
   },
+  'operator': {
+    name: '运算',
+    background: {
+      stroke: '#389438',
+      fill: '#59C059',
+      opacity: '1'
+    }
+  },
   'data': {
     name: '数据',
     background: {

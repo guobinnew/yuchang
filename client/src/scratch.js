@@ -7,63 +7,119 @@ import blocks from './blocks/index'
 const ycFontSize = 12 // ASCII
 const ycUnicodeFontSize = 16 // UNICODE
 // 计算文字长度
-function computeTextLength (txt) {
+function computeTextLength(txt) {
   // 根据文字计算长度
   if (!yuchg.isString(txt)) {
     return 0
   }
 
-  var length = txt.length * ycFontSize
-  var bytes = yuchg.strByteLength(txt) - txt.length
+  let length = txt.length * ycFontSize
+  let bytes = yuchg.strByteLength(txt) - txt.length
   length += bytes * (ycUnicodeFontSize - ycFontSize)
   return length
 }
 
-function acquireCategoryContext (cate) {
+function acquireCategoryContext(cate) {
   if (blocks.categories) {
     return blocks.categories[cate]
   }
   return null
 }
 
-// SVG命名空间
-const ycSvgNS = 'http://www.w3.org/2000/svg'
-
-const ShapeUtils = {
-  section: function (def) {
-    if (def.type === 'variant') {
-      if (def.shape === 'round') {
-        return ShapeUtils.roundRect(def)
+function acquireArgumentContext(id) {
+  if (blocks.args) {
+    for (let v of blocks.args.values()) {
+      if (v.id === id) {
+        return v
       }
     }
-  },
+  }
+  return null
+}
+
+// SVG命名空间
+const ycSvgNS = 'http://www.w3.org/2000/svg'
+const ycEvents = {
+  resize: 'ycBlockEventResize',
+  position: 'ycBlockEventPosition'
+}
+
+const ShapeUtils = {
   /*
    {
-   length: 16  // 水平端长度
+   width: 16  // 水平端宽度
    stroke:  ''  // 线条颜色
    fill: ''  // 填充色
    opacity: '1'   // 透明度
    classes: ''
+   height: 40 // 默认高度
+   }
+   */
+  event: function (option) {
+
+  },
+  /*
+   {
+   width: 16  // 水平端宽度
+   stroke:  ''  // 线条颜色
+   fill: ''  // 填充色
+   opacity: '1'   // 透明度
+   classes: ''
+   height: 40 // 默认高度
    }
    */
   slot: function (option) {
-    var path = document.createElementNS(ycSvgNS, 'path')
-    var $elem = $(path)
-    var height = 40
-    var headlen = 48
+    let path = document.createElementNS(ycSvgNS, 'path')
+    let $elem = $(path)
 
-    var d = `m 0,4 A 4,4 0 0,1 4,0 H 12 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H ${ option.length } a 4,4 0 0,1 4,4 v ${ height }  a 4,4 0 0,1 -4,4 H ${ headlen }   c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 H 4 a 4,4 0 0,1 -4,-4 z`
-    $elem.attr('d', d)
-    $elem.attr('stroke', option.stroke)
-    $elem.attr('fill', option.fill)
-    $elem.attr('fill-opacity', option.opacity)
+    if (!option) {
+      option = {}
+    }
+
+    let minWidth = 40
+    let minHeight = 16
+    let size = {
+      width: option.width ? option.width : minWidth,
+      height: option.height ? option.height : minHeight
+    }
+
+    let d = '`m 0,4 A 4,4 0 0,1 4,0 H 12 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H ${ size.width } a 4,4 0 0,1 4,4 v ${ size.height } a 4,4 0 0,1 -4,4 H 48 c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 H 4 a 4,4 0 0,1 -4,-4 z`'
+    let dfunc = new Function('size', 'return ' + d)
+    $elem.attr('d', dfunc(size))
+    option.stroke && $elem.attr('stroke', option.stroke)
+    option.fill && $elem.attr('fill', option.fill)
+    option.opacity && $elem.attr('fill-opacity', option.opacity)
     $elem.addClass('ycBlockPath ycBlockBackground' + (option.classes ? (' ' + option.classes) : ''))
+
+    // 自定义事件
+    $elem.on(ycEvents.resize, function (event, opt) {
+      const $this = $(this)
+      const log = `slot ${ycEvents.resize} event: `
+      if (!opt) {
+        console.log(log + `opt is null`)
+        return
+      }
+
+      if (!yuchg.isNumber(opt.width)) {
+        console.log(log + `width is not number`)
+      } else {
+        size.width = Math.max(opt.width, minWidth)
+      }
+
+      if (!yuchg.isNumber(opt.height)) {
+        console.log(log + `height is not number`)
+      } else {
+        size.height = Math.max(opt.height, minHeight)
+      }
+
+      $this.attr('d', dfunc(size))
+    })
     return $elem
   },
   /*
     {
-       radius: 20  // 半径
-       length: 16  // 水平端长度
+       height: 32  // 高度
+       contentWidth: 16  // 内容宽度
        stroke:  '#2E8EB8'  // 线条颜色
        fill: '#5CB1D6'  // 填充色
        opacity: '1'   // 透明度
@@ -71,13 +127,50 @@ const ShapeUtils = {
     }
    */
   roundRect: function (option) {
-    var path = document.createElementNS(ycSvgNS, 'path')
-    var $elem = $(path)
-    $elem.attr('d', `m 0,0 m ${option.radius},0 H ${option.radius + option.length} a ${option.radius} ${option.radius} 0 0 1 0 ${option.radius *2} H ${option.radius} a ${option.radius} ${option.radius} 0 0 1 0 ${option.radius * -2} z`)
-    $elem.attr('stroke', option.stroke)
-    $elem.attr('fill', option.fill)
-    $elem.attr('fill-opacity', option.opacity)
+    let path = document.createElementNS(ycSvgNS, 'path')
+    let $elem = $(path)
+    let minContentWidth = 16
+    let minRadius = 16
+
+    if (!option) {
+      option = {}
+    }
+
+    let size = {
+      radius: option.height ? option.height / 2 : minRadius,
+      contentWidth: option.contentWidth ? option.contentWidth : minContentWidth
+    }
+    let d = '`m 0,0 m ${size.radius},0 H ${size.radius + size.contentWidth} a ${size.radius} ${size.radius} 0 0 1 0 ${size.radius * 2} H ${size.radius} a ${size.radius} ${size.radius} 0 0 1 0 ${size.radius * -2} z`'
+    let dfunc = new Function('size', 'return ' + d)
+    $elem.attr('d', dfunc(size))
+
+    option.stroke && $elem.attr('stroke', option.stroke)
+    option.fill && $elem.attr('fill', option.fill)
+    option.opacity && $elem.attr('fill-opacity', option.opacity)
     $elem.addClass('ycBlockPath ycBlockBackground' + (option.classes ? (' ' + option.classes) : ''))
+    // 自定义事件
+    $elem.on(ycEvents.resize, function (event, opt) {
+      const $this = $(this)
+      const log = `slot ${ycEvents.resize} event: `
+      if (!opt) {
+        console.log(log + `event: opt is null`)
+        return
+      }
+
+      if (!yuchg.isNumber(opt.height)) {
+        console.log(log + `radius is not number`)
+      } else {
+        size.radius = Math.max(opt.height / 2, minRadius)
+      }
+
+      if (!yuchg.isNumber(opt.contentWidth)) {
+        console.log(log + `width is not number`)
+      } else {
+        size.contentWidth = Math.max(opt.contentWidth, minContentWidth)
+      }
+
+      $this.attr('d', dfunc(size))
+    })
     return $elem
   },
 
@@ -90,8 +183,8 @@ const ShapeUtils = {
    }
    */
   markerPath: function (option) {
-    var path = document.createElementNS(ycSvgNS, 'path')
-    var $elem = $(path)
+    let path = document.createElementNS(ycSvgNS, 'path')
+    let $elem = $(path)
     $elem.attr('stroke', option.stroke)
     $elem.attr('fill', option.fill)
     $elem.attr('fill-opacity', option.opacity)
@@ -102,24 +195,70 @@ const ShapeUtils = {
   /*
    {
    anchor: 'middle'  // 半径
-   baseline: 'middle'  // 水平端长度
+   baseline: 'central'  // 水平端长度
    classes: ''
    text: ''
-   offset: {x:0,y:0}
-   translate:{ x:0, y:0 }
+   x:
+   y:
+   translatex:
+   translatey:
    }
    */
   text: function (option) {
-    var text = document.createElementNS(ycSvgNS, 'text')
-    var $elem = $(text)
+    let text = document.createElementNS(ycSvgNS, 'text')
+    let $elem = $(text)
+    if (!option) {
+      option = {}
+    }
     $elem.addClass('ycBlockText' + (option.classes ? (' ' + option.classes) : ''))
     $elem.attr('text-anchor', option.anchor ? option.anchor : 'middle')
     $elem.attr('dominant-baseline', option.baseline ? option.baseline : 'central')
     $elem.attr('dy', '0')
-    $elem.attr('x', '' + option.offset.x)
-    $elem.attr('y', '' + option.offset.y)
-    $elem.attr('transform', `translate(${option.translate.x}, ${option.translate.y})`)
+
+    $elem.attr('x', option.x ? option.x : 0)
+    $elem.attr('y', option.y ? option.y : 0)
+
+    $elem.attr('transform', `translate(${option.translatex ? option.translatex : 0}, ${option.translatey ? option.translatey : 0})`)
+
     $elem.html(option.text ? option.text : '')
+
+    // 自定义事件
+    $elem.on(ycEvents.position, function (event, opt) {
+      const $this = $(this)
+      const log = `slot ${ycEvents.position} event: `
+      if (!opt) {
+        console.log(log + 'opt is null')
+        return
+      }
+
+      if (!yuchg.isNumber(opt.x)) {
+        console.log(log + `x is not number`)
+      } else {
+        $this.attr('x', opt.x)
+      }
+
+      if (!yuchg.isNumber(opt.y)) {
+        console.log(log + `y is not number`)
+      } else {
+        $this.attr('y', opt.y)
+      }
+
+      let tx = 0
+      let ty = 0
+      if (!yuchg.isNumber(opt.translatex)) {
+        console.log(log + `translatex is not number`)
+      } else {
+        tx = opt.translatex
+      }
+
+      if (!yuchg.isNumber(opt.translatey)) {
+        console.log(log + `translatey is not number`)
+      } else {
+        ty = opt.translatey
+      }
+      $this.attr('transform', `translate(${tx}, ${ty})`)
+    })
+
     return $elem
   },
 
@@ -133,11 +272,11 @@ const ShapeUtils = {
    }
    */
   group: function (option) {
-    var g = document.createElementNS(ycSvgNS, 'g')
-    var $elem = $(g)
-    $elem.attr('data-type', option.type)
-    $elem.attr('data-shape', option.shape)
-    $elem.attr('data-category', option.category)
+    let g = document.createElementNS(ycSvgNS, 'g')
+    let $elem = $(g)
+    option.type && $elem.attr('data-type', option.type)
+    option.shape && $elem.attr('data-shape', option.shape)
+    option.category && $elem.attr('data-category', option.category)
 
     if (option.draggable === true) {
       $elem.addClass('ycBlockDraggable')
@@ -146,24 +285,69 @@ const ShapeUtils = {
     return $elem
   },
 
+
+  /*
+   {
+   type:  //
+   shape:   //
+   translatex:
+   translatey:
+   }
+   */
+  arguGroup: function (option) {
+    let g = document.createElementNS(ycSvgNS, 'g')
+    let $elem = $(g)
+    option.type && $elem.attr('data-argument-type', option.id)
+    option.shape && $elem.attr('data-shape', option.shape)
+    $elem.attr('transform', `translate(${option.translatex ? option.translatex : 0}, ${option.translatey ? option.translatey : 0})`)
+
+    // 自定义事件
+    $elem.on(ycEvents.position, function (event, opt) {
+      const $this = $(this)
+      const log = `slot ${ycEvents.position} event: `
+      if (!opt) {
+        console.log(log + 'opt is null')
+        return
+      }
+
+      let tx = 0
+      let ty = 0
+      if (!yuchg.isNumber(opt.translatex)) {
+        console.log(log + `translatex is not number`)
+      } else {
+        tx = opt.translatex
+      }
+
+      if (!yuchg.isNumber(opt.translatey)) {
+        console.log(log + `translatey is not number`)
+      } else {
+        ty = opt.translatey
+      }
+      $this.attr('transform', `translate(${tx}, ${ty})`)
+    })
+
+    return $elem
+  },
+
   /*
    {
    classes: ''
    text: ''
-   translate:{ x:0, y:0 }
+   translatex:
+   translatey:
    width:
    height:
    }
    */
   flyoutLabel: function (option) {
-    var g = document.createElementNS(ycSvgNS, 'g')
-    var $elem = $(g)
+    let g = document.createElementNS(ycSvgNS, 'g')
+    let $elem = $(g)
     $elem.attr('display', 'block')
-    $elem.attr('transform', `translate(${option.translate.x}, ${option.translate.y})`)
+    $elem.attr('transform', `translate(${option.translatex ? option.translatex : 0}, ${option.translatey ? option.translatey : 0})`)
     $elem.addClass('ycBlockFlyoutLabel' + (option.classes ? (' ' + option.classes) : ''))
 
-    var rect = document.createElementNS(ycSvgNS, 'rect')
-    var $rect = $(rect)
+    let rect = document.createElementNS(ycSvgNS, 'rect')
+    let $rect = $(rect)
     $rect.attr('rx', '4')
     $rect.attr('ry', '4')
     $rect.attr('width', option.width)
@@ -171,8 +355,8 @@ const ShapeUtils = {
     $rect.addClass('ycBlockFlyoutLabelBackground')
     $elem.append($rect)
 
-    var text = document.createElementNS(ycSvgNS, 'text')
-    var $text = $(text)
+    let text = document.createElementNS(ycSvgNS, 'text')
+    let $text = $(text)
     $text.attr('x', '0')
     $text.attr('y', option.height / 2)
     $text.attr('dy', '0')
@@ -187,65 +371,75 @@ const ShapeUtils = {
 
   /*
    {
-   translate:{ x:0, y:0 }
+   translatex
+   translatey
    value:
-   offset:{x:0,y:0}
+   x:
+   y:
    }
    */
   editableText: function (option) {
-    var g = document.createElementNS(ycSvgNS, 'g')
-    var $elem = $(g)
-    $elem.attr('transform', `translate(${option.translate.x}, ${option.translate.y})`)
+    let g = document.createElementNS(ycSvgNS, 'g')
+    let $elem = $(g)
+    $elem.attr('transform', `translate(${option.translatex ? option.translatex : 8}, ${option.translatey ? option.translatey : 0})`)
     $elem.addClass('ycBlockEditableText')
 
-    var text = document.createElementNS(ycSvgNS, 'text')
-    var $text = $(text)
-    $text.attr('x', option.offset.x)
-    $text.attr('y', option.offset.y)
+    let text = document.createElementNS(ycSvgNS, 'text')
+    let $text = $(text)
+
+    $text.attr('x', option.x ? option.x : 0)
+    $text.attr('y', option.y ? option.y : 0)
     $text.attr('text-anchor', 'middle')
     $text.attr('dominant-baseline', 'central')
     $text.attr('dy', '0')
     $text.addClass('ycBlockText')
     $elem.append($text)
 
-    return $elem
-  },
+    // 自定义事件
+    $elem.on(ycEvents.position, function (event, opt) {
+      const $this = $(this)
+      const log = `slot ${ycEvents.position} event: `
+      if (!opt) {
+        console.log(log + 'opt is null')
+        return
+      }
 
-  /*
-   {
-   argumentType: ''
-   translate:{ x:0, y:0 }
-   type:
-   value:
-   }
-   */
-  argumentText: function (option) {
-    var g = document.createElementNS(ycSvgNS, 'g')
-    var $elem = $(g)
-    $elem.attr('data-type', 'argument')
-    $elem.attr('data-shape', 'round')
-    $elem.attr('data-argument-type', 'text')
-    $elem.attr('transform', `translate(${option.translate.x}, ${option.translate.y})`)
+      let tx = 0
+      let ty = 0
+      if (!yuchg.isNumber(opt.translatex)) {
+        console.log(log + `translatex is not number`)
+      } else {
+        tx = opt.translatex
+      }
 
-    var $path = ShapeUtils.markerPath({
-      stroke: '#3373CC',
-      fill: '#FFFFFF',
-      opacity: '1'
+      if (!yuchg.isNumber(opt.translatey)) {
+        console.log(log + `translatey is not number`)
+      } else {
+        ty = opt.translatey
+      }
+      $this.attr('transform', `translate(${tx}, ${ty})`)
+
+      let $thistext = $this.children('text')
+      if (!yuchg.isNumber(opt.x)) {
+        console.log(log + `x is not number`)
+      } else {
+        $thistext.attr('x', opt.x)
+      }
+
+      if (!yuchg.isNumber(opt.y)) {
+        console.log(log + `y is not number`)
+      } else {
+        $thistext.attr('y', opt.y)
+      }
     })
-    $path.attr('d', 'm 0,0 m 16,0 H 24 a 16 16 0 0 1 0 32 H 16 a 16 16 0 0 1 0 -32 z')
-    $elem.append($path)
 
-    // 根据value计算
-    $elem.append(ShapeUtils.editableText({
-
-    }))
+    return $elem
   }
-
 }
 
 // 块实例
 class BlockInstance {
-  constructor (proto, states) {
+  constructor(proto, states) {
     this.uid = uuidv4() // 唯一标示
     this.proto = proto
     this.elem = null
@@ -253,25 +447,56 @@ class BlockInstance {
     this.next = null
     this.parent = null // 父元素
     this.children = [] // 内部子元素
+    this.states = {}
 
     this.update(states)
   }
 
-  element () {
+  // 获取对应的DOM根元素
+  element() {
     if (!this.elem) {
       this.elem = $(this.proto.prototypeElement).clone()
     }
     return this.elem
   }
 
-  // 更新状态
-  update (states) {
-    this.states = states
-    // 重新更新
-    var $elem = this.element()
-    if (this.states) {
-      $elem.attr('transform', `translate(${this.states.x},${this.states.y})`)
+  // 绝对坐标（SVG）
+  absolutPosition() {
+    return {
+      x: 0,
+      y: 0
     }
+  }
+
+  // 更新状态
+  update(states, force = false) {
+    if (!this.states) {
+      this.states = {}
+    }
+
+    if (states) {
+      // 合并状态
+      $.extend(true, this.states, states)
+    }
+
+    if (force) {
+      // 强制全部更新
+      this.updateState(this.states)
+    } else if (states) {
+      this.updateState(states)
+    }
+  }
+
+  updateState(states) {
+    this.updatePosition(states)
+  }
+
+  updatePosition(states) {
+    // 重新更新
+    let $elem = this.element()
+    let x = states.x ? parseInt(states.x) : 0
+    let y = states.y ? parseInt(states.y) : 0
+    $elem.attr('transform', `translate(${x},${y})`)
   }
 }
 
@@ -279,29 +504,48 @@ class BlockInstance {
 Block基类
 */
 class Block {
-  constructor (def) {
+  constructor(def) {
     this.name = def.id // Block名称
     this.def = def
+    this.instances = [] // 实例列表
+    this.display = { // 显示设置
+      minContentWidth: 16, // 内容显示区域宽度，最小宽度
+      minHeight: 32,
+      space: 4 // 边框/间距
+    }
+    this.state = {
+      contentWidth: 16,
+      height: 32,
+      width: 16 // 宽度根据Block类型不同而不同，默认等于contentWidth
+    }
     this.prototypeElement = this.createElement()
     if (this.prototypeElement) {
       this.prototypeElement.attr('data-block', this.name)
     }
-    this.instances = [] // 实例列表
   }
 
-  createElement () {
+  // 创建DOM对象原型
+  createElement() {
     return null
   }
 
-  // 克隆一个对象实例
+  // 调整尺寸
+  // dom为DOM根元素
+  adjust(dom) {
+
+  }
+
+  // 克隆一个对象实例, state为状态变量 
   /*
   {
      x: // X坐标
      y: // Y坐标
   }
    */
-  instance (states) {
-    var inst = new BlockInstance(this, states)
+  instance(state) {
+    let s = $.extend({}, this.state)
+    $.extend(s, state)
+    var inst = new BlockInstance(this, s)
     this.instances.push(inst)
     return inst
   }
@@ -311,32 +555,74 @@ class Block {
 Block基类
 */
 class BlockArgument extends Block {
-  constructor (def) {
+  constructor(def) {
     super(def)
-    this.value = ''
   }
 
-  createElement () {
-    var $g = ShapeUtils.group(this.def)
-
-    let cate = acquireCategoryContext(this.def.category)
-    let opt = {
-      stroke: '#000000', // 线条颜色
-      fill: '#000000', // 填充色
-      opacity: '0.2'
-    }
-    $.extend(opt, cate.background)
+  createElement() {
+    var $g = ShapeUtils.arguGroup(this.def)
+    let opt = $.extend({}, this.def.background)
     $g.append(ShapeUtils.markerPath(opt))
+
+    if (this.def.shape === 'boolean') {
+      this.state.value = this.def.value ? !!this.def.value : false
+    } else if (this.def.shape === 'dropdown') {
+      this.state.currentIndex = this.def.currentIndex ? parseInt(this.def.currentIndex) : -1
+      this.state.values = this.def.values
+    } else if (this.def.shape === 'number') {
+      this.state.value = this.def.value ? parseInt(this.def.value) : 0
+      opt.height = this.display.height
+      $g.append(ShapeUtils.roundRect(opt))
+      $g.append(ShapeUtils.editableText({
+        text: this.state.value
+      }))
+    } else {
+      this.state.value = this.def.value ? this.def.value : ''
+      // 缺省外形
+      $g.append(ShapeUtils.roundRect(opt))
+      $g.append(ShapeUtils.editableText({
+        text: this.state.value
+      }))
+    }
+    this.adjust($g)
     return $g
+  }
+
+  adjust(dom) {
+    // 根据def计算尺寸
+    if (this.def.shape === 'boolean') {
+
+    } else if (this.def.shape === 'dropdown') {
+
+    } else {
+      // 根据文字计算长度
+      let txt = '' + this.value
+      let length = computeTextLength(txt)
+      let roundlength = length < this.display.minWidth ? this.display.minWidth : length
+
+      let $path = dom.children('path')
+      $path.trigger(ycEvents.resize, [{
+        contentWidth: roundlength,
+        height: this.state.height
+      }])
+
+      let $text = dom.children('text')
+      $text.trigger(ycEvents.position, [{
+        x: this.display.height / 2 + roundlength / 2,
+        y: 0,
+        translatex: 0,
+        translatey: this.display.height / 2
+      }])
+    }
   }
 }
 
 class BlockMarker extends Block {
-  constructor (def) {
+  constructor(def) {
     super(def)
   }
 
-  createElement () {
+  createElement() {
     var $g = ShapeUtils.group(this.def)
 
     if (this.name === 'insertmarker') {
@@ -344,11 +630,7 @@ class BlockMarker extends Block {
     }
 
     let cate = acquireCategoryContext(this.def.category)
-    let opt = {
-      stroke: '#000000', // 线条颜色
-      fill: '#000000', // 填充色
-      opacity: '0.2'
-    }
+    let opt = {}
     $.extend(opt, cate.background)
     $g.append(ShapeUtils.markerPath(opt))
     return $g
@@ -356,72 +638,225 @@ class BlockMarker extends Block {
 }
 
 class BlockVariant extends Block {
-  constructor (def) {
+  constructor(def) {
     super(def)
   }
 
-  createElement () {
-    var $g = ShapeUtils.group(this.def)
+  createElement() {
+    this.display.minHeight = 40
+    this.display.height = 40
 
-    var radius = 20 // 半圆半径
-    var minLen = 16 // 最小长度
-
-    // 根据文字计算长度
-    var txt = this.def.text
-    var length = computeTextLength(txt)
-    var roundlength = length < minLen ? minLen : length
-
+    let $g = ShapeUtils.group(this.def)
     let cate = acquireCategoryContext(this.def.category)
+    this.def.background = cate.background
     let opt = {
-      stroke: '#2E8EB8', // 线条颜色
-      fill: '#5CB1D6', // 填充色
-      opacity: '1' // 透明度
+      height: this.display.height
     }
     $.extend(opt, cate.background)
+    if (this.def.shape === 'boolean') { // 布尔类型
 
-    if (this.def.shape === 'round') {
-      opt.radius = radius
-      opt.length = roundlength
+    } else {
+      // 缺省外形
       $g.append(ShapeUtils.roundRect(opt))
     }
-
     $g.append(ShapeUtils.text({
-      text: this.def.text,
-      offset: {
-        x: radius + roundlength / 2,
-        y: 0
-      },
-      translate: {
-        x: 0,
-        y: radius
-      }
+      text: this.def.text
     }))
 
+    this.adjust($g)
+    return $g
+  }
+
+  // 计算调整内部子元素位置
+  adjust(dom) {
+    // 根据文字计算长度
+    let txt = this.def.text
+    let length = computeTextLength(txt)
+    let roundlength = length < this.display.minContentWidth ? this.display.minContentWidth : length
+
+    let $path = dom.children('path')
+    if (this.def.shape === 'round') {
+      $path.trigger(ycEvents.resize, [{
+        contentWidth: roundlength,
+        height: this.display.height
+      }])
+    }
+
+    let $text = dom.children('text')
+    $text.trigger(ycEvents.position, [{
+      x: this.display.height / 2 + roundlength / 2,
+      y: 0,
+      translatex: 0,
+      translatey: this.display.height / 2
+    }])
+  }
+}
+
+class BlockStack extends Block {
+  constructor(def) {
+    super(def)
+  }
+
+  createElement() {
+    let $elem = this.createContainer()
+    // this.sections = []
+    // // 创建Section
+    // for (let sec of this.def.sections.values()) {
+    //   let secblock = $.extend({
+    //     category: this.def.category
+    //   }, sec)
+    //   this.sections.push(secblock)
+    //   let $child = this.createSection(secblock)
+    //   if (!$child) {
+    //     console.log('block' + this.name + 'createSection failed:' + sec)
+    //     continue
+    //   }
+    //   $elem.append($child)
+    // }
+    this.adjust($elem)
+    return $elem
+  }
+
+  // 创建Sections
+  createSection(sec) {
+    if (sec.type === 'argument') {
+      return this.addArgument(sec)
+    } else if (sec.type === 'text') {
+      sec.$elem = ShapeUtils.text(sec)
+      return sec.$elem
+    }
+  }
+
+  addArgument(def, parent) {
+    if (!def || !def.datatype) {
+      return
+    }
+
+    // 检查是否注册
+    if (!def.prototypeElement) {
+      def.prototypeElement = new BlockArgument(def)
+    }
+
+    // 创建Block实例
+    let prototype = def.prototypeElement
+    // 放入队列中
+    def.instance = prototype.instance(def)
+    if (!def.instance) {
+      console.log('block' + this.name + 'createSection failed:' + def)
+      return
+    }
+
+    //var that = this
+    //var dom = this.dom
+    // $elem.on('mousedown', function () {
+    //   that.$selected = $(this)
+    //   let m = this.getCTM()
+    //   let pm = dom.$canvas[0].getCTM()
+
+    //   that.lastPoint.x = event.pageX
+    //   that.lastPoint.y = event.pageY
+    //   that.grapPoint.x = (Number(m.e) - Number(pm.e))
+    //   that.grapPoint.y = (Number(m.f) - Number(pm.f))
+    //   that.$selected.addClass('ycBlockSelected')
+    //   return false
+    // }).on('mouseup', function () {
+    // })
+    return def.instance.element()
+  }
+
+  adjust(dom) {
+    // $.extend(this.display, this.def.display)
+
+    // // 创建Section
+    // let space = this.display.space
+    // let childSize = {width:0, height:0}
+    // let offsetx = space
+    // let outersize = {
+    //   width: (this.sections.length + 1) * space,
+    //   height: 40
+    // }
+    // for (let sec of this.sections.values()) {
+    //   let $child = null
+    //   if (sec.type === 'argument' && sec.instance) {
+    //     $child = sec.instance.element()
+    //   } else if (sec.type === 'text' && sec.$elem) {
+    //     $child = sec.$elem
+    //     childSize.width = computeTextLength(sec.value)
+
+    //   }
+    //   $child.trigger(ycEvents.position, [{
+    //     x: offsetx,
+    //     y: 0
+    //   }])
+    //   //console.log('stack child size:', sec.size)
+    //   //outersize.width += sec.size.width
+    // }
+    // // 调整容器大小
+    // dom.trigger(ycEvents.resize, [outersize])
+  }
+
+  createContainer() {
+    return null
+  }
+
+  instance(states) {
+    let inst = super.instance(states)
+    // 给实例添加方法
+    // inst.setText = function (txt) {
+    //   this.proto && yuchg.isFunction(this.proto.adjust) && this.proto.adjust()
+    // }
+    return inst
+  }
+}
+
+class BlockExpress extends BlockStack {
+  constructor(def) {
+    super(def)
+  }
+
+  createContainer() {
+    let $g = ShapeUtils.group(this.def)
+    let cate = acquireCategoryContext(this.def.category)
+    this.def.background = cate.background
+    let opt = {}
+    $.extend(opt, cate.background)
+    if (this.def.shape === 'boolean') { // 布尔类型
+
+    } else {
+      // 缺省外形
+      $g.append(ShapeUtils.roundRect(opt))
+    }
     return $g
   }
 }
 
-class BlockStack extends Block{
-  constructor (def) {
+class BlockEvent extends BlockStack {
+  constructor(def) {
     super(def)
-    this.arguments = []
+    this.next = null // 下一个Block
   }
-}
 
-class BlockExpress extends BlockStack{
-  constructor (def) {
-    super(def)
+  createContainer() {
+    let $g = ShapeUtils.group(this.def)
+    let cate = acquireCategoryContext(this.def.category)
+    this.def.background = cate.background
+    let opt = {}
+    $.extend(opt, cate.background)
+    // 缺省外形
+    $g.append(ShapeUtils.event(opt))
+    this.adjust($g)
+    return $g
   }
 }
 
 class BlockAction extends BlockStack {
-  constructor (def) {
+  constructor(def) {
     super(def)
     this.prev = null // 上一个Block
     this.next = null // 下一个Block
   }
 
-  createElement () {
+  createElement() {
     var $g = ShapeUtils.group(this.def)
 
     var space = this.def.space ? this.def.space : 8 // section间距
@@ -476,34 +911,39 @@ class BlockAction extends BlockStack {
 
     return $g
   }
-}
 
+  createContainer() {
+    let $g = ShapeUtils.group(this.def)
+    let cate = acquireCategoryContext(this.def.category)
+    this.def.background = cate.background
+    let opt = {}
+    $.extend(opt, cate.background)
+    if (this.def.shape === 'boolean') { // 布尔类型
+
+    } else {
+      // 缺省外形
+      $g.append(ShapeUtils.roundRect(opt))
+    }
+
+    this.adjust($g)
+    return $g
+  }
+}
 
 class BlockControl extends BlockStack {
-  constructor (def) {
-    super(def)
-    this.success = []
-  }
-
-  createElement () {
-
-  }
-}
-
-
-class BlockControlTwo extends BlockStack {
-  constructor (def) {
+  constructor(def) {
     super(def)
     this.fail = null
+    this.success = null
   }
 
-  createElement () {
+  createContainer() {
 
   }
 }
 
 // 创建原型对象
-function createPrototype (opt) {
+function createPrototype(opt) {
   if (!opt.type) {
     return null
   }
@@ -515,13 +955,21 @@ function createPrototype (opt) {
     proto = new BlockMarker(opt)
   } else if (opt.type === 'action') {
     proto = new BlockAction(opt)
+  } else if (opt.type === 'event') {
+    proto = new BlockEvent(opt)
+  } else if (opt.type === 'express') {
+    proto = new BlockExpress(opt)
+  } else if (opt.type === 'control') {
+    proto = new BlockControl(opt)
+  } else if (opt.type === 'argument') {
+    proto = new BlockArgument(opt)
   }
 
   return proto
 }
 
 class Panel {
-  constructor (dom) {
+  constructor(dom) {
     this.dom = {}
     this.dom.$root = dom
     this.dom.$svg = dom.find('.ycBlockSvg')
@@ -631,34 +1079,57 @@ class Panel {
     })
   }
 
-  updateInfo (info) {
+  updateInfo(info) {
     this.mousePoint.x = info.x
     this.mousePoint.y = info.y
     this.dom.$info.html('X: ' + info.x + '  Y: ' + info.y)
   }
 
   // 统一设置canvas变换矩阵（平移，缩放）
-  setCanvasTransfrom (trans) {
+  setCanvasTransfrom(trans) {
     this.dom.$canvasList.forEach(function (item) {
       item.attr('transform', trans)
     })
   }
 
-  setOption (opt) {
+  setOption(opt) {
     // 合并
     $.extend(true, this.option, opt)
 
-    // 注册Block, 创建Block对象
     let registries = this.registries
     let defs = this.option.blocks.blocks
+    let args = this.option.blocks.args
+    //
     let cates = this.option.blocks.categories
     for (let val of Object.values(cates)) {
       val.blocks = []
     }
 
+    // 注册参数
+    for (let def of args.values()) {
+      def.type = 'argument'
+      // 提示重复
+      if (registries[def.id]) {
+        console.log('block registered repeated: ' + def.id)
+      }
+      registries[def.id] = createPrototype(def)
+      if (!registries[def.id]) {
+        console.log('block registered failed: ' + def.id)
+      } else {
+        console.log('block registered successed: ' + def.id)
+      }
+    }
+
+    // 注册Block
     for (let [type, val] of Object.entries(defs)) {
       for (let def of val.members.values()) {
         def.type = type
+
+        // 提示重复
+        if (registries[def.id]) {
+          console.log('block registered repeated: ' + def.id)
+        }
+
         registries[def.id] = createPrototype(def)
         if (!registries[def.id]) {
           console.log('block registered failed: ' + def.id)
@@ -672,25 +1143,25 @@ class Panel {
     this.prepare()
   }
 
-  prepare () {
+  prepare() {
     this.marker = this.createBlockInstance('insertmarker')
     // 初始化toolbox
     this.initCategoryToolbox()
   }
 
-  initCategoryToolbox () {
+  initCategoryToolbox() {
     var categories = this.option.blocks.categories
     var dom = this.dom
     var registries = this.registries
 
-    function createMenu (key) {
+    function createMenu(key) {
       var cate = categories[key]
       if (!cate) {
         console.log('category can not found: ' + key)
         return
       }
       var $menurow = $('<div class="ycBlockCategoryMenuRow"></div>')
-      var $menuitem = $(`<div class="ycBlockCategoryMenuItem" data-id="${key}"></div>`)
+      var $menuitem = $(`<div class="ycBlockCategoryMenuItem" data-id="${ key }"></div>`)
       $menuitem.append($(`<div class="ycBlockCategoryItemBubble" style="background-color: ${ cate.background.fill }; border-color: ${ cate.background.stroke };"></div>`))
       $menuitem.append($(`<div class="ycBlockCategoryMenuItemLabel">${ cate.name }</div>`))
       $menurow.append($menuitem)
@@ -718,10 +1189,8 @@ class Panel {
           text: val.name,
           width: labellen,
           height: 40,
-          translate: {
-            x: 20,
-            y: offsety
-          }
+          translatex: 20,
+          translatey: offsety
         })
         categories[key].$flyoutlable = $label
         dom.$flyoutcanvas.append($label)
@@ -745,7 +1214,7 @@ class Panel {
     })
   }
 
-  createBlockInstance (type, states) {
+  createBlockInstance(type, states) {
     // 坚持类型是否注册
     if (!this.hasRegistered(type)) {
       console.error('block registered failed: ' + type)
@@ -760,7 +1229,7 @@ class Panel {
     return inst
   }
 
-  addBlock (states, parent) {
+  addBlock(states, parent) {
     if (!states || !states.type) {
       return
     }
@@ -797,7 +1266,7 @@ class Panel {
     }
   }
 
-  addBlocks (blocks) {
+  addBlocks(blocks) {
     if (yuchg.isArray(blocks)) {
       var that = this
       // 创建多个Block
@@ -810,31 +1279,31 @@ class Panel {
     }
   }
 
-  findBlock (id) {
+  findBlock(id) {
 
   }
 
-  findBlocksByType (type) {
+  findBlocksByType(type) {
 
   }
 
-  removeBlocks (ids) {
+  removeBlocks(ids) {
 
   }
 
-  removeBlocksByTypes (types) {
+  removeBlocksByTypes(types) {
 
   }
 
-  registerBlock (defs) {
+  registerBlock(defs) {
 
   }
 
-  unregisterBlock (types) {
+  unregisterBlock(types) {
 
   }
 
-  hasRegistered (type) {
+  hasRegistered(type) {
     if (this.registries.hasOwnProperty(type) && this.registries[type]) {
       return true
     }

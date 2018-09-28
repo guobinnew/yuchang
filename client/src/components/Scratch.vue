@@ -314,6 +314,12 @@
         y:200
       })
 
+       editor.addBlock({
+        type: 'add',
+        x:400,
+        y:500
+      })
+
       editor.addBlock({
         type: 'move',
         x:300,
