@@ -107,228 +107,231 @@
 </template>
 
 <style>
-    .scratch {
-        overflow: hidden;
-        height: 100%;
-    }
+.scratch {
+  overflow: hidden;
+  height: 100%;
+}
 
-    .ycBlockText {
-        fill: #fff;
-        font-family: "Helvetica Neue", Helvetica, sans-serif;
-        font-size: 12pt;
-        font-weight: 500;
-    }
+.ycBlockText {
+  fill: #fff;
+  font-family: "Helvetica Neue", Helvetica, sans-serif;
+  font-size: 12pt;
+  font-weight: 500;
+}
 
-    .ycBlockPath {
-        stroke-width: 1px;
-    }
+.ycBlockPath {
+  stroke-width: 1px;
+}
 
-    .ycBlockDraggable {
-        cursor: grab;
-        cursor: -webkit-grab;
-        cursor: -moz-grab;
-    }
+.ycBlockDraggable {
+  cursor: grab;
+  cursor: -webkit-grab;
+  cursor: -moz-grab;
+}
 
-    #ycBlockInfo{
-        fill: #333;
-    }
+#ycBlockInfo {
+  fill: #333;
+}
 
-    .ycBlockDragSurface {
-        pointer-events: none;
-        display: none;
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        overflow: visible !important;
-        z-index: 50;
-    }
+.ycBlockDragSurface {
+  pointer-events: none;
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: visible !important;
+  z-index: 50;
+}
 
-    .ycBlockInsertionMarker > .ycBlockPath {
-        stroke: none;
-    }
+.ycBlockInsertionMarker > .ycBlockPath {
+  stroke: none;
+}
 
-    .ycBlockFlyout {
-        border-right: 1px solid hsla(0, 0%, 0%, 0.15);
-        border-left: 1px solid hsla(0, 0%, 0%, 0.15);
-        box-sizing: content-box;
-        position: absolute;
-        top:0;
-        right:60px;
-    }
+.ycBlockFlyout {
+  border-right: 1px solid hsla(0, 0%, 0%, 0.15);
+  border-left: 1px solid hsla(0, 0%, 0%, 0.15);
+  box-sizing: content-box;
+  position: absolute;
+  top: 0;
+  right: 60px;
+}
 
-    .ycBlockFlyoutBackground {
-        fill: #F9F9F9;
-        fill-opacity: .8;
-    }
+.ycBlockFlyoutBackground {
+  fill: #f9f9f9;
+  fill-opacity: 0.8;
+}
 
-    .ycBlockToolbox {
-        border-left: 1px solid hsla(0, 0%, 0%, 0.15);
-        border-bottom: 1px solid hsla(0, 0%, 0%, 0.15);
-        -webkit-box-sizing: content-box;
-        box-sizing: content-box;
-        -ms-overflow-style: none;
-        position: absolute;
-        top:0;
-        right:0;
-        width: 60px;
-        line-height: 17px;
-        height: 100%;
-    }
+.ycBlockToolbox {
+  border-left: 1px solid hsla(0, 0%, 0%, 0.15);
+  border-bottom: 1px solid hsla(0, 0%, 0%, 0.15);
+  -webkit-box-sizing: content-box;
+  box-sizing: content-box;
+  -ms-overflow-style: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 60px;
+  line-height: 17px;
+  height: 100%;
+}
 
-    .ycBlockCategoryMenu {
-        height: 100%;
-        width: 60px;
-        background: #FFFFFF;
-        color: #575E75;
-        font-size: .7rem;
-        user-select: none;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-    }
+.ycBlockCategoryMenu {
+  height: 100%;
+  width: 60px;
+  background: #ffffff;
+  color: #575e75;
+  font-size: 0.7rem;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
 
-    .ycBlockCategoryMenuRow{
-        padding-top: 8px;
-    }
+.ycBlockCategoryMenuRow {
+  padding-top: 8px;
+}
 
-    .ycBlockCategoryMenuItem {
-        padding: 0.375rem 0px;
-        cursor: pointer;
-        text-align: center;
-    }
+.ycBlockCategoryMenuItem {
+  padding: 0.375rem 0px;
+  cursor: pointer;
+  text-align: center;
+}
 
-    .ycBlockCategoryItemBubble {
-        width: 1.25rem;
-        height: 1.25rem;
-        border: 1px solid;
-        border-radius: 100%;
-        margin: 0 auto 0.125rem;
-    }
+.ycBlockCategoryItemBubble {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 1px solid;
+  border-radius: 100%;
+  margin: 0 auto 0.125rem;
+}
 
-    .ycBlockCategoryMenuItemLabel {
-        font-size: 0.65rem;
-    }
+.ycBlockCategoryMenuItemLabel {
+  font-size: 0.65rem;
+}
 
-    .ycBlockFlyoutLabel {
-        cursor: default;
-    }
+.ycBlockFlyoutLabel {
+  cursor: default;
+}
 
-    .ycBlockFlyoutLabelBackground {
-        opacity: 0;
-    }
+.ycBlockFlyoutLabelBackground {
+  opacity: 0;
+}
 
-    .ycBlockFlyoutLabelText {
-        font-family: "Helvetica Neue", Helvetica, sans-serif;
-        font-size: 14pt;
-        fill: #575E75;
-        font-weight: bold;
-    }
+.ycBlockFlyoutLabelText {
+  font-family: "Helvetica Neue", Helvetica, sans-serif;
+  font-size: 14pt;
+  fill: #575e75;
+  font-weight: bold;
+}
 
-    .ycBlockEditableText{
-        cursor: text;
-    }
+.ycBlockEditableText {
+  cursor: text;
+}
 </style>
 
 <script>
-   import yuchg from '../base'
-   import scratch from '../scratch'
-   import $ from 'jquery'
-   import * as d3 from 'd3'
+import yuchg from "../base";
+import scratch from "../scratch";
+import $ from "jquery";
+import * as d3 from "d3";
 
-   var editor = null
+var editor = null;
 
-  export default {
-    name: 'Scratch',
-    props: ['width','height','virtual-width','virtual-height','flex'],
-    data: function () {
-      return {
-        id: 'scratch',
-        size: {
-          width: 800,
-          height: 600,
-          virtualWidth: 1600,
-          virtualHeight: 1200,
-        },
-        flyout: {
-          width: 250
-        }
+export default {
+  name: "Scratch",
+  props: ["width", "height", "virtual-width", "virtual-height", "flex"],
+  data: function() {
+    return {
+      id: "scratch",
+      size: {
+        width: 800,
+        height: 600,
+        virtualWidth: 1600,
+        virtualHeight: 1200
+      },
+      flyout: {
+        width: 250
       }
-    },
-    computed: {
-
-    },
-    created: function() {
-      if( this.width != undefined ) {
-        this.size.width =  parseInt(this.width)
-      }
-
-      if( this.height != undefined ) {
-        this.size.height =  parseInt(this.height)
-      }
-
-      if( this['virtual-width'] != undefined ) {
-        this.size.virtualWidth =  parseInt(this['virtual-width'])
-      }
-
-      if( this['virtual-height'] != undefined ) {
-        this.size.virtualHeight =  parseInt(this['virtual-height'])
-      }
-    },
-    mounted: function () {
-      let that = this
-      editor = scratch.init($(that.$el))
-
-      let _flex = parseInt(that.flex)
-      if( _flex === 1 ){
-        // 随窗口动态改变大小
-        var resizeEditor = function () {
-          let $parentElement = $(that.$el)
-          that.size.width = $parentElement[0].clientWidth
-          that.size.height = $parentElement[0].clientHeight
-        }
-
-        window.onresize = function () {
-          resizeEditor()
-        }
-
-        resizeEditor()
-      }
-
-      console.log(editor)
-
-      editor.setOption({})
-      //
-
-      // 测试
-      editor.addBlock({
-        type: 'locationx',
-        x:100,
-        y:200
-      })
-
-      editor.addBlock({
-        type: 'locationy',
-        x:300,
-        y:200
-      })
-
-       editor.addBlock({
-        type: 'add',
-        x:400,
-        y:500
-      })
-
-      editor.addBlock({
-        type: 'move',
-        x:300,
-        y:300
-      })
-
-    },
-    methods: {
-
+    };
+  },
+  computed: {},
+  created: function() {
+    if (this.width != undefined) {
+      this.size.width = parseInt(this.width);
     }
-  }
+
+    if (this.height != undefined) {
+      this.size.height = parseInt(this.height);
+    }
+
+    if (this["virtual-width"] != undefined) {
+      this.size.virtualWidth = parseInt(this["virtual-width"]);
+    }
+
+    if (this["virtual-height"] != undefined) {
+      this.size.virtualHeight = parseInt(this["virtual-height"]);
+    }
+  },
+  mounted: function() {
+    let that = this;
+    editor = scratch.init($(that.$el));
+
+    let _flex = parseInt(that.flex);
+    if (_flex === 1) {
+      // 随窗口动态改变大小
+      var resizeEditor = function() {
+        let $parentElement = $(that.$el);
+        that.size.width = $parentElement[0].clientWidth;
+        that.size.height = $parentElement[0].clientHeight;
+      };
+
+      window.onresize = function() {
+        resizeEditor();
+      };
+
+      resizeEditor();
+    }
+
+    console.log(editor);
+
+    editor.setOption({});
+    //
+
+    // 测试
+    editor.addBlock({
+      type: "locationx",
+      state: {
+        x: 100,
+        y: 200
+      }
+    });
+
+    editor.addBlock({
+      type: "locationy",
+      state: {
+        x: 300,
+        y: 200
+      }
+    });
+
+    editor.addBlock({
+      type: "add",
+      state: {
+        x: 400,
+        y: 500
+      }
+    });
+
+    editor.addBlock({
+      type: "move",
+      state: {
+        x: 300,
+        y: 300
+      }
+    });
+  },
+  methods: {}
+};
 </script>

@@ -122,7 +122,12 @@ export default [
     category: 'operator',
     draggable: true,
     display: {
-      padding: 8
+      padding: {
+        left: 8,
+        right: 8,
+        top: 4,
+        bottom: 4
+      }
     },
     sections: [
       {
@@ -151,7 +156,12 @@ export default [
     category: 'operator',
     draggable: true,
     display: {
-      padding: 8
+      padding: {
+        left: 8,
+        right: 8,
+        top: 4,
+        bottom: 4
+      }
     },
     sections: [
       {
@@ -179,6 +189,14 @@ export default [
     shape: 'boolean',
     category: 'operator',
     draggable: true,
+    display: {
+      padding: {
+        left: 16,
+        right: 16,
+        top: 4,
+        bottom: 4
+      }
+    },
     sections: [
       {
         type: 'argument',
@@ -205,6 +223,14 @@ export default [
     shape: 'boolean',
     category: 'operator',
     draggable: true,
+    display: {
+      padding: {
+        left: 16,
+        right: 16,
+        top: 4,
+        bottom: 4
+      }
+    },
     sections: [
       {
         type: 'argument',
@@ -212,7 +238,7 @@ export default [
       },
       {
         type: 'text',
-        text: '>'
+        text: '<'
       },
       {
         type: 'argument',

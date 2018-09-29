@@ -5,7 +5,8 @@ export default [
     category: 'motion',
     draggable: true,
     display: {
-      space: 8
+      space: 8,
+      padding: 8
     },
     sections: [
       {
@@ -15,7 +16,9 @@ export default [
       {
         type: 'argument',
         datatype: 'number',
-        value: '1'
+        state: {
+          value: 1
+        }
       },
       {
         type: 'text',
