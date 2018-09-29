@@ -33,6 +33,22 @@ export default {
       opacity: '1'
     }
   },
+  'event': {
+    name: '事件',
+    background: {
+      stroke: '#CC9900',
+      fill: '#FFBF00',
+      opacity: '1'
+    }
+  },
+  'control': {
+    name: '控制',
+    background: {
+      stroke: '#CF8B17',
+      fill: '#FFAB19',
+      opacity: '1'
+    }
+  },
   'operator': {
     name: '运算',
     background: {
