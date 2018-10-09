@@ -37,37 +37,6 @@
                 <text id="ycBlockInfo" class="ycBlockText" y="2" text-anchor="middle" dominant-baseline="middle" dy="0" x="8"
                       transform="translate(128, 24) ">X: 0  Y: 0</text>
                 <g class="ycBlockCanvas">
-                    <g class="ycBlockDraggable" data-shapes="stack" data-category="motion" transform="translate(0.40740740740745,80.14814814814818)">
-                        <path class="ycBlockPath ycBlockBackground" stroke="#3373CC" fill="#4C97FF" fill-opacity="1" d="m 0,4 A 4,4 0 0,1 4,0 H 12 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H 158 a 4,4 0 0,1 4,4 v 40  a 4,4 0 0,1 -4,4 H 48   c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 H 4 a 4,4 0 0,1 -4,-4 z"></path>
-                        <g data-argument-type="dropdown" data-shapes="argument round" transform="translate(47.99999999999996,8)">
-                            <path class="ycBlockPath ycBlockBackground" stroke="#3373CC" fill="#4280D7" fill-opacity="1" d="m 0,0 m 16,0 H 90 a 16 16 0 0 1 0 32 H 16 a 16 16 0 0 1 0 -32 z"></path>
-                            <g class="ycBlockEditableText" transform="translate(8, 0) " style="cursor: default;">
-                                <text class="ycBlockText ycBlockDropdownText" x="34.99998664855957" y="18" dominant-baseline="middle" dy="0" text-anchor="middle">鼠标指针</text>
-                                <image height="12px" width="12px" xlink:href="../assets/dropdown-arrow.svg" transform="translate(73.99997329711914,11)"></image>
-                            </g>
-                        </g>
-                        <text class="ycBlockText" y="2" text-anchor="middle" dominant-baseline="middle" dy="0" x="15.999993324279785" transform="translate(8, 24) ">移到</text>
-                        <path class="ycBlockPath" style="visibility: hidden" d="" fill="#3373CC"></path>
-                    </g>
-                    <g class="ycBlockDraggable ycBlockSelected" data-shapes="stack" data-category="motion" transform="translate(0.33333333333337,217.03703703703707)">
-                        <path class="ycBlockPath ycBlockBackground" stroke="#3373CC" fill="#4C97FF" fill-opacity="1" d="m 0,4 A 4,4 0 0,1 4,0 H 12 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H 116 a 4,4 0 0,1 4,4 v 40  a 4,4 0 0,1 -4,4 H 48   c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 H 4 a 4,4 0 0,1 -4,-4 z"></path>
-                        <g data-argument-type="text number" data-shapes="argument round" transform="translate(48,8)">
-                            <path class="ycBlockPath ycBlockBackground" stroke="#3373CC" fill="#FFFFFF" fill-opacity="1" d="m 0,0 m 16,0 H 24 a 16 16 0 0 1 0 32 H 16 a 16 16 0 0 1 0 -32 z"></path>
-                            <g class="ycBlockEditableText" transform="translate(8, 0) ">
-                                <text class="ycBlockText" x="12" y="18" dominant-baseline="middle" dy="0" text-anchor="middle">10</text>
-                            </g>
-                        </g>
-                        <text class="ycBlockText" y="2" text-anchor="middle" dominant-baseline="middle" dy="0" x="16" transform="translate(8, 24) ">移动</text>
-                        <text class="ycBlockText" y="2" text-anchor="middle" dominant-baseline="middle" dy="0" x="8" transform="translate(96, 24) ">步</text>
-                    </g>
-
-                    <g class="blocklyDraggable blocklySelected" data-shapes="c-block c-2" data-category="control" transform="translate(155.50302291538947,571.695456298584)">
-                        <path class="blocklyPath blocklyBlockBackground" stroke="#CF8B17" fill="#FFAB19" fill-opacity="1" d="m 0,4 A 4,4 0 0,1 4,0 H 12 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H 156 a 4,4 0 0,1 4,4 v 40  a 4,4 0 0,1 -4,4 H 64 c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 h -8  a 4,4 0 0,0 -4,4 v 16 a 4,4 0 0,0 4,4 h  8 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H 156 H 156 a 4,4 0 0,1 4,4 v 24  a 4,4 0 0,1 -4,4 H 64 c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 h -8  a 4,4 0 0,0 -4,4 v 16 a 4,4 0 0,0 4,4 h  8 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H 156 a 4,4 0 0,1 4,4 v 24  a 4,4 0 0,1 -4,4 H 48   c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 H 4 a 4,4 0 0,1 -4,-4 z"></path>
-                        <text class="blocklyText" y="2" text-anchor="middle" dominant-baseline="middle" dy="0" x="15.999993324279785" transform="translate(8, 24) ">如果</text>
-                        <path class="blocklyPath" style="visibility: visible" d="M 16,0  h 16 l 16,16 l -16,16 h -16 l -16,-16 l 16,-16 z" fill="#CF8B17" transform="translate(48,8)" data-argument-type="boolean"></path>
-                        <text class="blocklyText" y="2" text-anchor="middle" dominant-baseline="middle" dy="0" x="15.999993324279785" transform="translate(104, 24) ">那么</text>
-                        <text class="blocklyText" y="2" text-anchor="middle" dominant-baseline="middle" dy="0" x="15.999993324279785" transform="translate(8, 88) ">否则</text>
-                    </g>
                 </g>
             </g>
         </svg>
