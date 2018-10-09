@@ -16,10 +16,10 @@ export default [
       {
         type: 'argument',
         datatype: 'enum',
-        display: {
-          fill: '#4280D7'
-        },
         state: {
+          display: {
+            fill: '#4280D7'
+          },
           currentIndex: 0,
           values: [
             { name: '打开我爹的', value: 1 },

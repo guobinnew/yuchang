@@ -12,7 +12,12 @@ export default [
       },
       {
         type: 'argument',
-        datatype: 'boolean'
+        datatype: 'boolean',
+        state: {
+          display: {
+            fill: '#CF8B17'
+          }
+        }
       },
       {
         type: 'text',
@@ -38,7 +43,12 @@ export default [
       },
       {
         type: 'argument',
-        datatype: 'boolean'
+        datatype: 'boolean',
+        state: {
+          display: {
+            fill: '#CF8B17'
+          }
+        }
       },
       {
         type: 'text',

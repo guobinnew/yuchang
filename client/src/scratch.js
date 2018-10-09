@@ -166,7 +166,7 @@ ycEventFunctions[ycEvents.background] = function (event, opt) {
     if (!yuchg.isString(opt.fill)) {
       logger.debug(log + `fill is not string`)
     } else {
-      $this.attr('fill', opt.stroke)
+      $this.attr('fill', opt.fill)
     }
   }
 
@@ -216,7 +216,7 @@ const ShapeUtils = {
       if (!option) {
         option = {}
       }
-   
+
       const headWidth = 96
       const cornerRadius = 4
       const bulgeHeight = 22 // 凸起高度
@@ -265,7 +265,7 @@ const ShapeUtils = {
       $elem.addClass('ycBlockPath ycBlockBackground' + (option.classes ? (' ' + option.classes) : ''))
 
 
-      let _eventWarpper = function(event, opt, context) {
+      let _eventWarpper = function (event, opt, context) {
         let log = `cap ${ycEvents.resize} event: `
         if (!opt) {
           logger.warn(log + `opt is null`)
@@ -387,6 +387,12 @@ const ShapeUtils = {
       option.fill && $elem.attr('fill', option.fill)
       option.opacity && $elem.attr('fill-opacity', option.opacity)
       $elem.addClass('ycBlockPath ycBlockBackground' + (option.classes ? (' ' + option.classes) : ''))
+
+      // 绑定事件
+      const bindEvents = [ycEvents.background]
+      for (let evt of bindEvents.values()) {
+        $elem.on(evt, ycEventFunctions[evt])
+      }
 
       // 自定义事件
       $elem.on(ycEvents.resize, function (event, opt) {
@@ -517,6 +523,13 @@ const ShapeUtils = {
       option.opacity && $elem.attr('fill-opacity', option.opacity)
       $elem.addClass('ycBlockPath ycBlockBackground' + (option.classes ? (' ' + option.classes) : ''))
 
+
+      // 绑定事件
+      const bindEvents = [ycEvents.background]
+      for (let evt of bindEvents.values()) {
+        $elem.on(evt, ycEventFunctions[evt])
+      }
+
       // 自定义事件
       $elem.on(ycEvents.resize, function (event, opt) {
         event.stopPropagation()
@@ -635,6 +648,13 @@ const ShapeUtils = {
       option.opacity && $elem.attr('fill-opacity', option.opacity)
       $elem.addClass('ycBlockPath ycBlockBackground' + (option.classes ? (' ' + option.classes) : ''))
 
+
+      // 绑定事件
+      const bindEvents = [ycEvents.background]
+      for (let evt of bindEvents.values()) {
+        $elem.on(evt, ycEventFunctions[evt])
+      }
+
       // 自定义事件
       $elem.on(ycEvents.resize, function (event, opt) {
         event.stopPropagation()
@@ -728,6 +748,13 @@ const ShapeUtils = {
       option.fill && $elem.attr('fill', option.fill)
       option.opacity && $elem.attr('fill-opacity', option.opacity)
       $elem.addClass('ycBlockPath ycBlockBackground' + (option.classes ? (' ' + option.classes) : ''))
+
+      // 绑定事件
+      const bindEvents = [ycEvents.background]
+      for (let evt of bindEvents.values()) {
+        $elem.on(evt, ycEventFunctions[evt])
+      }
+
       // 自定义事件
       $elem.on(ycEvents.resize, function (event, opt) {
         event.stopPropagation()
@@ -821,6 +848,13 @@ const ShapeUtils = {
       option.fill && $elem.attr('fill', option.fill)
       option.opacity && $elem.attr('fill-opacity', option.opacity)
       $elem.addClass('ycBlockPath ycBlockBackground' + (option.classes ? (' ' + option.classes) : ''))
+
+      // 绑定事件
+      const bindEvents = [ycEvents.background]
+      for (let evt of bindEvents.values()) {
+        $elem.on(evt, ycEventFunctions[evt])
+      }
+
       // 自定义事件
       $elem.on(ycEvents.resize, function (event, opt) {
         event.stopPropagation()
@@ -1001,131 +1035,6 @@ const ShapeUtils = {
 
       return $elem
     }
-
-     // /*
-  //  {
-  //  translatex  相对父容器位置
-  //  translatey
-  //  value:  文本内容
-  //  stroke:
-  //  fill:
-  //  opacity:
-  //  }
-  //  */
-  // dropdown: function (option) {
-  //   let g = document.createElementNS(ycSvgNS, 'g')
-  //   let $elem = $(g)
-  //   $elem.attr('transform', `translate(${option.translatex ? option.translatex : 8}, ${option.translatey ? option.translatey : 0})`)
-  //   $elem.attr('style', 'cursor: default;')
-  //   $elem.addClass('ycBlockEditableText')
-
-  //   let rect = ShapeUtils.rect({
-  //     width: 32,
-  //     height: 32,
-  //     'stroke',
-  //     option.stroke
-  //     option.fill
-  //   })
-  //   let $rect = $(rect)
-
-  //   $rect.attr('rx', 4)
-  //   $rect.attr('ry', 4)
-  //   $rect.attr('width', option.width ? option.width : 32)
-  //   $rect.attr('height', 32)
-  //   $rect.attr('stroke', option.stroke)
-  //   $rect.attr('fill', option.fill)
-  //   $rect.attr('fill-opacity', option.opacity)
-  //   $rect.addClass('ycBlockBackground')
-  //   $elem.append($rect)
-
-  //   let text = document.createElementNS(ycSvgNS, 'text')
-  //   let $text = $(text)
-
-  //   $text.attr('x', 0)
-  //   $text.attr('y', 0)
-  //   $text.attr('text-anchor', 'middle')
-  //   $text.attr('dominant-baseline', 'central')
-  //   $text.attr('dy', '0')
-  //   $text.addClass('ycBlockText')
-  //   $elem.append($text)
-
-  //   let image = document.createElementNS(ycSvgNS, 'image')
-  //   let $image = $(image)
-
-  //   logger.debug('dropdown', option)
-  //   $image.attr('width', option.button.width)
-  //   $image.attr('height', option.button.height)
-  //   $image.attr('xlink:href', '')
-  //   image.href.baseVal = option.button.url
-  //   $elem.append($image)
-
-  //   // 自定义事件
-  //   $elem.on(ycEvents.position, function (event, opt) {
-  //     event.stopPropagation()
-  //     const log = `dropdown ${ycEvents.position} event: `
-  //     if (!opt) {
-  //       logger.debug(log + 'opt is null')
-  //       return
-  //     }
-
-  //     const $this = $(this)
-
-  //     let tx = 0
-  //     let ty = 0
-  //     if (!yuchg.isNumber(opt.translatex)) {
-  //       logger.debug(log + `translatex is not number`)
-  //     } else {
-  //       tx = opt.translatex
-  //     }
-
-  //     if (!yuchg.isNumber(opt.translatey)) {
-  //       logger.debug(log + `translatey is not number`)
-  //     } else {
-  //       ty = opt.translatey
-  //     }
-  //     $this.attr('transform', `translate(${tx}, ${ty})`)
-
-  //     let $thistext = $this.children('text')
-  //     if (!yuchg.isString(opt.text)) {
-  //       logger.debug(log + `text is not number`)
-  //     } else {
-  //       $thistext.html(opt.text)
-  //     }
-  //   }).on(ycEvents.position, function (event, opt) {
-  //     event.stopPropagation()
-  //     const log = `dropdown ${ycEvents.position} event: `
-  //     if (!opt) {
-  //       logger.debug(log + 'opt is null')
-  //       return
-  //     }
-
-  //     const $this = $(this)
-
-  //     let tx = 0
-  //     let ty = 0
-  //     if (!yuchg.isNumber(opt.translatex)) {
-  //       logger.debug(log + `translatex is not number`)
-  //     } else {
-  //       tx = opt.translatex
-  //     }
-
-  //     if (!yuchg.isNumber(opt.translatey)) {
-  //       logger.debug(log + `translatey is not number`)
-  //     } else {
-  //       ty = opt.translatey
-  //     }
-  //     $this.attr('transform', `translate(${tx}, ${ty})`)
-
-  //     let $thistext = $this.children('text')
-  //     if (!yuchg.isString(opt.text)) {
-  //       logger.debug(log + `text is not number`)
-  //     } else {
-  //       $thistext.html(opt.text)
-  //     }
-  //   })
-  //   return $elem
-  // },
-
   },
   base: {
     /*
@@ -1579,7 +1488,7 @@ class BlockArgument extends Block {
       for (let item of option.state.values.values()) {
         length = Math.max(computeTextLength(item.name), length)
       }
-      length += buttonSize  // 按钮宽度
+      length += buttonSize // 按钮宽度
       option.state.contentWidth = length < def.display.minContentWidth ? def.display.minContentWidth : length
       option.state.width = option.state.contentWidth + padding.left + padding.right
 
@@ -1589,14 +1498,20 @@ class BlockArgument extends Block {
         height: option.state.height
       }])
 
-       // 更新大小
-       option.state.width = $shape[0].__boundbox__.width
-       option.state.height = $shape[0].__boundbox__.height
-       option.state.contentWidth = $shape[0].__boundbox__.contentWidth
-       option.state.contentHeight = $shape[0].__boundbox__.contentHeight
-       option.state.outerWidth = $shape[0].__boundbox__.outerWidth
-       option.state.outerHeight = $shape[0].__boundbox__.outerHeight
+      // 更新背景
+      if (option.state.display) {
+        $shape.trigger(ycEvents.background, [{
+          fill: option.state.display.fill
+        }])
+      }
 
+      // 更新大小
+      option.state.width = $shape[0].__boundbox__.width
+      option.state.height = $shape[0].__boundbox__.height
+      option.state.contentWidth = $shape[0].__boundbox__.contentWidth
+      option.state.contentHeight = $shape[0].__boundbox__.contentHeight
+      option.state.outerWidth = $shape[0].__boundbox__.outerWidth
+      option.state.outerHeight = $shape[0].__boundbox__.outerHeight
 
       // 调整文字位置 
       let $text = option.dom.children('text')
@@ -1614,7 +1529,7 @@ class BlockArgument extends Block {
       // 调整按钮位置 
       let $image = option.dom.children('image')
       $image.trigger(ycEvents.position, [{
-        translatex: option.state.width - (option.state.height + buttonSize )/2,
+        translatex: option.state.width - (option.state.height + buttonSize) / 2,
         translatey: (option.state.height - buttonSize) / 2
       }])
     } else {
@@ -1634,6 +1549,13 @@ class BlockArgument extends Block {
         width: option.state.width,
         height: option.state.height
       }])
+
+      // 更新背景
+      if (option.state.display) {
+        $shape.trigger(ycEvents.background, [{
+          fill: option.state.display.fill
+        }])
+      }
 
       // 更新大小
       option.state.width = $shape[0].__boundbox__.width
