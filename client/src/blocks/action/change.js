@@ -1,6 +1,6 @@
 export default [
   {
-    id: 'changecolor',
+    id: 'interference',
     shape: 'slot',
     category: 'motion',
     draggable: true,
@@ -16,12 +16,15 @@ export default [
       {
         type: 'argument',
         datatype: 'enum',
-        values: [
-          { name: '打开', value: 1 },
-          { name: '关闭', value: 0 }
-        ],
+        display: {
+          fill: '#4280D7'
+        },
         state: {
-          value: 0
+          currentIndex: 0,
+          values: [
+            { name: '打开我爹的', value: 1 },
+            { name: '关闭', value: 0 }
+          ]
         }
       }
     ],
