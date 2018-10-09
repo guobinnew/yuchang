@@ -1,7 +1,7 @@
-
+import interactions from './interaction'
 let blocks = []
 
-blocks = blocks.concat([])
+blocks = blocks.concat(interactions)
 
 export default {
   name: '事件',

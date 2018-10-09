@@ -1,7 +1,7 @@
 export default [
   {
     id: 'click',
-    shape: 'event',
+    shape: 'cap',
     category: 'event',
     draggable: true,
     sections: [
@@ -11,7 +11,7 @@ export default [
       },
       {
         type: 'image',
-        url: '../assets/green-flag.svg',
+        url: '/img/green-flag.6a025d28.svg',
         width: 24,
         height: 24
       },

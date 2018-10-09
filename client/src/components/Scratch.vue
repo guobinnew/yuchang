@@ -5,7 +5,7 @@
              :height="size.height"
              :data-virtual-width="size.virtualWidth"
              :data-virtual-height="size.virtualHeight"
-             version="1.1" xmlns="http://www.w3.org/2000/svg">
+             version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
             <defs>
                 <pattern id="ycBlockGridPattern" patternUnits="userSpaceOnUse" width="38.879999999999995"
                          height="38.879999999999995" x="207.0918124072559" y="-1.856000000001302">
@@ -60,18 +60,13 @@
                         <text class="ycBlockText" y="2" text-anchor="middle" dominant-baseline="middle" dy="0" x="16" transform="translate(8, 24) ">移动</text>
                         <text class="ycBlockText" y="2" text-anchor="middle" dominant-baseline="middle" dy="0" x="8" transform="translate(96, 24) ">步</text>
                     </g>
-                    <g class="blocklyDraggable blocklySelected" data-shapes="hat" data-category="events" transform="translate(134.9629629629629,60.59259259259272)">
-                        <path class="blocklyPath blocklyBlockBackground" stroke="#CC9900" fill="#FFBF00" fill-opacity="1" d="m 0,0 c 25,-22 71,-22 96,0 H 115.99997043609619 a 4,4 0 0,1 4,4 v 40  a 4,4 0 0,1 -4,4 H 48   c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 H 4 a 4,4 0 0,1 -4,-4 z"></path>
-                        <text class="blocklyText" y="2" text-anchor="middle" dominant-baseline="middle" dy="0" x="7.999996662139893" transform="translate(8, 24) ">当</text>
-                        <g transform="translate(31.999993324279785, 12) ">
-                            <image height="24px" width="24px" xlink:href="../assets/green-flag.svg"></image></g><text class="blocklyText" y="2" text-anchor="middle" dominant-baseline="middle" dy="0" x="23.999988555908203" transform="translate(63.999993324279785, 24) ">被点击</text></g>
-                    <g class="blocklyDraggable" data-shapes="c-block c-1 end" data-category="control" transform="translate(249.037037037037,178.22222222222234)">
-                        <path class="blocklyPath blocklyBlockBackground" stroke="#CF8B17" fill="#FFAB19" fill-opacity="1" d="m 0,4 A 4,4 0 0,1 4,0 H 12 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H 156 a 4,4 0 0,1 4,4 v 40  a 4,4 0 0,1 -4,4 H 64 c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 h -8  a 4,4 0 0,0 -4,4 v 16 a 4,4 0 0,0 4,4 h  8 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H 156 H 156 a 4,4 0 0,1 4,4 v 24  a 4,4 0 0,1 -4,4 H 4 a 4,4 0 0,1 -4,-4 z"></path>
-                        <text class="blocklyText" y="2" text-anchor="middle" dominant-baseline="middle" dy="0" x="31.99998664855957" transform="translate(8, 24) ">重复执行</text>
-                        <g transform="translate(128, 76) ">
-                            <image height="24px" width="24px" xlink:href="../assets/repeat.svg"></image>
-                            </g>
-                        </g>
+
+                    <g class="blocklyDraggable blocklySelected" data-shapes="c-block c-2" data-category="control" transform="translate(155.50302291538947,571.695456298584)">
+                        <path class="blocklyPath blocklyBlockBackground" stroke="#CF8B17" fill="#FFAB19" fill-opacity="1" d="m 0,4 A 4,4 0 0,1 4,0 H 12 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H 156 a 4,4 0 0,1 4,4 v 40  a 4,4 0 0,1 -4,4 H 64 c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 h -8  a 4,4 0 0,0 -4,4 v 16 a 4,4 0 0,0 4,4 h  8 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H 156 H 156 a 4,4 0 0,1 4,4 v 24  a 4,4 0 0,1 -4,4 H 64 c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 h -8  a 4,4 0 0,0 -4,4 v 16 a 4,4 0 0,0 4,4 h  8 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H 156 a 4,4 0 0,1 4,4 v 24  a 4,4 0 0,1 -4,4 H 48   c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 H 4 a 4,4 0 0,1 -4,-4 z"></path>
+                        <text class="blocklyText" y="2" text-anchor="middle" dominant-baseline="middle" dy="0" x="15.999993324279785" transform="translate(8, 24) ">如果</text>
+                        <path class="blocklyPath" style="visibility: visible" d="M 16,0  h 16 l 16,16 l -16,16 h -16 l -16,-16 l 16,-16 z" fill="#CF8B17" transform="translate(48,8)" data-argument-type="boolean"></path>
+                        <text class="blocklyText" y="2" text-anchor="middle" dominant-baseline="middle" dy="0" x="15.999993324279785" transform="translate(104, 24) ">那么</text>
+                        <text class="blocklyText" y="2" text-anchor="middle" dominant-baseline="middle" dy="0" x="15.999993324279785" transform="translate(8, 88) ">否则</text>
                     </g>
                 </g>
             </g>

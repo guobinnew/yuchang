@@ -51,16 +51,361 @@ const ycEvents = {
 const ShapeUtils = {
   /*
    {
-   width: 16  // 水平端宽度
+   width: 120  // 水平端宽度
    stroke:  ''  // 线条颜色
    fill: ''  // 填充色
    opacity: '1'   // 透明度
    classes: ''
-   height: 40 // 默认高度
+   height: 48 // 默认高度
    }
    */
-  event: function (option) {
+  cap: function (option) {
+    let path = document.createElementNS(ycSvgNS, 'path')
+    let $elem = $(path)
 
+    if (!option) {
+      option = {}
+    }
+
+    let headWidth = 96
+    let cornerRadius = 4
+    let bulgeHeight = 22 // 凸起高度
+    let minContentWidth = 20
+    let minContentHeight = 40
+
+    // 内部
+    const boundbox = {
+      width: minContentWidth + cornerRadius + headWidth,
+      height: minContentHeight + cornerRadius * 2,
+      contentWidth: minContentWidth,
+      contentHeight: minContentHeight,
+      outerWidth: minContentWidth + cornerRadius + headWidth, // 包围盒宽度
+      outerHeight: minContentHeight + cornerRadius * 2 + bulgeHeight // 包围盒高度
+    }
+
+    // 计算内容大小
+    let _size = (w, h) => {
+      let modify = !!w || !!h
+      if (w) {
+        boundbox.contentWidth = Math.max(w - headWidth - cornerRadius, minContentWidth)
+      }
+
+      if (h) {
+        boundbox.contentHeight = Math.max(h - cornerRadius * 2, minContentHeight)
+      }
+
+      if (modify) {
+        // 更新宽高
+        boundbox.width = boundbox.outerWidth = boundbox.contentWidth + cornerRadius + headWidth
+        boundbox.height = boundbox.contentHeight + cornerRadius * 2
+        boundbox.outerHeight = boundbox.height + bulgeHeight
+      }
+    }
+
+    // 更新尺寸大小
+    _size(option.width, option.height)
+
+    let d = '`m 0,0 c 25,-22 71,-22 96,0 H ${ 96 + size.contentWidth } a 4,4 0 0,1 4,4 v ${size.contentHeight}  a 4,4 0 0,1 -4,4 H 48   c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 H 4 a 4,4 0 0,1 -4,-4 z`'
+    let dfunc = new Function('size', 'return ' + d)
+    $elem.attr('d', dfunc(boundbox))
+    option.stroke && $elem.attr('stroke', option.stroke)
+    option.fill && $elem.attr('fill', option.fill)
+    option.opacity && $elem.attr('fill-opacity', option.opacity)
+    $elem.addClass('ycBlockPath ycBlockBackground' + (option.classes ? (' ' + option.classes) : ''))
+
+    // 自定义事件
+    $elem.on(ycEvents.resize, function (event, opt) {
+      event.stopPropagation()
+
+      let log = `cap ${ycEvents.resize} event: `
+      if (!opt) {
+        logger.warn(log + `opt is null`)
+        return
+      }
+
+      const $this = $(this)
+      const option = {}
+
+      if (opt.width) {
+        if (!yuchg.isNumber(opt.width)) {
+          logger.warn(log + `width is not number`)
+        } else {
+          option.width = opt.width
+        }
+      }
+      if (opt.height) {
+        if (!yuchg.isNumber(opt.height)) {
+          logger.warn(log + `height is not number`)
+        } else {
+          option.height = opt.height
+        }
+      }
+      _size(option.width, option.height)
+      $this.attr('d', dfunc(boundbox))
+      $this[0].__boundbox__ = boundbox
+    })
+
+    // 计算大小
+    $elem[0].__boundbox__ = boundbox
+    return $elem
+  },
+  /*
+   {
+   width: 120  // 水平端宽度
+   stroke:  ''  // 线条颜色
+   fill: ''  // 填充色
+   opacity: '1'   // 透明度
+   classes: ''
+   height: 48 // 默认高度
+   }
+   */
+  cup: function (option) {
+    let path = document.createElementNS(ycSvgNS, 'path')
+    let $elem = $(path)
+
+    if (!option) {
+      option = {}
+    }
+
+    let headWidth = 48
+    let cornerRadius = 4
+    let minContentWidth = 108
+    let minContentHeight = 40
+    let bottomHeight = 24
+    let emptySlotHeight = 16
+    let bulgeHeight = option.end ? 0 : 8 // 凸起高度
+
+    // 内部
+    const boundbox = {
+      width: minContentWidth + cornerRadius + headWidth,
+      height: minContentHeight + cornerRadius * 2,
+      contentWidth: minContentWidth,
+      contentHeight: minContentHeight,
+      slotHeight: emptySlotHeight,
+      outerWidth: minContentWidth + cornerRadius + headWidth, // 包围盒宽度
+      outerHeight: minContentHeight + cornerRadius * 6 + bottomHeight + emptySlotHeight + bulgeHeight // 包围盒高度
+    }
+
+    // 计算内容大小
+    let _size = (w, h, sh) => {
+      let modify = !!w || !!h || !!sh
+      if (w) {
+        boundbox.contentWidth = Math.max(w - headWidth - cornerRadius, minContentWidth)
+      }
+
+      if (h) {
+        boundbox.contentHeight = Math.max(h - cornerRadius * 2, minContentHeight)
+      }
+
+      if (sh) {
+        boundbox.slotHeight = Math.max(sh, emptySlotHeight)
+      }
+
+      if (modify) {
+        // 更新宽高
+        boundbox.width = boundbox.outerWidth = boundbox.contentWidth + cornerRadius + headWidth
+        boundbox.height = boundbox.contentHeight + cornerRadius * 2
+        boundbox.outerHeight = boundbox.height + cornerRadius * 4 + boundbox.slotHeight + bottomHeight + bulgeHeight
+      }
+    }
+
+    // 更新尺寸大小
+    _size(option.width, option.height, option.slotHeight)
+    let d = '`m 0,4 A 4,4 0 0,1 4,0 H 12 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H ${ 48 + size.contentWidth} a 4,4 0 0,1 4,4 v ${ size.contentHeight}  a 4,4 0 0,1 -4,4 H 64 c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 h -8  a 4,4 0 0,0 -4,4 v ${ size.slotHeight } a 4,4 0 0,0 4,4 h  8 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H ${ 48 + size.contentWidth } a 4,4 0 0,1 4,4 v 24  a 4,4 0 0,1 -4,4 '
+
+    const end = [
+      ' H 48 c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 H 4 a 4,4 0 0,1 -4,-4 z`',
+      ' H 4 a 4,4 0 0,1 -4,-4 z`'
+    ]
+
+    let dfunc = new Function('size', 'return ' + d + (option.end ? end[1] : end[0]))
+    $elem.attr('d', dfunc(boundbox))
+    option.stroke && $elem.attr('stroke', option.stroke)
+    option.fill && $elem.attr('fill', option.fill)
+    option.opacity && $elem.attr('fill-opacity', option.opacity)
+    $elem.addClass('ycBlockPath ycBlockBackground' + (option.classes ? (' ' + option.classes) : ''))
+
+    // 自定义事件
+    $elem.on(ycEvents.resize, function (event, opt) {
+      event.stopPropagation()
+
+      let log = `cup ${ycEvents.resize} event: `
+      if (!opt) {
+        logger.warn(log + `opt is null`)
+        return
+      }
+
+      const $this = $(this)
+      const option = {}
+
+      if (opt.width) {
+        if (!yuchg.isNumber(opt.width)) {
+          logger.warn(log + `width is not number`)
+        } else {
+          option.width = opt.width
+        }
+      }
+      if (opt.height) {
+        if (!yuchg.isNumber(opt.height)) {
+          logger.warn(log + `height is not number`)
+        } else {
+          option.height = opt.height
+        }
+      }
+
+      if (opt.slotHeight) {
+        if (!yuchg.isNumber(opt.slotHeight)) {
+          logger.warn(log + `slotHeight is not number`)
+        } else {
+          option.slotHeight = opt.slotHeight
+        }
+      }
+
+      _size(option.width, option.height, option.slotHeight)
+      $this.attr('d', dfunc(boundbox))
+      $this[0].__boundbox__ = boundbox
+    })
+
+    // 计算大小
+    $elem[0].__boundbox__ = boundbox
+    return $elem
+  },
+  /*
+  {
+  width: 120  // 水平端宽度
+  stroke:  ''  // 线条颜色
+  fill: ''  // 填充色
+  opacity: '1'   // 透明度
+  classes: ''
+  height: 48 // 默认高度
+  }
+  */
+  cuptwo: function (option) {
+    let path = document.createElementNS(ycSvgNS, 'path')
+    let $elem = $(path)
+
+    if (!option) {
+      option = {}
+    }
+
+    let headWidth = 48
+    let cornerRadius = 4
+    let minContentWidth = 108
+    let minContentHeight = 40
+    let bottomHeight = 24
+    let minOtherHeight = 24
+    let emptySlotHeight = 16
+    let bulgeHeight = option.end ? 0 : 8 // 凸起高度
+
+    // 内部
+    const boundbox = {
+      width: minContentWidth + cornerRadius + headWidth,
+      height: minContentHeight + cornerRadius * 2,
+      contentWidth: minContentWidth,
+      contentHeight: minContentHeight,
+      slotHeight: [emptySlotHeight, emptySlotHeight],
+      otherHeight: minOtherHeight,
+      outerWidth: minContentWidth + cornerRadius + headWidth, // 包围盒宽度
+      outerHeight: minContentHeight + cornerRadius * 6 + bottomHeight + emptySlotHeight + bulgeHeight // 包围盒高度
+    }
+
+    // 计算内容大小
+    let _size = (w, h, oh, sh) => {
+      let modify = !!w || !!h || !!oh || !!sh
+      if (w) {
+        boundbox.contentWidth = Math.max(w - headWidth - cornerRadius, minContentWidth)
+      }
+
+      if (h) {
+        boundbox.contentHeight = Math.max(h - cornerRadius * 2, minContentHeight)
+      }
+
+      if (oh) {
+        boundbox.otherHeight = Math.max(oh, minOtherHeight)
+      }
+
+      if (sh) {
+        boundbox.slotHeight[0] = Math.max(sh[0], emptySlotHeight)
+        boundbox.slotHeight[1] = Math.max(sh[1], emptySlotHeight)
+      }
+
+      if (modify) {
+        // 更新宽高
+        boundbox.width = boundbox.outerWidth = boundbox.contentWidth + cornerRadius + headWidth
+        boundbox.height = boundbox.contentHeight + cornerRadius * 2
+        boundbox.outerHeight = boundbox.height + cornerRadius * 8 + boundbox.slotHeight[0] + boundbox.slotHeight[1] + bottomHeight + bulgeHeight + boundbox.otherHeight
+      }
+    }
+
+    // 更新尺寸大小
+    _size(option.width, option.height, option.otherHeight, option.slotHeight)
+
+    let d = '`m 0,4 A 4,4 0 0,1 4,0 H 12 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H ${ 48 + size.contentWidth} a 4,4 0 0,1 4,4 v ${ size.contentHeight}  a 4,4 0 0,1 -4,4 H 64 c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 h -8  a 4,4 0 0,0 -4,4 v ${ size.slotHeight[0] } a 4,4 0 0,0 4,4 h  8 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H ${ 48 + size.contentWidth } a 4,4 0 0,1 4,4 v ${ size.otherHeight }  a 4,4 0 0,1 -4,4 H 64 c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 h -8  a 4,4 0 0,0 -4,4 v ${ size.slotHeight[1] } a 4,4 0 0,0 4,4 h  8 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H ${ 48 + size.contentWidth } a 4,4 0 0,1 4,4 v 24  a 4,4 0 0,1 -4,4 '
+
+    const end = [
+      ' H 48 c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 H 4 a 4,4 0 0,1 -4,-4 z`',
+      ' H 4 a 4,4 0 0,1 -4,-4 z`'
+    ]
+
+    let dfunc = new Function('size', 'return ' + d + (option.end ? end[1] : end[0]))
+    $elem.attr('d', dfunc(boundbox))
+    option.stroke && $elem.attr('stroke', option.stroke)
+    option.fill && $elem.attr('fill', option.fill)
+    option.opacity && $elem.attr('fill-opacity', option.opacity)
+    $elem.addClass('ycBlockPath ycBlockBackground' + (option.classes ? (' ' + option.classes) : ''))
+
+    // 自定义事件
+    $elem.on(ycEvents.resize, function (event, opt) {
+      event.stopPropagation()
+
+      let log = `cup ${ycEvents.resize} event: `
+      if (!opt) {
+        logger.warn(log + `opt is null`)
+        return
+      }
+
+      const $this = $(this)
+      const option = {}
+
+      if (opt.width) {
+        if (!yuchg.isNumber(opt.width)) {
+          logger.warn(log + `width is not number`)
+        } else {
+          option.width = opt.width
+        }
+      }
+      if (opt.height) {
+        if (!yuchg.isNumber(opt.height)) {
+          logger.warn(log + `height is not number`)
+        } else {
+          option.height = opt.height
+        }
+      }
+
+      if (opt.otherHeight) {
+        if (!yuchg.isNumber(opt.otherHeight)) {
+          logger.warn(log + `otherHeight is not number`)
+        } else {
+          option.otherHeight = opt.otherHeight
+        }
+      }
+
+      if (opt.slotHeight) {
+        if (!yuchg.isNumber(opt.slotHeight)) {
+          logger.warn(log + `slotHeight is not number`)
+        } else {
+          option.slotHeight = opt.slotHeight
+        }
+      }
+
+      _size(option.width, option.height, option.otherHeight, option.slotHeight)
+      $this.attr('d', dfunc(boundbox))
+      $this[0].__boundbox__ = boundbox
+    })
+
+    // 计算大小
+    $elem[0].__boundbox__ = boundbox
+    return $elem
   },
   /*
    {
@@ -677,7 +1022,69 @@ const ShapeUtils = {
     })
 
     return $elem
+  },
+
+  /*
+   {
+   classes: ''
+   url: ''
+   translatex:
+   translatey:
+   width:
+   height:
+   }
+   */
+  image: function (option) {
+    let g = document.createElementNS(ycSvgNS, 'g')
+    let $elem = $(g)
+    $elem.attr('transform', `translate(${option.translatex ? option.translatex : 0}, ${option.translatey ? option.translatey : 0})`)
+
+    let img = document.createElementNS(ycSvgNS, 'image')
+    let $img = $(img)
+
+    $img.attr('height', (option.width ? option.width : 24) + 'px')
+    $img.attr('width', (option.height ? option.height : 24) + 'px')
+    $img.attr('xlink:href', '')
+    img.href.baseVal = option.url
+    $elem.append($img)
+
+    // 自定义事件
+    $elem.on(ycEvents.position, function (event, opt) {
+      event.stopPropagation()
+      const log = `image ${ycEvents.position} event: `
+      if (!opt) {
+        logger.debug(log + 'opt is null')
+        return
+      }
+
+      const $this = $(this)
+
+      let tx = 0
+      let ty = 0
+      if (!yuchg.isNumber(opt.translatex)) {
+        logger.debug(log + `translatex is not number`)
+      } else {
+        tx = opt.translatex
+      }
+
+      if (!yuchg.isNumber(opt.translatey)) {
+        logger.debug(log + `translatey is not number`)
+      } else {
+        ty = opt.translatey
+      }
+      $this.attr('transform', `translate(${tx}, ${ty})`)
+
+      let $thisimg = $this.children('image')
+      if (!yuchg.isString(opt.url)) {
+        logger.debug(log + `url is not string`)
+      } else {
+        $thisimg[0].href.baseVal = option.url
+      }
+    })
+
+    return $elem
   }
+
 }
 
 // 块实例
@@ -798,9 +1205,8 @@ class Block {
         }
       }
     } else { // 如果没有定义padding, 则根据类型进行动态计算
-
       // slot|control 固定padding为8
-      if (this.def.shape === 'slot' || this.def.shape === 'control') {
+      if (this.def.shape === 'slot' || this.def.shape === 'cap' || this.def.shape === 'cup' || this.def.shape === 'cuptwo') {
         p.left = p.right = 8
       } else {
         p.left = p.right = this.def.state.height / 2 // 默认取高度一半
@@ -899,6 +1305,8 @@ class BlockArgument extends Block {
     this.def.state.height = $shape[0].__boundbox__.height
     this.def.state.contentWidth = $shape[0].__boundbox__.contentWidth
     this.def.state.contentHeight = $shape[0].__boundbox__.contentHeight
+    this.def.state.outerWidth = $shape[0].__boundbox__.outerWidth
+    this.def.state.outerHeight = $shape[0].__boundbox__.outerHeight
 
     this.adjust({
       dom: $elem,
@@ -938,6 +1346,9 @@ class BlockArgument extends Block {
       option.state.height = $shape[0].__boundbox__.height
       option.state.contentWidth = $shape[0].__boundbox__.contentWidth
       option.state.contentHeight = $shape[0].__boundbox__.contentHeight
+      option.state.outerWidth = $shape[0].__boundbox__.outerWidth
+      option.state.outerHeight = $shape[0].__boundbox__.outerHeight
+
 
       let $text = option.dom.children('text')
       $text.trigger(ycEvents.position, [{
@@ -1005,6 +1416,9 @@ class BlockVariant extends Block {
     this.def.state.height = $shape[0].__boundbox__.height
     this.def.state.contentWidth = $shape[0].__boundbox__.contentWidth
     this.def.state.contentHeight = $shape[0].__boundbox__.contentHeight
+    this.def.state.outerWidth = $shape[0].__boundbox__.outerWidth
+    this.def.state.outerHeight = $shape[0].__boundbox__.outerHeight
+
 
     $elem.append(ShapeUtils.text({
       text: this.def.text
@@ -1045,6 +1459,9 @@ class BlockVariant extends Block {
     option.state.height = $shape[0].__boundbox__.height
     option.state.contentWidth = $shape[0].__boundbox__.contentWidth
     option.state.contentHeight = $shape[0].__boundbox__.contentHeight
+    option.state.outerWidth = $shape[0].__boundbox__.outerWidth
+    option.state.outerHeight = $shape[0].__boundbox__.outerHeight
+
 
     let $text = option.dom.children('text')
     $text.trigger(ycEvents.position, [{
@@ -1101,6 +1518,9 @@ class BlockStack extends Block {
     } else if (sec.type === 'text') {
       sec.$elem = ShapeUtils.text(sec)
       return sec.$elem
+    } else if (sec.type === 'image') {
+      sec.$elem = ShapeUtils.image(sec)
+      return sec.$elem
     }
   }
 
@@ -1137,6 +1557,9 @@ class BlockStack extends Block {
       } else if (sec.type === 'text' && sec.$elem) {
         let l = computeTextLength(sec.text)
         offsetx += l
+      } else if (sec.type === 'image' && sec.$elem) {
+        let l = sec.width ? sec.width : 24
+        offsetx += l
       }
       offsetx += space
     }
@@ -1157,10 +1580,12 @@ class BlockStack extends Block {
     option.state.height = $shape[0].__boundbox__.height
     option.state.contentWidth = $shape[0].__boundbox__.contentWidth
     option.state.contentHeight = $shape[0].__boundbox__.contentHeight
+    option.state.outerWidth = $shape[0].__boundbox__.outerWidth
+    option.state.outerHeight = $shape[0].__boundbox__.outerHeight
 
 
     offsetx = padding.left
-  
+
     // 调整位置
     for (let sec of sections.values()) {
       let $child = null
@@ -1181,6 +1606,15 @@ class BlockStack extends Block {
           y: -space / 2,
           translatex: offsetx,
           translatey: option.state.height / 2
+        }])
+        offsetx += l
+      } else if (sec.type === 'image' && sec.$elem) {
+        $child = sec.$elem
+        let l = sec.width ? sec.width : 24
+        // 根据高度调整文本位置
+        $child.trigger(ycEvents.position, [{
+          translatex: offsetx,
+          translatey: (option.state.height - sec.height) / 2
         }])
         offsetx += l
       }
@@ -1223,28 +1657,8 @@ class BlockExpress extends BlockStack {
     this.def.state.height = $shape[0].__boundbox__.height
     this.def.state.contentWidth = $shape[0].__boundbox__.contentWidth
     this.def.state.contentHeight = $shape[0].__boundbox__.contentHeight
-    return $g
-  }
-}
-
-class BlockEvent extends BlockStack {
-  constructor(def) {
-    super(def)
-  }
-
-  createContainer() {
-    let $g = ShapeUtils.group(this.def)
-    let opt = {}
-    $.extend(opt, this.def.background)
-    // 缺省外形
-    let $shape = ShapeUtils.event(opt)
-    $g.append($shape)
-
-    // 更新大小
-    this.def.state.width = $shape[0].__boundbox__.width
-    this.def.state.height = $shape[0].__boundbox__.height
-    this.def.state.contentWidth = $shape[0].__boundbox__.contentWidth
-    this.def.state.contentHeight = $shape[0].__boundbox__.contentHeight
+    this.def.state.outerWidth = $shape[0].__boundbox__.outerWidth
+    this.def.state.outerHeight = $shape[0].__boundbox__.outerHeight
 
     return $g
   }
@@ -1269,6 +1683,8 @@ class BlockAction extends BlockStack {
     this.def.state.height = $shape[0].__boundbox__.height
     this.def.state.contentWidth = $shape[0].__boundbox__.contentWidth
     this.def.state.contentHeight = $shape[0].__boundbox__.contentHeight
+    this.def.state.outerWidth = $shape[0].__boundbox__.outerWidth
+    this.def.state.outerHeight = $shape[0].__boundbox__.outerHeight
 
     return $g
   }
@@ -1291,6 +1707,9 @@ class BlockAction extends BlockStack {
       } else if (sec.type === 'text' && sec.$elem) {
         let l = computeTextLength(sec.text)
         offsetx += l
+      } else if (sec.type === 'image' && sec.$elem) {
+        let l = sec.width ? sec.width : 24
+        offsetx += l
       }
       offsetx += space
     }
@@ -1311,9 +1730,11 @@ class BlockAction extends BlockStack {
     option.state.height = $shape[0].__boundbox__.height
     option.state.contentWidth = $shape[0].__boundbox__.contentWidth
     option.state.contentHeight = $shape[0].__boundbox__.contentHeight
+    option.state.outerWidth = $shape[0].__boundbox__.outerWidth
+    option.state.outerHeight = $shape[0].__boundbox__.outerHeight
 
     offsetx = padding.left
-   
+
     // 根据新大小调整位置
     for (let sec of sections.values()) {
       let $child = null
@@ -1336,19 +1757,249 @@ class BlockAction extends BlockStack {
           translatey: option.state.height / 2 // 中心定位
         }])
         offsetx += l
+      } else if (sec.type === 'image' && sec.$elem) {
+        $child = sec.$elem
+        let l = sec.width ? sec.width : 24
+        // 根据高度调整文本位置
+        $child.trigger(ycEvents.position, [{
+          translatex: offsetx,
+          translatey: (option.state.height - sec.height) / 2
+        }])
+        offsetx += l
       }
       offsetx += space
     }
   }
 }
 
-class BlockControl extends BlockStack {
+class BlockEvent extends BlockAction {
   constructor(def) {
     super(def)
   }
 
   createContainer() {
+    let $g = ShapeUtils.group(this.def)
+    let opt = Object.assign({}, this.def.background)
 
+    // 缺省外形
+    let $shape = ShapeUtils.cap(opt)
+    $g.append($shape)
+
+    // 更新大小
+    this.def.state.width = $shape[0].__boundbox__.width
+    this.def.state.height = $shape[0].__boundbox__.height
+    this.def.state.contentWidth = $shape[0].__boundbox__.contentWidth
+    this.def.state.contentHeight = $shape[0].__boundbox__.contentHeight
+    this.def.state.outerWidth = $shape[0].__boundbox__.outerWidth
+    this.def.state.outerHeight = $shape[0].__boundbox__.outerHeight
+
+    return $g
+  }
+}
+
+class BlockControl extends BlockStack {
+  constructor(def) {
+    def.state.contentHeight = 40
+    def.display.minContentHeight = 40
+    super(def)
+  }
+
+  createElement() {
+    let $elem = this.createContainer()
+    this.sections = []
+    // 创建Section
+    for (let sec of this.def.sections.values()) {
+      let secblock = Object.assign({}, sec)
+      this.sections.push(secblock)
+      let $child = this.createSection(secblock)
+      if (!$child) {
+        logger.debug('block' + this.name + 'createSection failed:' + sec)
+        continue
+      }
+      // 修改边框颜色
+      if (this.def.background && this.def.background.stroke) {
+        $child.trigger(ycEvents.background, [{
+          stroke: this.def.background.stroke
+        }])
+      }
+
+      $elem.append($child)
+    }
+
+    this.others = []
+    if (this.def.others) {
+      // 创建Section
+      for (let sec of this.def.others.values()) {
+        let secblock = Object.assign({}, sec)
+        this.others.push(secblock)
+        let $child = this.createSection(secblock)
+        if (!$child) {
+          logger.debug('block' + this.name + 'createSection failed:' + sec)
+          continue
+        }
+        // 修改边框颜色
+        if (this.def.background && this.def.background.stroke) {
+          $child.trigger(ycEvents.background, [{
+            stroke: this.def.background.stroke
+          }])
+        }
+        $elem.append($child)
+      }
+    }
+  
+    this.adjust({
+      dom: $elem,
+      proto: this,
+      state: this.def.state
+    })
+
+    return $elem
+  }
+
+  createContainer() {
+    let $g = ShapeUtils.group(this.def)
+    let opt = Object.assign({}, this.def.background)
+    // 默认为非中止block
+    opt.end = !!this.def.end
+    // 缺省外形
+    let $shape = null
+    if (this.def.shape === 'cup') {
+      $shape = ShapeUtils.cup(opt)
+    } else if (this.def.shape === 'cuptwo') {
+      $shape = ShapeUtils.cuptwo(opt)
+    }
+    $g.append($shape)
+    // 更新大小
+    this.def.state.width = $shape[0].__boundbox__.width
+    this.def.state.height = $shape[0].__boundbox__.height
+    this.def.state.contentWidth = $shape[0].__boundbox__.contentWidth
+    this.def.state.contentHeight = $shape[0].__boundbox__.contentHeight
+    this.def.state.outerWidth = $shape[0].__boundbox__.outerWidth
+    this.def.state.outerHeight = $shape[0].__boundbox__.outerHeight
+
+    return $g
+  }
+
+  adjust(option) {
+    const def = option.proto.def
+    const padding = option.proto.padding()
+    const sections = option.proto.sections
+    const others = option.proto.others
+
+    // 计算section尺寸
+    let space = def.display.space
+    let offsetx = padding.left
+    let contentWidth = 0
+    let contentHeight = 20
+    let otherWidth = 0
+    let otherHeight = 24
+
+    // 先计算Sections部分宽度和最大高度
+    for (let sec of sections.values()) {
+      if (sec.type === 'argument' && sec.instance) {
+        offsetx += sec.instance.state.width
+        contentHeight = Math.max(contentHeight, sec.instance.state.height)
+      } else if (sec.type === 'text' && sec.$elem) {
+        let l = computeTextLength(sec.text) // 字体大小固定，不需要考虑字体
+        offsetx += l
+      } else if (sec.type === 'image' && sec.$elem) {
+        let l = sec.width ? sec.width : 24
+        contentHeight = Math.max(otherHeight, sec.height)
+        offsetx += l
+      }
+      offsetx += space
+    }
+
+    contentWidth = offsetx - space + padding.right
+
+    offsetx = padding.left
+    // 先计算Others宽度和最大高度
+    for (let sec of others.values()) {
+      if (sec.type === 'argument' && sec.instance) {
+        offsetx += sec.instance.state.width
+        otherHeight = Math.max(otherHeight, sec.instance.state.height)
+      } else if (sec.type === 'text' && sec.$elem) {
+        let l = computeTextLength(sec.text)
+        offsetx += l
+      } else if (sec.type === 'image' && sec.$elem) {
+        let l = sec.width ? sec.width : 24
+        offsetx += l
+        otherHeight = Math.max(otherHeight, sec.height)
+      }
+      offsetx += space
+    }
+    otherWidth = offsetx - space + padding.right
+
+    option.state.width = Math.max(otherWidth, contentWidth)
+    option.state.height = contentHeight + padding.top + padding.bottom
+
+    // 调整容器大小
+    let $shape = option.dom.children('path')
+    $shape.trigger(ycEvents.resize, [{
+      width: option.state.width,
+      height: option.state.height,
+      otherHeight: otherHeight
+    }])
+
+    // 更新大小
+    option.state.width = $shape[0].__boundbox__.width
+    option.state.height = $shape[0].__boundbox__.height
+    option.state.contentWidth = $shape[0].__boundbox__.contentWidth
+    option.state.contentHeight = $shape[0].__boundbox__.contentHeight
+    option.state.outerWidth = $shape[0].__boundbox__.outerWidth
+    option.state.outerHeight = $shape[0].__boundbox__.outerHeight
+
+    let adjustSection = function (sec, offx, offy) {
+      let $child = null
+      if (sec.type === 'argument' && sec.instance) {
+        $child = sec.instance.element()
+        // 根据高度调整文本位置
+        $child.trigger(ycEvents.position, [{
+          translatex: offx,
+          translatey: (option.state.height - sec.instance.state.height) / 2 + offy
+        }])
+        offx += sec.instance.state.width
+      } else if (sec.type === 'text' && sec.$elem) {
+        $child = sec.$elem
+        let l = computeTextLength(sec.text)
+        // 根据高度调整文本位置
+        $child.trigger(ycEvents.position, [{
+          x: l / 2,
+          y: 0,
+          translatex: offx,
+          translatey: option.state.height / 2 + offy // 中心定位
+        }])
+        offx += l
+      } else if (sec.type === 'image' && sec.$elem) {
+        $child = sec.$elem
+        let l = sec.width ? sec.width : 24
+        // 根据高度调整文本位置
+        $child.trigger(ycEvents.position, [{
+          translatex: offx,
+          translatey: (option.state.height - sec.height) / 2 + offy
+        }])
+        offx += l
+      }
+      return offx
+    }
+
+    logger.debug('control====', sections, others)
+    // 根据新大小调整Sections位置
+    let offsety = 0
+    offsetx = padding.left
+    for (let sec of sections.values()) {
+      offsetx = adjustSection(sec, offsetx, offsety)
+      offsetx += space
+    }
+
+
+    // 根据新大小调整Others位置
+    offsety = option.state.height + 16  // 补充：计算child高度
+    offsetx = padding.left
+    for (let sec of others.values()) {
+      offsetx = adjustSection(sec, offsetx, offsety)
+      offsetx += space
+    }
   }
 }
 
@@ -1667,7 +2318,7 @@ class Panel {
               let $elem = $(proto.prototypeElement).clone(true)
               $elem.attr('transform', `translate(36, ${offsety})`)
               dom.$flyoutcanvas.append($elem)
-              offsety += toolboxspace
+              offsety += (proto.def.state.outerHeight + 16)
             } else {
               logger.debug('block registry is corrupted:' + block)
             }
