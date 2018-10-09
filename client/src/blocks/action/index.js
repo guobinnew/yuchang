@@ -1,8 +1,9 @@
-import motion from './motion'
+import motions from './motion'
+import changes from './change'
 
 let blocks = []
 
-blocks = blocks.concat(motion)
+blocks = blocks.concat(motions)
 
 export default {
   name: '动作',

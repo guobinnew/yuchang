@@ -42,6 +42,11 @@ export default {
       name: '枚举值',
       shape: 'dropdown',
       category: 'argument',
+      button: {
+        url: '/img/dropdown-arrow.be850da5.svg',
+        width: 12,
+        height: 12
+      },
       values: [{
         value: -1,
         name: '空'
