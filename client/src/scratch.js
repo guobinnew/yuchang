@@ -2457,7 +2457,6 @@ class Panel {
         that.$selected.addClass('ycBlockSelected')
         that.$selected.addClass('ycBlockDragging')
 
-        
         // 插入占位(在末尾添加)
         var $marker = that.marker.element()
         that.dom.$canvas.append($marker)
@@ -2523,12 +2522,67 @@ class Panel {
     })
   }
 
+  // 处理包定义
+  processPackage(p) {
+    if (!this.option.blocks.defs) {
+      this.option.blocks.defs = {
+        variant: {
+          name: '变量',
+          members: []
+        },
+        marker: {
+          name: '标记',
+          members: []
+        },
+        action: {
+          name: '动作',
+          members: []
+        },
+        event: {
+          name: '事件',
+          members: []
+        },
+        express: {
+          name: '表达式',
+          members: []
+        },
+        control: {
+          name: '控制',
+          members: []
+        }
+      }
+    }
+    
+    let defs = this.option.blocks.defs
+    if (yuchg.isArray(p)) {
+      for (let item of p.values()) {
+        let type = item.type
+        if (defs[type]) {
+          defs[type].members = defs[type].members.concat(item)
+        }
+      }
+    } else if (yuchg.isObject(p)) {
+      for (let [type, val] of Object.entries(p)) {
+        if (yuchg.isArray(val)) {
+          if (defs[type]) {
+            defs[type].members = defs[type].members.concat(val)
+          }
+        }
+      }
+    }
+  }
+
   setOption(opt) {
     // 合并
     $.extend(true, this.option, opt)
 
     let registries = this.registries
-    let defs = this.option.blocks.blocks
+    // 提取Block包定义
+    for (let p of this.option.blocks.packages.values()) {
+      this.processPackage(p)
+    }
+    logger.debug(this.option.blocks.defs)
+    let defs = this.option.blocks.defs
     let args = this.option.blocks.args
     //
     let cates = this.option.blocks.categories

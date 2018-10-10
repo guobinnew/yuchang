@@ -5,7 +5,5 @@ let blocks = []
 
 blocks = blocks.concat(loops, conditions)
 
-export default {
-  name: '控制',
-  members: blocks
-}
+export default blocks
+
