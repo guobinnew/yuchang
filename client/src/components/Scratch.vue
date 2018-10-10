@@ -39,6 +39,11 @@
                 <g class="ycBlockCanvas">
                 </g>
             </g>
+             <g class="ycBlockZoom" transform="translate(20,20)">
+                <image width="36" height="36" y="44" xlink:href="../assets/zoom-out.svg"></image>
+                <image width="36" height="36" y="0" xlink:href="../assets/zoom-in.svg"></image>
+                <image width="36" height="36" y="88" xlink:href="../assets/zoom-reset.svg"></image>
+            </g>
         </svg>
         <svg class="ycBlockDragSurface"
              style="display: block;"
@@ -67,7 +72,7 @@
                     <rect id="ycBlockMenuClipRect" :height="size.height" :width="flyout.width" y="0" x="0"></rect>
                 </clipPath>
             </defs>
-            <path class="ycBlockFlyoutBackground" d="M 0,0 h 250 a 0 0 0 0 1 0 0 v 606 a 0 0 0 0 1 0 0 h -250 z"></path>
+            <path class="ycBlockFlyoutBackground" :d="flyoutBackground"></path>
             <g class="ycBlockWorkspace" clip-path="url(#ycBlockMenuClipPath)">
                 <g class="ycBlockCanvas" transform="translate(0,0) scale(0.675)">
                     <rect fill-opacity="0" x="12" y="1960" height="56" width="96"></rect>
@@ -206,6 +211,10 @@
 .ycBlockEditableText {
   cursor: text;
 }
+
+.ycBlockZoom image{
+  cursor: pointer;
+}
 </style>
 
 <script>
@@ -233,7 +242,11 @@ export default {
       }
     };
   },
-  computed: {},
+  computed: {
+    flyoutBackground: function(){
+      return `M 0,0 h ${this.flyout.width} a 0 0 0 0 1 0 0 v ${this.size.height} a 0 0 0 0 1 0 0 h ${-this.flyout.width} z`
+    }
+  },
   created: function() {
     if (this.width != undefined) {
       this.size.width = parseInt(this.width);

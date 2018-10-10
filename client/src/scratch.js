@@ -1,5 +1,6 @@
 import yuchg from './base'
 import $ from 'jquery'
+import * as d3 from "d3"
 import uuidv4 from 'uuid/v4'
 import logger from './logger'
 import blocks from './blocks/index'
@@ -2284,6 +2285,7 @@ class Panel {
 
     this.$selected = null
     this.currentZoomFactor = 1.0
+    this.zoomRate = 0.25
     this.startDrag = false
 
     this.flyoutgrapPoint = {
@@ -2474,14 +2476,39 @@ class Panel {
     this.marker = this.createBlockInstance('insertmarker')
     // 初始化toolbox
     this.initCategoryToolbox()
+    this.initZoomPanel()
+  }
+
+  initZoomPanel() {
+    let that = this
+    $('.ycBlockZoom image').each(function (index, elem) {
+      $(this).mousedown(function () {
+        if (index === 0) {
+          that.currentZoomFactor -= that.zoomRate
+        }
+        else if (index === 1) {
+          that.currentZoomFactor += that.zoomRate
+        }
+        else if (index === 2) {
+          that.currentZoomFactor = 1.0
+          that.setCanvasTransfrom(that.dom.$canvasList, 'translate(0,0) scale(1.0)')
+          return
+        }
+       
+        let m = that.dom.$canvas[0].getCTM()
+        let trans = 'translate(' + (Number(m.e)) + ',' + (Number(m.f)) + ') ' + 'scale(' + that.currentZoomFactor + ')'
+        that.setCanvasTransfrom(that.dom.$canvasList, trans)
+      })
+    })
   }
 
   initCategoryToolbox() {
     var categories = this.option.blocks.categories
     var dom = this.dom
     var registries = this.registries
-
-    function createMenu(key) {
+    let zoom = this.flyoutZoomFactor
+ 
+    function createMenu(key, offset) {
       var cate = categories[key]
       if (!cate) {
         logger.debug('category can not found: ' + key)
@@ -2493,19 +2520,25 @@ class Panel {
       $menuitem.append($(`<div class="ycBlockCategoryMenuItemLabel">${ cate.name }</div>`))
       $menurow.append($menuitem)
 
+      let trans = 'translate(0,' + (-offset * zoom) + ') scale(' + zoom + ')'
       $menuitem.on('click', function () {
+        d3.selectAll('.ycBlockFlyout>.ycBlockWorkspace>g')
+        .transition()
+        .duration(500)
+        .attr('transform', trans)
         logger.debug('click ----- ' + $(this).data('id'))
       })
 
       return $menurow
     }
 
-    let offsety = 12
+    let padding = 12
+    let offsety = padding
     let toolboxspace = 64
     $.each(categories, function (key, val) {
       if (!val.display || val.display !== 'none') {
         // 创建菜单
-        let $menuitem = createMenu(key)
+        let $menuitem = createMenu(key, offsety - padding)
         categories[key].$menuitem = $menuitem
         dom.$menu.append($menuitem)
 
