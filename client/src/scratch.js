@@ -1982,7 +1982,7 @@ class BlockAction extends BlockStack {
         // 根据高度调整文本位置
         $child.trigger(ycEvents.position, [{
           translatex: offsetx,
-          translatey: (option.state.height - sec.instance.state.height) / 2
+          translatey: (option.state.height - sec.instance.state.height) / 2 + 2  // 微调
         }])
         offsetx += sec.instance.state.width
       } else if (sec.type === 'text' && sec.$elem) {
@@ -1993,7 +1993,7 @@ class BlockAction extends BlockStack {
           x: l / 2,
           y: 0,
           translatex: offsetx,
-          translatey: option.state.height / 2 // 中心定位
+          translatey: option.state.height / 2 + 2 // 中心定位
         }])
         offsetx += l
       } else if (sec.type === 'image' && sec.$elem) {
@@ -2002,7 +2002,7 @@ class BlockAction extends BlockStack {
         // 根据高度调整文本位置
         $child.trigger(ycEvents.position, [{
           translatex: offsetx,
-          translatey: (option.state.height - sec.height) / 2
+          translatey: (option.state.height - sec.height) / 2 + 2
         }])
         offsetx += l
       }
