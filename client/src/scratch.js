@@ -2573,6 +2573,7 @@ class Panel {
   }
 
   setOption(opt) {
+    this.option.blocks.defs = null
     // 合并
     $.extend(true, this.option, opt)
 

@@ -249,63 +249,41 @@ export default {
   },
   created: function() {
     if (this.width != undefined) {
-      this.size.width = parseInt(this.width);
+      this.size.width = parseInt(this.width)
     }
 
     if (this.height != undefined) {
-      this.size.height = parseInt(this.height);
+      this.size.height = parseInt(this.height)
     }
 
     if (this["virtual-width"] != undefined) {
-      this.size.virtualWidth = parseInt(this["virtual-width"]);
+      this.size.virtualWidth = parseInt(this["virtual-width"])
     }
 
     if (this["virtual-height"] != undefined) {
-      this.size.virtualHeight = parseInt(this["virtual-height"]);
+      this.size.virtualHeight = parseInt(this["virtual-height"])
     }
   },
   mounted: function() {
-    let that = this;
-    editor = scratch.init($(that.$el));
+    let that = this
+    editor = scratch.init($(that.$el))
 
-    let _flex = parseInt(that.flex);
+    let _flex = parseInt(that.flex)
     if (_flex === 1) {
       // 随窗口动态改变大小
       var resizeEditor = function() {
-        let $parentElement = $(that.$el);
-        that.size.width = $parentElement[0].clientWidth;
-        that.size.height = $parentElement[0].clientHeight;
-      };
+        let $parentElement = $(that.$el)
+        that.size.width = $parentElement[0].clientWidth
+        that.size.height = $parentElement[0].clientHeight
+      }
 
       window.onresize = function() {
-        resizeEditor();
-      };
+        resizeEditor()
+      }
 
-      resizeEditor();
+      resizeEditor()
     }
-
-    console.log(editor);
-
-    editor.setOption({});
-    //
-
-    // 测试
-    editor.addBlock({
-      type: "locationx",
-      state: {
-        x: 100,
-        y: 200
-      }
-    });
-
-    editor.addBlock({
-      type: "locationx",
-      state: {
-        x: 300,
-        y: 200
-      }
-    });
-
+    editor.setOption({})
   },
   methods: {}
 };
