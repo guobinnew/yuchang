@@ -299,28 +299,13 @@ export default {
     });
 
     editor.addBlock({
-      type: "locationy",
+      type: "locationx",
       state: {
         x: 300,
         y: 200
       }
     });
 
-    editor.addBlock({
-      type: "add",
-      state: {
-        x: 400,
-        y: 500
-      }
-    });
-
-    editor.addBlock({
-      type: "move",
-      state: {
-        x: 300,
-        y: 300
-      }
-    });
   },
   methods: {}
 };

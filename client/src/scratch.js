@@ -1279,6 +1279,30 @@ class BlockInstance {
       translatey: yuchg.isNumber(this.state.y) ? this.state.y : 0
     }])
   }
+
+  // next为true时，删除所有nextBlock
+  // 为false时，仅删除自己，nextBlock上移
+  clear(next = true) {
+    // 删除子节点children
+    for (let c of this.children.values()) {
+      c.clear()
+    }
+    // 删除next
+    if (this.next) {
+      if (next) {
+        this.next.clear()
+      } else {
+        this.next.prev = this.prev
+      }
+    }
+    let index = this.proto.instances.indexOf(this)
+    if (index >= 0) {
+      this.proto.instances.splice(index, 1)
+    }
+    this.elem.remove()
+
+    // 通知父对象更新
+  }
 }
 
 /*
@@ -2268,7 +2292,7 @@ class Panel {
     this.marker = null
 
     this.registries = {} // block注册列表
-    this.instances = [] // block实例数组
+    this.instances = {} // block实例数组
 
     this.grapPoint = {
       x: 0,
@@ -2315,13 +2339,15 @@ class Panel {
       this.lastPoint.x = event.pageX
       this.lastPoint.y = event.pageY
       this.startDrag = true
-      return false
+      this.dom.$flyout.css('pointer-events', 'none')
     }).on('mousemove', function () {
+      logger.debug('canvas mousemove')
       let X = $(this).offset().left
       let Y = $(this).offset().top
+      let cm = that.dom.$canvas[0].getCTM()
       that.updateInfo({
-        x: event.pageX - X,
-        y: event.pageY - Y
+        x: event.pageX - X - Number(cm.e),
+        y: event.pageY - Y - Number(cm.f)
       })
 
       let deltaX = event.pageX - that.lastPoint.x
@@ -2346,19 +2372,30 @@ class Panel {
         // 根据鼠标位置调整surface
         that.dom.$dragsurface.attr('style', 'display: block; transform: translate3d(' + deltaX + 'px,' + deltaY + 'px,0px)')
       }
-    }).on('mouseup mouseleave', function () {
+    }).on('mouseup mouseleave', () => {
       that.startDrag = false
+      this.dom.$flyout.css('pointer-events', 'auto')
+
       if (that.$selected && that.$selected.hasClass('ycBlockSelected')) {
         if (that.$selected.hasClass('ycBlockDragging')) {
           // 插入占位
           var $marker = that.marker.element()
-          that.$selected.insertBefore($marker)
-          that.$selected.removeClass('ycBlockDragging')
+          // 判断是否在Flyout区域
+          if (this.isInFlyoutRegion(event.pageX, event.pageY)) {
+            // 删除Block实例
+            let uid = this.$selected.attr('data-uid')
+            this.removeBlock(uid)
+            that.$selected = null
+            return
+          } else {
+            that.$selected.insertBefore($marker)
+            that.$selected.removeClass('ycBlockDragging')
+            // 更新变换
+            let dm = that.dom.$dragsurface.css('transform').replace(/[^0-9\-,]/g, '').split(',')
+            let m = that.$selected[0].getCTM()
+            that.$selected.attr('transform', 'translate(' + (Number(dm[4]) + that.grapPoint.x) / Number(m.a) + ',' + (Number(dm[5]) + that.grapPoint.y) / Number(m.d) + ')')
+          }
           $marker.remove()
-          // 更新变换
-          let dm = that.dom.$dragsurface.css('transform').replace(/[^0-9\-,]/g, '').split(',')
-          let m = that.$selected[0].getCTM()
-          that.$selected.attr('transform', 'translate(' + (Number(dm[4]) + that.grapPoint.x) / Number(m.a) + ',' + (Number(dm[5]) + that.grapPoint.y) / Number(m.d) + ')')
           that.dom.$dragsurface.css('display', 'none;')
         }
         that.$selected.removeClass('ycBlockSelected')
@@ -2370,10 +2407,9 @@ class Panel {
       this.flyoutlastPoint.x = event.pageX
       this.flyoutlastPoint.y = event.pageY
       this.flyoutstartDrag = true
-      return false
     }).on('mousemove', function () {
       let deltaY = event.pageY - that.flyoutlastPoint.y
-      if (!that.$flyoutselected && that.flyoutstartDrag) {
+      if (!that.$flyoutselected && that.flyoutstartDrag) { // 上下滚动拖放
         that.flyoutlastPoint.x = event.pageX
         that.flyoutlastPoint.y = event.pageY
         let m = that.dom.$flyoutcanvas[0].getCTM()
@@ -2392,11 +2428,86 @@ class Panel {
         let trans = 'translate(0,' + y + ') ' + 'scale(' + that.flyoutZoomFactor + ')'
         that.setCanvasTransfrom(that.dom.$flyoutcanvasList, trans)
 
-      } else if (that.$flyoutselected && that.$flyoutselected.hasClass('ycBlockSelected')) {}
-    }).on('mouseup mouseleave', function () {
-      that.flyoutstartDrag = false
-      if (that.$flyoutselected && that.$flyoutselected.hasClass('ycBlockSelected')) {}
+      } else if (that.$flyoutselected) { // 拖动Block
+        // 获取选中的类型
+        let bid = that.$flyoutselected.attr('data-id')
+        let proto = that.registries[bid]
+
+        // 根据当前鼠标位置计算在SVG中位置
+        let X = that.dom.$svg.offset().left
+        let Y = that.dom.$svg.offset().top
+        let cm = that.dom.$canvas[0].getCTM()
+
+        // 根据Block尺寸调整位置
+        let bbox = that.$flyoutselected[0].getBBox()
+        that.grapPoint.x = event.pageX - bbox.width / 2 - X + bbox.x - Number(cm.e)
+        that.grapPoint.y = event.pageY - bbox.height / 2 - Y + bbox.y - Number(cm.f)
+   
+        logger.debug('drag ==', X, Y, event.pageX, event.pageY, bbox, that.grapPoint)
+
+        let newInst = that.addBlock({
+          type: proto.def.id,
+          state: {
+            x: that.grapPoint.x,
+            y: that.grapPoint.y
+          }
+        }, that.dom.$dragcanvas)
+
+        that.$selected = newInst.element()
+        that.$selected.addClass('ycBlockSelected')
+        that.$selected.addClass('ycBlockDragging')
+
+        
+        // 插入占位(在末尾添加)
+        var $marker = that.marker.element()
+        that.dom.$canvas.append($marker)
+
+        that.$flyoutselected = null
+        that.lastPoint.x = event.pageX
+        that.lastPoint.y = event.pageY
+        let deltaX = event.pageX - that.lastPoint.x
+        let deltaY = event.pageY - that.lastPoint.y
+        // 根据鼠标位置调整surface
+        that.dom.$dragsurface.attr('style', 'display: block; transform: translate3d(' + deltaX + 'px,' + deltaY + 'px,0px)')
+        that.dom.$dragsurface.css('display', 'block')
+  
+        that.startDrag = true
+        that.dom.$flyout.css('pointer-events', 'none')
+      }
+    }).on('mouseup mouseleave', () => {
+      this.flyoutstartDrag = false
+      if (this.$flyoutselected && this.$flyoutselected.hasClass('ycBlockSelected')) {
+
+      }
     })
+  }
+
+  // point 为屏幕坐标位置
+  isInFlyoutRegion(x, y) {
+    const dom = this.dom
+    let $bg = dom.$flyout.find('.ycBlockFlyoutBackground')
+    let bbox = $bg[0].getBBox()
+    let ctm = $bg[0].getScreenCTM()
+
+    let left = ctm.e + bbox.x
+    let right = left + bbox.width
+    let top = ctm.f + bbox.y
+    let bottom = top + bbox.height
+    return x >= left && x <= right && y >= top && y <= bottom
+  }
+
+  // point 为屏幕坐标位置
+  flyoutToCanvasRegion(x, y) {
+    const dom = this.dom
+    let $bg = dom.$flyout.find('.ycBlockFlyoutBackground')
+    let bbox = $bg[0].getBBox()
+    let ctm = $bg[0].getScreenCTM()
+
+    let left = ctm.e + bbox.x
+    let right = left + bbox.width
+    let top = ctm.f + bbox.y
+    let bottom = top + bbox.height
+    return x >= left && x <= right && y >= top && y <= bottom
   }
 
   updateInfo(info) {
@@ -2485,16 +2596,14 @@ class Panel {
       $(this).mousedown(function () {
         if (index === 0) {
           that.currentZoomFactor -= that.zoomRate
-        }
-        else if (index === 1) {
+        } else if (index === 1) {
           that.currentZoomFactor += that.zoomRate
-        }
-        else if (index === 2) {
+        } else if (index === 2) {
           that.currentZoomFactor = 1.0
           that.setCanvasTransfrom(that.dom.$canvasList, 'translate(0,0) scale(1.0)')
           return
         }
-       
+
         let m = that.dom.$canvas[0].getCTM()
         let trans = 'translate(' + (Number(m.e)) + ',' + (Number(m.f)) + ') ' + 'scale(' + that.currentZoomFactor + ')'
         that.setCanvasTransfrom(that.dom.$canvasList, trans)
@@ -2507,7 +2616,8 @@ class Panel {
     var dom = this.dom
     var registries = this.registries
     let zoom = this.flyoutZoomFactor
- 
+    let that = this
+
     function createMenu(key, offset) {
       var cate = categories[key]
       if (!cate) {
@@ -2523,9 +2633,9 @@ class Panel {
       let trans = 'translate(0,' + (-offset * zoom) + ') scale(' + zoom + ')'
       $menuitem.on('click', function () {
         d3.selectAll('.ycBlockFlyout>.ycBlockWorkspace>g')
-        .transition()
-        .duration(500)
-        .attr('transform', trans)
+          .transition()
+          .duration(500)
+          .attr('transform', trans)
         logger.debug('click ----- ' + $(this).data('id'))
       })
 
@@ -2563,8 +2673,15 @@ class Panel {
             if (proto && proto.prototypeElement) {
               let $elem = $(proto.prototypeElement).clone(true)
               $elem.attr('transform', `translate(36, ${offsety})`)
+              $elem.attr('data-id', block)
               dom.$flyoutcanvas.append($elem)
               offsety += (proto.def.state.outerHeight + 16)
+
+              // 添加事件
+              $elem.on('mousedown', function () {
+                that.$flyoutselected = $(this)
+              }).on('mouseup', function () {})
+
             } else {
               logger.debug('block registry is corrupted:' + block)
             }
@@ -2588,8 +2705,29 @@ class Panel {
     let prototype = this.registries[type]
     // 放入队列中
     let inst = prototype.instance(state)
-    this.instances.push(inst)
+    this.instances[inst.uid] = inst
     return inst
+  }
+
+  removeBlock(uid) {
+    if (!yuchg.isString(uid)) {
+      logger.warn('removeBlock failed: wrond uid - ', uid)
+      return
+    }
+    let inst = this.instances[uid]
+    if (!inst) {
+      logger.warn('removeBlock failed: can not found uid - ', uid)
+      return
+    }
+
+    //let m = this.dom.$dragcanvas[0].getCTM()
+    //d3.select('.ycBlockDragSurface>g')
+    //.transition()
+    //.duration(500)
+    //.attr('transform', 'scale(0.001)')
+
+    inst.clear()
+    delete this.instances[uid]
   }
 
   addBlock(option, parent) {
@@ -2603,6 +2741,7 @@ class Panel {
     }
 
     let $elem = inst.element()
+    $elem.attr('data-uid', inst.uid)
 
     var that = this
     var dom = this.dom
@@ -2611,22 +2750,18 @@ class Panel {
       that.$selected = $(this)
       let m = this.getCTM()
       let pm = dom.$canvas[0].getCTM()
-
-      that.lastPoint.x = event.pageX
-      that.lastPoint.y = event.pageY
       that.grapPoint.x = (Number(m.e) - Number(pm.e))
       that.grapPoint.y = (Number(m.f) - Number(pm.f))
       that.$selected.addClass('ycBlockSelected')
-      return false
-    }).on('mouseup', function () {
-
-    })
+    }).on('mouseup', function () {})
 
     if (parent) {
       parent.append(inst.element())
     } else {
       this.dom.$canvas.append(inst.element())
     }
+
+    return inst
   }
 
   addBlocks(blocks) {
