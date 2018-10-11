@@ -961,7 +961,7 @@ const ShapeUtils = {
     editableText: function (option) {
       let g = document.createElementNS(ycSvgNS, 'g')
       let $elem = $(g)
-      $elem.attr('transform', `translate(${option.translatex ? option.translatex : 8}, ${option.translatey ? option.translatey : 0})`)
+      $elem.attr('transform', `translate(${option.translatex ? option.translatex : 4}, ${option.translatey ? option.translatey : 0})`)
       $elem.addClass('ycBlockEditableText')
 
       let $text = ShapeUtils.base.text(option)
@@ -998,6 +998,17 @@ const ShapeUtils = {
           x: opt.x,
           y: opt.y
         }])
+      }).on(ycEvents.change, function (event, v) {
+        event.stopPropagation()
+        const $this = $(this)
+        const tagName = $this[0].tagName
+        const log = `${tagName} ${ycEvents.change} event: `
+        if (!v) {
+          logger.debug(log + 'value is null')
+          return
+        }
+        let $thistext = $this.children('text')
+        $thistext.html('' + v)
       })
 
       return $elem
@@ -1438,9 +1449,11 @@ class BlockArgument extends Block {
     this.def.state.value = this.def.value ? parseInt(this.def.value) : 0
     let $shape = ShapeUtils.path.roundRect(option)
     parent.append($shape)
-    parent.append(ShapeUtils.group.editableText({
+
+    let $text = ShapeUtils.group.editableText({
       text: this.def.state.value
-    }))
+    })
+    parent.append($text)
     return $shape
   }
 
@@ -1485,6 +1498,25 @@ class BlockArgument extends Block {
       // 默认类型
       $shape = this.createNumber($elem, opt)
     }
+
+    // 修改值
+    let that = this
+    $elem.on(ycEvents.change, function(event, val){
+      event.stopPropagation()
+
+      let $this = $(this)
+      if (that.def.shape === 'boolean') {
+       
+      } else if (that.def.shape === 'dropdown') {
+       
+      } else if (that.def.shape === 'number') {
+       
+      } else {
+        // 默认类型
+        let $text = $this.find('text')
+        $text.trigger(ycEvents.change, [val])
+      }
+    })
 
     this.def.state.width = $shape[0].__boundbox__.width
     this.def.state.height = $shape[0].__boundbox__.height
@@ -1592,7 +1624,8 @@ class BlockArgument extends Block {
 
       let $text = option.dom.children('text')
       $text.trigger(ycEvents.positionText, [{
-        x: option.state.height / 2 + option.state.contentWidth / 2,
+        x: option.state.width / 2,
+        y: option.state.height / 2,
         translatex: 0,
         translatey: option.state.height / 2
       }])
@@ -1753,8 +1786,35 @@ class BlockStack extends Block {
 
   // 创建Sections
   createSection(sec) {
+    let that = this
     if (sec.type === 'argument') {
-      return this.addArgument(sec)
+      let inst = this.addArgument(sec)
+      let $elem = inst.element()
+
+      if (sec.datatype === 'number' || sec.datatype === 'string') {
+
+        $elem.on('mouseup', function() {
+          let $this = $(this)
+          let $path = $this.children('path')
+          let m = $path[0].getCTM()
+          let bbox = $path[0].getBBox()
+          if (!$this.parent().hasClass('ycBlockFlyout')) {
+            logger.debug('click me')
+            that.def.__panel__.showInputWidget({
+              type: 'string',
+              x: Number(m.e),
+              y: Number(m.f),
+              width: bbox.width + 1,
+              height: bbox.height + 1,
+              callback: function(v) {
+                inst.update({value: v})
+                //$this.trigger(ycEvents.change, [v])
+              }
+            })
+          }
+        })
+      }
+      return $elem
     } else if (sec.type === 'text') {
       sec.$elem = ShapeUtils.base.text(sec)
       return sec.$elem
@@ -1776,7 +1836,7 @@ class BlockStack extends Block {
     }
 
     sec.instance = inst
-    return sec.instance.element()
+    return sec.instance
   }
 
   adjust(option) {
@@ -2288,6 +2348,7 @@ class Panel {
     this.dom.$flyoutcanvasList = [this.dom.$flyoutcanvas, this.dom.$flyoutbubblecanvas]
 
     this.dom.$menu = dom.find('.ycBlockCategoryMenu')
+    this.dom.$widget = dom.find('.ycBlockWidgetDiv')
 
     this.marker = null
 
@@ -2341,7 +2402,6 @@ class Panel {
       this.startDrag = true
       this.dom.$flyout.css('pointer-events', 'none')
     }).on('mousemove', function () {
-      logger.debug('canvas mousemove')
       let X = $(this).offset().left
       let Y = $(this).offset().top
       let cm = that.dom.$canvas[0].getCTM()
@@ -2729,14 +2789,18 @@ class Panel {
               let $elem = $(proto.prototypeElement).clone(true)
               $elem.attr('transform', `translate(36, ${offsety})`)
               $elem.attr('data-id', block)
+              $elem.addClass('ycBlockFlyout')
               dom.$flyoutcanvas.append($elem)
               offsety += (proto.def.state.outerHeight + 16)
 
               // 添加事件
               $elem.on('mousedown', function () {
                 that.$flyoutselected = $(this)
-              }).on('mouseup', function () {})
-
+              }).on('mouseup', function () {
+                if (!that.startDrag) {
+                  that.$flyoutselected = null
+                }
+              })
             } else {
               logger.debug('block registry is corrupted:' + block)
             }
@@ -2783,6 +2847,58 @@ class Panel {
 
     inst.clear()
     delete this.instances[uid]
+  }
+
+  showInputWidget(option) {
+    // <div class="ycBlockWidgetDiv fieldTextInput" style="display: block; 
+    // direction: ltr; top: 224.395px; width: 41px; height: 33px; transform: scale(1.1327); 
+    // margin-left: 0px; border-radius: 16.5px; border-color: rgb(204, 153, 0); left: 691.598px; transition: box-shadow 0.25s ease 0s; box-shadow: rgba(255, 255, 255, 0.3) 0px 0px 0px 4px;">
+    // <input class="blocklyHtmlInput" spellcheck="true" value="10" style="border-radius: 16.5px; transition: font-size 0.25s ease 0s; font-size: 12pt;">
+    // </div>
+    logger.debug('input')
+    if (!option) {
+      this.hideInputWidget()
+      return
+    }
+
+ 
+    let $parent = this.dom.$widget
+    $parent.children().remove()
+
+    let that = this
+    let $input = null
+    if (option.type === 'string') {
+      $parent.addClass('fieldTextInput')
+      $parent.attr('style', 'direction: ltr; margin-left: 0px; border-radius: 16.5px; border-color: rgb(204, 153, 0); transition: box-shadow 0.25s ease 0s; box-shadow: rgba(255, 255, 255, 0.3) 0px 0px 0px 4px;')
+      $parent.css('direction', 'ltr')
+
+      $parent.css('top', option.y)
+      $parent.css('left', option.x)
+      $parent.css('width', option.width)
+      $parent.css('height', option.height)
+
+      $input = $('<input class="ycBlockHtmlInput" spellcheck="true" value="">')
+      $input.val(10)
+
+      let callback = option.callback
+      $input.on('blur', function() {
+        let newValue = $(this).val()
+        callback && callback(newValue)
+        that.hideInputWidget()
+      })
+      $parent.append($input)
+      $input.focus()
+    }
+
+    $parent.css('display', 'block')
+    $input.focus()
+  }
+
+  hideInputWidget() {
+    let $parent = this.dom.$widget
+    $parent.attr('class', 'ycBlockWidgetDiv')
+    $parent.attr('style', '')
+    $parent.children().remove()
   }
 
   addBlock(option, parent) {

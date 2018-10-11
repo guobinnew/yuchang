@@ -4,11 +4,7 @@
   </div>
 </template>
 
-
 <script>
-  // import yuchg from '../base.js'
-  // import * as d3 from 'd3'
-
   export default {
     name: 'about',
     data: function() {

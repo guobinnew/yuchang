@@ -3,8 +3,6 @@
         <svg class="ycBlockSvg"
              :width="size.width"
              :height="size.height"
-             :data-virtual-width="size.virtualWidth"
-             :data-virtual-height="size.virtualHeight"
              version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
             <defs>
                 <pattern id="ycBlockGridPattern" patternUnits="userSpaceOnUse" width="38.879999999999995"
@@ -85,6 +83,12 @@
             <div class="ycBlockCategoryMenu">
             </div>
         </div>
+        <div class="ycBlockWidgetDiv"></div>
+        <div class="ycBlockDropDownDiv">
+          <div class="ycBlockDropDownContent"></div>
+          <div class="ycBlockDropDownArrow arrowBottom" style="transform: translate(77, 300) rotate(45deg);"></div>
+        </div>
+        <div class="ycBlockTooltipDiv"></div>
     </div>
 </template>
 
@@ -125,6 +129,10 @@
   bottom: 0;
   overflow: visible !important;
   z-index: 50;
+}
+
+.ycBlockWsDragSurface.ycBlockOverflowVisible {
+    overflow: visible;
 }
 
 .ycBlockInsertionMarker > .ycBlockPath {
@@ -212,39 +220,72 @@
   cursor: text;
 }
 
-.ycBlockZoom image{
+.ycBlockZoom image {
   cursor: pointer;
 }
+
+.ycBlockWidgetDiv {
+    display: none;
+    position: absolute;
+    z-index: 99999;
+}
+
+.ycBlockWidgetDiv.fieldTextInput {
+    overflow: hidden;
+    border: 1px solid;
+    box-sizing: border-box;
+    transform-origin: 0 0;
+    -ms-transform-origin: 0 0;
+    -moz-transform-origin: 0 0;
+    -webkit-transform-origin: 0 0;
+}
+
+.ycBlockHtmlInput {
+  border-radius: 16.5px;
+  transition: font-size 0.25s ease 0s;
+  font-size: 12pt;
+  border: none;
+  font-family: "Helvetica Neue", Helvetica, sans-serif;
+  height: 100%;
+  margin: 0;
+  outline: none;
+  box-sizing: border-box;
+  width: 100%;
+  text-align: center;
+  color: #575e75;
+  font-weight: 500;
+}
+
+.ycBlockNonEditableText>text, .ycBlockEditableText>text {
+    fill: #575E75;
+}
+
 </style>
 
 <script>
-import yuchg from "../base";
-import scratch from "../scratch";
-import $ from "jquery";
-import * as d3 from "d3";
-
-var editor = null;
+import Scratch from "../scratch/index"
 
 export default {
   name: "Scratch",
-  props: ["width", "height", "virtual-width", "virtual-height", "flex"],
+  props: ["width", "height", "flex"],
   data: function() {
     return {
       id: "scratch",
       size: {
         width: 800,
-        height: 600,
-        virtualWidth: 1600,
-        virtualHeight: 1200
+        height: 600
       },
       flyout: {
         width: 250
-      }
+      },
+      editor: null
     };
   },
   computed: {
-    flyoutBackground: function(){
-      return `M 0,0 h ${this.flyout.width} a 0 0 0 0 1 0 0 v ${this.size.height} a 0 0 0 0 1 0 0 h ${-this.flyout.width} z`
+    flyoutBackground: function() {
+      return `M 0,0 h ${this.flyout.width} a 0 0 0 0 1 0 0 v ${
+        this.size.height
+      } a 0 0 0 0 1 0 0 h ${-this.flyout.width} z`;
     }
   },
   created: function() {
@@ -255,26 +296,17 @@ export default {
     if (this.height != undefined) {
       this.size.height = parseInt(this.height)
     }
-
-    if (this["virtual-width"] != undefined) {
-      this.size.virtualWidth = parseInt(this["virtual-width"])
-    }
-
-    if (this["virtual-height"] != undefined) {
-      this.size.virtualHeight = parseInt(this["virtual-height"])
-    }
   },
   mounted: function() {
-    let that = this
-    editor = scratch.init($(that.$el))
+    let that = this;
+    that.editor = Scratch.init(that.$el)
 
     let _flex = parseInt(that.flex)
     if (_flex === 1) {
       // 随窗口动态改变大小
       var resizeEditor = function() {
-        let $parentElement = $(that.$el)
-        that.size.width = $parentElement[0].clientWidth
-        that.size.height = $parentElement[0].clientHeight
+        that.size.width = that.$el.clientWidth
+        that.size.height = that.$el.clientHeight
       }
 
       window.onresize = function() {
@@ -283,8 +315,8 @@ export default {
 
       resizeEditor()
     }
-    editor.setOption({})
+    that.editor.setOption({})
   },
   methods: {}
-};
+}
 </script>
