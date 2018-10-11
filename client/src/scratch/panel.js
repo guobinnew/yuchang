@@ -465,13 +465,17 @@ class Panel {
             let proto = registries[block]
             if (proto && proto.prototypeElement) {
               let $elem = $(proto.prototypeElement).clone(true)
-              $elem.attr('transform', `translate(36, ${offsety})`)
+             
               $elem.attr('data-id', block)
               $elem.addClass('ycBlockFlyout')
               $flyoutcanvas.append($elem)
 
-              // 获取包围盒大小
+               // 获取包围盒大小
               let bbox = $elem[0].getBBox()
+              logger.debug('FLYOUT=====', bbox)
+              offsety += (-bbox.y)
+              $elem.attr('transform', `translate(36, ${offsety})`)
+              
               offsety += (bbox.height + 16)
 
               // 添加事件

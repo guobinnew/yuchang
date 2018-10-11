@@ -32,6 +32,11 @@ class BlockInstance {
 
   // 更新状态
   update(state, force = false) {
+    if (!state && !force) {
+      return
+    } else if (!state) {
+      state = {}
+    }
     let modify = []
     if (!force) {
       // 检查需要更新的属性
@@ -173,6 +178,7 @@ class Block {
       // 开启部分更新
 
     }
+
     $dom.trigger(ShapeUtils.events.position, [{
       translatex: yuchg.isNumber(option.state.x) ? option.state.x : 0,
       translatey: yuchg.isNumber(option.state.y) ? option.state.y : 0
@@ -615,10 +621,10 @@ class BlockStack extends Block {
       if (sec.type === 'argument' && sec.instance) {
         offsetx += sec.instance.state.width
         contentHeight = Math.max(contentHeight, sec.instance.state.height)
-      } else if (sec.type === 'text' && sec.$elem) {
+      } else if (sec.type === 'text' && sec.elem) {
         let l = Utils.computeTextLength(sec.text)
         offsetx += l
-      } else if (sec.type === 'image' && sec.$elem) {
+      } else if (sec.type === 'image' && sec.elem) {
         let l = sec.width ? sec.width : 24
         offsetx += l
       }
@@ -626,14 +632,20 @@ class BlockStack extends Block {
     }
 
     offsetx -= space
-    option.state.width = offsetx + padding.right
-    option.state.height = contentHeight + padding.top + padding.bottom
+    option.state.contentWidth = offsetx + padding.right
+    option.state.contentHeight = contentHeight + padding.top + padding.bottom
+
+    // 如果是表达式
+    if(this.def.type === 'express') {
+
+    }
 
     // 调整容器大小
     let $shape = $dom.children('path')
+    logger.debug('Stack resize =====', option.state)
     $shape.trigger(ShapeUtils.events.resize, [{
-      width: option.state.width,
-      height: option.state.height
+      contentWidth: option.state.contentWidth,
+      contentHeight: option.state.contentHeight
     }])
 
     // 更新大小
@@ -641,39 +653,31 @@ class BlockStack extends Block {
     option.state.height = $shape[0].__boundbox__.height
     option.state.contentWidth = $shape[0].__boundbox__.contentWidth
     option.state.contentHeight = $shape[0].__boundbox__.contentHeight
-    option.state.outerWidth = $shape[0].__boundbox__.outerWidth
-    option.state.outerHeight = $shape[0].__boundbox__.outerHeight
-
+ 
     offsetx = padding.left
 
     // 调整位置
     for (let sec of sections.values()) {
       let $child = null
       if (sec.type === 'argument' && sec.instance) {
-        $child = $(sec.instance.element())
         // 根据高度调整文本位置
-        $child.trigger(ShapeUtils.events.position, [{
-          translatex: offsetx,
-          translatey: (option.state.height - sec.instance.state.height) / 2
-        }])
-
-        if (sec.datatype === 'number' || sec.datatype === 'string') {
-          //sec.instance.update()
-        }
-
+        sec.instance.update({
+          x: offsetx,
+          y: (option.state.height - sec.instance.state.height) / 2
+        })
         offsetx += sec.instance.state.width
-      } else if (sec.type === 'text' && sec.$elem) {
+      } else if (sec.type === 'text' && sec.elem) {
         $child = $(sec.elem)
-        let l = Utils.computeTextLength(sec.text)
+        let bbox = sec.elem.getBBox()
         // 根据高度调整文本位置
         $child.trigger(ShapeUtils.events.positionText, [{
-          x: l / 2,   // 文字宽度一半
+          x: bbox.width / 2,   // 文字宽度一半
           y: 0,
           translatex: offsetx,
-          translatey: (option.state.height - space) / 2
+          translatey: option.state.height / 2
         }])
-        offsetx += l
-      } else if (sec.type === 'image' && sec.$elem) {
+        offsetx += bbox.width
+      } else if (sec.type === 'image' && sec.elem) {
         $child = $(sec.elem)
         let l = sec.width ? sec.width : 24
         // 根据高度调整文本位置
@@ -714,10 +718,86 @@ class BlockExpress extends BlockStack {
     this.def.state.height = shape.__boundbox__.height
     this.def.state.contentWidth = shape.__boundbox__.contentWidth
     this.def.state.contentHeight = shape.__boundbox__.contentHeight
-    this.def.state.outerWidth = shape.__boundbox__.outerWidth
-    this.def.state.outerHeight = shape.__boundbox__.outerHeight
-
+   
     return g
+  }
+
+  adjust(option) {
+    const $dom = $(option.dom)
+    const def = option.proto.def
+    const padding = option.proto.padding()
+    const sections = option.proto.sections
+
+    // 计算section尺寸
+    let space = def.display.space
+    let offsetx = padding.left
+    let contentHeight = 20
+
+    // 先计算宽度和最大高度
+    for (let sec of sections.values()) {
+      if (sec.type === 'argument' && sec.instance) {
+        offsetx += sec.instance.state.width
+        contentHeight = Math.max(contentHeight, sec.instance.state.height)
+      } else if (sec.type === 'text' && sec.elem) {
+        let l = Utils.computeTextLength(sec.text)
+        offsetx += l
+      } else if (sec.type === 'image' && sec.elem) {
+        let l = sec.width ? sec.width : 24
+        offsetx += l
+      }
+      offsetx += space
+    }
+
+    offsetx -= space
+    option.state.width = option.state.contentWidth = offsetx + padding.right
+    option.state.height =  option.state.contentHeight = contentHeight + padding.top + padding.bottom
+
+    // 调整容器大小
+    let $shape = $dom.children('path')
+    $shape.trigger(ShapeUtils.events.resize, [{
+      width: option.state.width,
+      height: option.state.height
+    }])
+
+    // 更新大小
+    option.state.width = $shape[0].__boundbox__.width
+    option.state.height = $shape[0].__boundbox__.height
+    option.state.contentWidth = $shape[0].__boundbox__.contentWidth
+    option.state.contentHeight = $shape[0].__boundbox__.contentHeight
+ 
+    offsetx = padding.left
+    // 调整位置
+    for (let sec of sections.values()) {
+      let $child = null
+      if (sec.type === 'argument' && sec.instance) {
+        sec.instance.update({
+          x: offsetx,
+          y: (option.state.height - sec.instance.state.height) / 2
+        })
+        offsetx += sec.instance.state.width
+      } else if (sec.type === 'text' && sec.elem) {
+        $child = $(sec.elem)
+        let l = Utils.computeTextLength(sec.text)
+        // 根据高度调整文本位置
+        $child.trigger(ShapeUtils.events.positionText, [{
+          x: l / 2,   // 文字宽度一半
+          y: 0,
+          translatex: offsetx,
+          translatey: option.state.height / 2
+        }])
+        offsetx += l
+      } else if (sec.type === 'image' && sec.elem) {
+        $child = $(sec.elem)
+        let l = sec.width ? sec.width : 24
+        // 根据高度调整文本位置
+        $child.trigger(ShapeUtils.events.position, [{
+          translatex: offsetx,
+          translatey: (option.state.height - sec.height) / 2
+        }])
+        offsetx += l
+      }
+      offsetx += space
+    }
   }
 }
 
@@ -822,10 +902,10 @@ class BlockControl extends BlockStack {
       if (sec.type === 'argument' && sec.instance) {
         offsetx += sec.instance.state.width
         contentHeight = Math.max(contentHeight, sec.instance.state.height)
-      } else if (sec.type === 'text' && sec.$elem) {
+      } else if (sec.type === 'text' && sec.elem) {
         let l = Utils.computeTextLength(sec.text) // 字体大小固定，不需要考虑字体
         offsetx += l
-      } else if (sec.type === 'image' && sec.$elem) {
+      } else if (sec.type === 'image' && sec.elem) {
         let l = sec.width ? sec.width : 24
         contentHeight = Math.max(otherHeight, sec.height)
         offsetx += l
@@ -841,10 +921,10 @@ class BlockControl extends BlockStack {
       if (sec.type === 'argument' && sec.instance) {
         offsetx += sec.instance.state.width
         otherHeight = Math.max(otherHeight, sec.instance.state.height)
-      } else if (sec.type === 'text' && sec.$elem) {
+      } else if (sec.type === 'text' && sec.elem) {
         let l = Utils.computeTextLength(sec.text)
         offsetx += l
-      } else if (sec.type === 'image' && sec.$elem) {
+      } else if (sec.type === 'image' && sec.elem) {
         let l = sec.width ? sec.width : 24
         offsetx += l
         otherHeight = Math.max(otherHeight, sec.height)
@@ -853,15 +933,14 @@ class BlockControl extends BlockStack {
     }
     otherWidth = offsetx - space + padding.right
 
-    option.state.width = Math.max(otherWidth, contentWidth)
-    option.state.height = contentHeight + padding.top + padding.bottom
+    option.state.contentWidth = Math.max(otherWidth, contentWidth)
+    option.state.contentHeight = contentHeight + padding.top + padding.bottom
 
     // 调整容器大小
     let $shape = $dom.children('path')
     $shape.trigger(ShapeUtils.events.resize, [{
-      width: option.state.width,
-      height: option.state.height,
-      otherHeight: otherHeight
+      contentWidth: option.state.contentWidth,
+      contentHeight: option.state.contentHeight
     }])
 
     // 更新大小
@@ -875,16 +954,14 @@ class BlockControl extends BlockStack {
     let adjustSection = function (sec, offx, offy) {
       let $child = null
       if (sec.type === 'argument' && sec.instance) {
-        $child = $(sec.instance.element())
-        // 根据高度调整文本位置
-        $child.trigger(ShapeUtils.events.position, [{
-          translatex: offx,
-          translatey: (option.state.height - sec.instance.state.height) / 2 + offy
-        }])
+        sec.instance.update({
+          x: offx,
+          y: (option.state.height - sec.instance.state.height) / 2 + offy
+        })
         offx += sec.instance.state.width
-      } else if (sec.type === 'text' && sec.$elem) {
+      } else if (sec.type === 'text' && sec.elem) {
         $child = $(sec.elem)
-        let l = computeTextLength(sec.text)
+        let l = Utils.computeTextLength(sec.text)
         // 根据高度调整文本位置
         $child.trigger(ShapeUtils.events.positionText, [{
           x: l / 2,
@@ -893,8 +970,8 @@ class BlockControl extends BlockStack {
           translatey: option.state.height / 2 + offy // 中心定位
         }])
         offx += l
-      } else if (sec.type === 'image' && sec.$elem) {
-        $child = $(sec.$elem)
+      } else if (sec.type === 'image' && sec.elem) {
+        $child = $(sec.elem)
         let l = sec.width ? sec.width : 24
         // 根据高度调整文本位置
         $child.trigger(ShapeUtils.events.position, [{
@@ -962,10 +1039,10 @@ class BlockAction extends BlockStack {
       if (sec.type === 'argument' && sec.instance) {
         offsetx += sec.instance.state.width
         contentHeight = Math.max(contentHeight, sec.instance.state.height)
-      } else if (sec.type === 'text' && sec.$elem) {
+      } else if (sec.type === 'text' && sec.elem) {
         let l = Utils.computeTextLength(sec.text)
         offsetx += l
-      } else if (sec.type === 'image' && sec.$elem) {
+      } else if (sec.type === 'image' && sec.elem) {
         let l = sec.width ? sec.width : 24
         offsetx += l
       }
@@ -973,14 +1050,15 @@ class BlockAction extends BlockStack {
     }
 
     offsetx -= space
-    option.state.width = offsetx + padding.right
-    option.state.height = contentHeight + padding.top + padding.bottom
+    option.state.contentWidth = offsetx + padding.right
+    option.state.contentHeight = contentHeight + padding.top + padding.bottom
 
+    logger.debug('ACTION ======', option.state)
     // 调整容器大小
     let $shape = $dom.children('path')
     $shape.trigger(ShapeUtils.events.resize, [{
-      width: option.state.width,
-      height: option.state.height
+      contentWidth: option.state.contentWidth,
+      contentHeight: option.state.contentHeight
     }])
 
     // 更新大小
@@ -995,16 +1073,15 @@ class BlockAction extends BlockStack {
     for (let sec of sections.values()) {
       let $child = null
       if (sec.type === 'argument' && sec.instance) {
-        $child = $(sec.instance.element())
         // 根据高度调整文本位置
-        $child.trigger(ShapeUtils.events.position, [{
-          translatex: offsetx,
-          translatey: (option.state.height - sec.instance.state.height) / 2 + 2  // 微调
-        }])
+        sec.instance.update({
+          x: offsetx,
+          y: (option.state.height - sec.instance.state.height) / 2 + 2  // 微调
+        })
         offsetx += sec.instance.state.width
-      } else if (sec.type === 'text' && sec.$elem) {
+      } else if (sec.type === 'text' && sec.elem) {
         $child = $(sec.elem)
-        let l = computeTextLength(sec.text)
+        let l = Utils.computeTextLength(sec.text)
         // 根据高度调整文本位置
         $child.trigger(ShapeUtils.events.positionText, [{
           x: l / 2,
@@ -1013,7 +1090,7 @@ class BlockAction extends BlockStack {
           translatey: option.state.height / 2 + 2 // 中心定位
         }])
         offsetx += l
-      } else if (sec.type === 'image' && sec.$elem) {
+      } else if (sec.type === 'image' && sec.elem) {
         $child = $(sec.elem)
         let l = sec.width ? sec.width : 24
         // 根据高度调整文本位置

@@ -573,6 +573,7 @@ const ShapeUtils = {
       $elem.on(ycEvents.resize, function (event, opt) {
         event.stopPropagation()
 
+        logger.debug('SLOT ===========', opt)
         let log = logPrefix(this, ycEvents.resize)
         if (!opt) {
           logger.warn(log + `opt is null`)
@@ -582,8 +583,9 @@ const ShapeUtils = {
         opt.contentWidth = checkParameter(opt.contentWidth, yuchg.isNumber)
         opt.contentHeight = checkParameter(opt.contentHeight, yuchg.isNumber)
 
+        logger.debug('SLOT ===========######1', opt, this.__boundbox__)
         boundbox = _size(boundbox, opt)
-
+        logger.debug('SLOT ===========######2', opt, this.__boundbox__)
         const $this = $(this)
         $this.attr('d', _dfunc(boundbox))
         this.__boundbox__ = boundbox
@@ -607,7 +609,7 @@ const ShapeUtils = {
       const minRadius = 16
 
       // 内部
-      path.__boundbox__ = {
+      let boundbox = {
         width: minWidth,
         height: minRadius * 2,
         radius: minRadius,
@@ -638,11 +640,11 @@ const ShapeUtils = {
 
         return _boundbox
       }
-      path.__boundbox__ = _size(path.__boundbox__, option)
+      boundbox = _size(boundbox, option)
 
       const d = '`m 0,0 m ${size.radius},0 H ${size.radius + size.contentWidth} a ${size.radius} ${size.radius} 0 0 1 0 ${size.radius * 2} H ${size.radius} a ${size.radius} ${size.radius} 0 0 1 0 ${size.radius * -2} z`'
       const _dfunc = new Function('size', 'return ' + d)
-      $elem.attr('d', _dfunc(path.__boundbox__))
+      $elem.attr('d', _dfunc(boundbox))
 
       option.stroke && $elem.attr('stroke', option.stroke)
       option.fill && $elem.attr('fill', option.fill)
@@ -667,10 +669,13 @@ const ShapeUtils = {
 
         opt.width = checkParameter(opt.width, yuchg.isNumber)
         opt.height = checkParameter(opt.height, yuchg.isNumber)
-        this.__boundbox__ = _size(this.__boundbox__, opt)
+        boundbox = _size(boundbox, opt)
         const $this = $(this)
-        $this.attr('d', _dfunc(this.__boundbox__))
+        $this.attr('d', _dfunc(boundbox))
+        this.__boundbox__ = boundbox
       })
+
+      path.__boundbox__ = boundbox
       return path
     },
 
@@ -687,7 +692,7 @@ const ShapeUtils = {
       }
 
       // 内部
-      path.__boundbox__ = {
+      let boundbox = {
         width: minWidth,
         height: minSide * 2,
         side: minSide,
@@ -719,11 +724,11 @@ const ShapeUtils = {
         return _boundbox
       }
 
-      path.__boundbox__ = _size(path.__boundbox__, option)
+      boundbox = _size(boundbox, option)
 
       const d = '`m 0,0 m ${size.side},0 H ${size.side + size.contentWidth} l ${size.side} ${size.side} l ${-size.side} ${size.side} H ${size.side} l ${-size.side} ${-size.side} l ${size.side} ${-size.side} z`'
       const _dfunc = new Function('size', 'return ' + d)
-      $elem.attr('d', _dfunc(path.__boundbox__))
+      $elem.attr('d', _dfunc(boundbox))
 
       option.stroke && $elem.attr('stroke', option.stroke)
       option.fill && $elem.attr('fill', option.fill)
@@ -749,10 +754,12 @@ const ShapeUtils = {
         opt.width = checkParameter(opt.width, yuchg.isNumber)
         opt.height = checkParameter(opt.height, yuchg.isNumber)
 
-        this.__boundbox__ = _size(this.__boundbox__, opt)
+        boundbox = _size(boundbox, opt)
         const $this = $(this)
-        $this.attr('d', _dfunc(this.__boundbox__))
+        $this.attr('d', _dfunc(boundbox))
+        this.__boundbox__ = boundbox
       })
+      path.__boundbox__ = boundbox
       return path
     },
     /*
