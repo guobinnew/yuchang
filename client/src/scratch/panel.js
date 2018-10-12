@@ -21,21 +21,6 @@ function acquireCategoryContext(category) {
 }
 
 /**
- * 查找类目上下文
- * argument: string 参数类型ID
- */
-function acquireArgumentContext(argument) {
-  if (BlockDefs.args) {
-    for (let v of BlockDefs.args.values()) {
-      if (v.id === argument) {
-        return v
-      }
-    }
-  }
-  return null
-}
-
-/**
  * 编辑面板，提供可视化编辑UI
  */
 class Panel {
@@ -360,14 +345,6 @@ class Panel {
       val.blocks = []
     }
 
-    // 先注册参数对象（后面注册Block需要用到）
-    if (yuchg.isObject(args)) {
-      for (let def of args.members.values()) {
-        def.type = 'argument'
-        this.registerBlock(def)
-      }  
-    }
-
     // 注册Block
     for (let [type, val] of Object.entries(defs)) {
       for (let def of val.members.values()) {
@@ -470,15 +447,13 @@ class Panel {
           $.each(val.blocks, function (index, block) {
             let proto = registries[block]
             if (proto && proto.prototypeElement) {
+              // 仅克隆DOM（并非创建实例）
               let $elem = $(proto.prototypeElement).clone(true)
-             
-              $elem.attr('data-id', block)
               $elem.addClass('ycBlockFlyout')
               $flyoutcanvas.append($elem)
 
                // 获取包围盒大小
               let bbox = $elem[0].getBBox()
-              logger.debug('FLYOUT=====', bbox)
               offsety += (-bbox.y)
               $elem.attr('transform', `translate(36, ${offsety})`)
 
@@ -541,11 +516,6 @@ class Panel {
   }
 
   showInputWidget(option) {
-    // <div class="ycBlockWidgetDiv fieldTextInput" style="display: block; 
-    // direction: ltr; top: 224.395px; width: 41px; height: 33px; transform: scale(1.1327); 
-    // margin-left: 0px; border-radius: 16.5px; border-color: rgb(204, 153, 0); left: 691.598px; transition: box-shadow 0.25s ease 0s; box-shadow: rgba(255, 255, 255, 0.3) 0px 0px 0px 4px;">
-    // <input class="blocklyHtmlInput" spellcheck="true" value="10" style="border-radius: 16.5px; transition: font-size 0.25s ease 0s; font-size: 12pt;">
-    // </div>
     logger.debug('input')
     if (!option) {
       this.hideInputWidget()

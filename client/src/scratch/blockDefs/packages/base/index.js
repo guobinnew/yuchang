@@ -8,7 +8,7 @@ import controls from './control'
 export default {
   variant: variants,
   marker: markers,
-  action: [],
+  action: actions,
   event: [],
   express: [],
   control: []

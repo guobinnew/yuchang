@@ -37,7 +37,8 @@ export default {
       background: {
         stroke: '#3373CC',
         fill: '#4C97FF',
-        opacity: '1'
+        opacity: '1',
+        highlightFill: '#4280D7'
       }
     }
   },

@@ -5,13 +5,14 @@ import yuchg from '../base'
 import logger from '../logger'
 import ShapeUtils from './shapes'
 import Utils from './utils'
+import Argument from './argus'
 
 // 块实例
 class BlockInstance {
   constructor(proto, state) {
     this.uid = uuidv4() // 唯一标示
     this.__proto = proto // 原型Block对象
-    this.elem = null // DOM根节点
+    this.dom = null // DOM根节点
     this.prev = null // 序列上一个节点（DOM父节点），NULL表示为序列头
     this.next = null // 序列下一个节点（DOM子节点），NULL表示为序列尾
     this.parent = null // 父元素（DOM父节点）
@@ -24,11 +25,12 @@ class BlockInstance {
 
   // 获取对应的DOM根元素
   element() {
-    if (!this.elem) {
+    if (!this.dom) {
       let $clone = $(this.__proto.prototypeElement).clone(true)
-      this.elem = $clone[0]
+      this.dom = $clone[0]
+      this.dom.__inst = this
     }
-    return this.elem
+    return this.dom
   }
 
   // 更新状态
@@ -89,7 +91,7 @@ class BlockInstance {
     if (index >= 0) {
       this.__proto.instances.splice(index, 1)
     }
-    $(this.elem).remove()
+    $(this.dom).remove()
 
     // 通知父对象更新
   }
@@ -103,7 +105,7 @@ Block基类
 */
 class Block {
   constructor(option) {
-    this.instances = [] // 实例列表
+    this.instances = new Map() // 实例Map列表
     this.def = {
       state: { // 允许实例调整的数据
         size: { // 尺寸设置
@@ -133,9 +135,6 @@ class Block {
 
     // 创建原型节点，当创建Block实例时，只需要clone节点即可
     this.prototypeElement = this.createPrototype()
-    if (this.prototypeElement) {
-      $(this.prototypeElement).attr('data-block', this.def.id)
-    }
   }
 
   /**
@@ -196,8 +195,9 @@ class Block {
   createContainer() {
     // 创建顶层group
     const elem = ShapeUtils.base.group()
-    const $elem = $(elem)
+    elem.__proto = this
 
+    const $elem = $(elem)
     const props = ['id', 'shape', 'type', 'category']
     for (let i of props) {
       let v = this.def[i]
@@ -254,13 +254,17 @@ class Block {
   }
 
   adjustBackground(option) {
-
+    // 给顶层path绘制背景
+    const $dom = $(option.dom)
+    // 调整容器大小
+    const $shape = $dom.children('path')
+    let opt = Object.assign({}, option.state.background)
+    $shape.trigger(ShapeUtils.events.background, [opt])
   }
 
   adjustTransform(option) {
     const $dom = $(option.dom)
     const state = option.state
-
     $dom.trigger(ShapeUtils.events.position, [{
       translatex: yuchg.isNumber(state.transform.x) ? state.transform.x : 0,
       translatey: yuchg.isNumber(state.transform.y) ? state.transform.y : 0
@@ -272,216 +276,8 @@ class Block {
    */
   instance(state) {
     var inst = new BlockInstance(this, state)
-    this.instances.push(inst)
+    this.instances.set(inst.uid, inst)
     return inst
-  }
-}
-
-/*
-BlockArgument
-*/
-class BlockArgument extends Block {
-  constructor(option) {
-    if (option.shape === 'boolean') {
-      option.display.minContentWidth = 16
-    } else if (option.shape === 'dropdown') {
-      option.display.buttonSize = 12
-    }
-    super(option)
-  }
-
-  createBoolean(parent, option) {
-    let $parent = $(parent)
-    this.def.state.value = this.def.value ? !!this.def.value : false
-    option.contentWidth = 16
-    let shape = ShapeUtils.path.diamondRect(option)
-    $parent.append(shape)
-    return shape
-  }
-
-  createNumber(parent, option) {
-    let $parent = $(parent)
-    this.def.state.value = this.def.value ? parseInt(this.def.value) : 0
-    let shape = ShapeUtils.path.roundRect(option)
-    $parent.append(shape)
-
-    let text = ShapeUtils.group.editableText({
-      text: this.def.state.value
-    })
-    $parent.append(text)
-    return shape
-  }
-
-  createDropDown(parent, option) {
-    let $parent = $(parent)
-    this.def.state.currentIndex = this.def.currentIndex ? parseInt(this.def.currentIndex) : -1
-    this.def.state.values = this.def.values
-
-    const index = this.def.state.currentIndex
-    let values = this.def.values
-    let shape = ShapeUtils.path.roundRect(option)
-    $parent.append(shape)
-
-    let text = values[index] ? values[index].name : ''
-    $parent.append(ShapeUtils.base.text({
-      text: text
-    }))
-
-    $parent.append(ShapeUtils.base.image({
-      width: this.def.display.buttonSize,
-      height: this.def.display.buttonSize,
-      url: '/img/dropdown-arrow.be850da5.svg'
-    }))
-    return shape
-  }
-
-  createElement() {
-    let elem = ShapeUtils.base.arguGroup(this.def)
-    let $elem = $(elem)
-    let opt = {
-      contentWidth: this.def.state.width,
-      height: this.def.state.height
-    }
-    Object.assign(opt, this.def.background)
-
-    let shape = null
-    if (this.def.shape === 'boolean') {
-      shape = this.createBoolean($elem, opt)
-    } else if (this.def.shape === 'dropdown') {
-      shape = this.createDropDown($elem, opt)
-    } else if (this.def.shape === 'number') {
-      shape = this.createNumber($elem, opt)
-    } else {
-      // 默认类型
-      shape = this.createNumber($elem, opt)
-    }
-
-    // 修改值
-    let that = this
-    $elem.on(ShapeUtils.events.change, function (event, val) {
-      event.stopPropagation()
-
-      let $this = $(this)
-      if (that.def.shape === 'boolean') {
-
-      } else if (that.def.shape === 'dropdown') {
-
-      } else if (that.def.shape === 'number') {
-
-      } else {
-        // 默认类型
-        let $text = $this.find('text')
-        $text.trigger(ShapeUtils.events.change, [val])
-      }
-    })
-
-    this.def.state.width = shape.__boundbox__.width
-    this.def.state.height = shape.__boundbox__.height
-    this.def.state.contentWidth = shape.__boundbox__.contentWidth
-    this.def.state.contentHeight = shape.__boundbox__.contentHeight
-
-    this.adjust({
-      dom: elem,
-      proto: this,
-      state: this.def.state
-    })
-    return elem
-  }
-
-  adjust(option) {
-
-    const $dom = $(option.dom)
-    const def = option.proto.def
-    const padding = option.proto.padding()
-    const buttonSize = def.display.buttonSize
-    // 根据def计算尺寸
-    if (def.shape === 'dropdown') {
-      // 根据文字计算
-      let length = 0
-      for (let item of option.state.values.values()) {
-        length = Math.max(Utils.computeTextLength(item.name), length)
-      }
-      length += buttonSize // 按钮宽度
-      option.state.contentWidth = length < def.display.minContentWidth ? def.display.minContentWidth : length
-      option.state.width = option.state.contentWidth + padding.left + padding.right
-
-      let $shape = $dom.children('path')
-      $shape.trigger(ShapeUtils.events.resize, [{
-        width: option.state.width,
-        height: option.state.height
-      }])
-
-      // 更新背景
-      if (option.state.display) {
-        $shape.trigger(ShapeUtils.events.background, [{
-          fill: option.state.display.fill
-        }])
-      }
-
-      // 更新大小
-      option.state.width = $shape[0].__boundbox__.width
-      option.state.height = $shape[0].__boundbox__.height
-      option.state.contentWidth = $shape[0].__boundbox__.contentWidth
-      option.state.contentHeight = $shape[0].__boundbox__.contentHeight
-
-      // 调整文字位置 
-      let $text = $dom.children('text')
-      // 更新文字
-      let index = option.state.currentIndex ? option.state.currentIndex : 0
-      let textstr = option.state.values[index] ? option.state.values[index].name : ''
-      $text.trigger(ShapeUtils.events.change, [textstr])
-
-      $text.trigger(ShapeUtils.events.positionText, [{
-        x: option.state.height / 2 + (option.state.contentWidth - buttonSize) / 2,
-        translatex: 0,
-        translatey: option.state.height / 2
-      }])
-
-      // 调整按钮位置 
-      let $image = $dom.children('image')
-      $image.trigger(ShapeUtils.events.position, [{
-        translatex: option.state.width - (option.state.height + buttonSize) / 2,
-        translatey: (option.state.height - buttonSize) / 2
-      }])
-    } else {
-      let txt = ''
-      // 根据文字计算长度
-      if (def.shape !== 'boolean') {
-        txt = '' + option.state.value
-      } else {
-        def.display.minContentWidth = 16
-      }
-      let length = Utils.computeTextLength(txt)
-      option.state.contentWidth = length < def.display.minContentWidth ? def.display.minContentWidth : length
-      option.state.width = option.state.contentWidth + padding.left + padding.right
-
-      let $shape = $dom.children('path')
-      $shape.trigger(ShapeUtils.events.resize, [{
-        width: option.state.width,
-        height: option.state.height
-      }])
-
-      // 更新背景
-      if (option.state.display) {
-        $shape.trigger(ShapeUtils.events.background, [{
-          fill: option.state.display.fill
-        }])
-      }
-
-      // 更新大小
-      option.state.width = $shape[0].__boundbox__.width
-      option.state.height = $shape[0].__boundbox__.height
-      option.state.contentWidth = $shape[0].__boundbox__.contentWidth
-      option.state.contentHeight = $shape[0].__boundbox__.contentHeight
-
-      let $text = $dom.children('text')
-      $text.trigger(ShapeUtils.events.positionText, [{
-        x: option.state.width / 2,
-        y: option.state.height / 2,
-        translatex: 0,
-        translatey: option.state.height / 2
-      }])
-    }
   }
 }
 
@@ -522,9 +318,11 @@ class BlockVariant extends Block {
     return p
   }
 
-  createElement() {
-    // 创建顶层容器
-    let elem = this.createContainer()
+  /**
+   * 创建顶层容器
+   */
+  createContainer() {
+    let elem = super.createContainer()
     let $elem = $(elem)
     const state = this.def.state
 
@@ -541,6 +339,14 @@ class BlockVariant extends Block {
       shape = ShapeUtils.path.roundRect(opt)
     }
     $elem.append(shape)
+
+    return elem
+  }
+
+  createElement() {
+    // 创建顶层容器
+    let elem = this.createContainer()
+    let $elem = $(elem)
 
     // 创建text
     $elem.append(ShapeUtils.base.text())
@@ -593,34 +399,36 @@ class BlockVariant extends Block {
 }
 
 class BlockStack extends Block {
-  constructor(def) {
-    def.display.minHeight = 40
-    def.state.height = 40
-    super(def)
+  constructor(option) {
+    option.state = $.extend(true, {
+      size: {
+        minHeight: 40,
+        height: 40
+      }
+    }, option.state)
+    super(option)
   }
 
   createElement() {
     let elem = this.createContainer()
     let $elem = $(elem)
-    this.sections = []
 
-    // 创建Section
-    for (let sec of this.def.sections.values()) {
-      let secblock = Object.assign({}, sec)
-      this.sections.push(secblock)
-      let child = this.createSection(secblock)
-      if (!child) {
-        logger.debug('block' + this.name + 'createSection failed:' + sec)
-        continue
-      }
-      let $child = $(child)
-      // 修改边框颜色
-      if (this.def.background && this.def.background.stroke) {
-        $child.trigger(ShapeUtils.events.background, [{
-          stroke: this.def.background.stroke
-        }])
-      }
-      $elem.append($child)
+    const state = this.def.state
+    if (yuchg.isArray(state.data.sections)) {
+      // 创建Section
+      state.data.sections.forEach((sec, i) => {
+        let child = this.createSection(sec)
+        if (!child) {
+          logger.debug(`Block<${ this.def.id }> createSection failed:`, sec)
+        } else {
+          sec.dom = child
+          sec.dom.__index = i
+          $elem.append(child)
+        }
+      })
+    } else {
+      logger.warn(`Block<${ this.def.id }> has no sections:`, state.data.sections)
+      state.data.sections = []
     }
     return elem
   }
@@ -628,148 +436,141 @@ class BlockStack extends Block {
   // 创建Sections
   createSection(sec) {
     let that = this
+    let elem = null
     if (sec.type === 'argument') {
-      let inst = this.addArgument(sec)
-      let elem = inst.element()
-
-      if (sec.datatype === 'number' || sec.datatype === 'string') {
-
-        $(elem).on('mouseup', function () {
-          let $this = $(this)
-          let $path = $this.children('path')
-          let m = $path[0].getCTM()
-          let bbox = $path[0].getBBox()
-          if (!$this.parent().hasClass('ycBlockFlyout')) {
-            logger.debug('click me')
-            that.def.__panel.showInputWidget({
-              type: 'string',
-              x: Number(m.e),
-              y: Number(m.f),
-              width: bbox.width + 1,
-              height: bbox.height + 1,
-              callback: function (v) {
-                inst.update({
-                  value: v
-                })
-                //$this.trigger(ShapeUtils.events.change, [v])
-              }
-            })
-          }
-        })
-      }
-      return elem
+      elem = Argument.createElement(sec)
     } else if (sec.type === 'text') {
-      sec.elem = ShapeUtils.base.text(sec)
-      return sec.elem
+      elem = ShapeUtils.base.text(sec)
     } else if (sec.type === 'image') {
-      sec.elem = ShapeUtils.group.image(sec)
-      return sec.elem
+      if (!sec.width) {
+        sec.width = 0
+      }
+      if (!sec.height) {
+        sec.height = 0
+      }
+      elem = ShapeUtils.group.image(sec)
+    }
+    return elem
+  }
+
+  adjustBackground(option) {
+    // 修改Section边框
+    const state = option.state
+    for (let sec of state.data.sections) {
+      if (sec.dom) {
+        let $child = $(sec.dom)
+        // 修改边框颜色
+        if (state.background && state.background.stroke) {
+          $child.trigger(ShapeUtils.events.background, [{
+            stroke: state.background.stroke
+          }])
+        }
+      }
     }
   }
 
-  addArgument(sec, parent) {
-    if (!sec || !sec.datatype) {
-      return
+  adjustData(option) {
+    // 修改section内容
+    const state = option.state
+    for (let sec of state.data.sections) {
+      if (sec.type === 'argument' && sec.instance) { // 只修改参数内容
+        let $child = $(sec.instance.element())
+        
+      }
     }
-
-    // 创建Block实例
-    let inst = this.def.__panel.createBlockInstance(sec.datatype, sec.state)
-    if (!inst) {
-      return
-    }
-
-    sec.instance = inst
-    return sec.instance
   }
 
-  adjust(option) {
+  adjustSize(option) {
     const $dom = $(option.dom)
-    const def = option.proto.def
-    const padding = option.proto.padding()
-    const sections = option.proto.sections
+    const padding = this.padding(option)
+    const state = option.state
+    const sections = state.data.sections
 
     // 计算section尺寸
-    let space = def.display.space
+    let space = state.size.space
     let offsetx = padding.left
     let contentHeight = 20
 
     // 先计算宽度和最大高度
     for (let sec of sections.values()) {
       if (sec.type === 'argument' && sec.instance) {
-        offsetx += sec.instance.state.width
-        contentHeight = Math.max(contentHeight, sec.instance.state.height)
-      } else if (sec.type === 'text' && sec.elem) {
-        let l = Utils.computeTextLength(sec.text)
-        offsetx += l
-      } else if (sec.type === 'image' && sec.elem) {
-        let l = sec.width ? sec.width : 24
-        offsetx += l
+        sec.__width = sec.instance.state.size.width
+        contentHeight = Math.max(contentHeight, sec.instance.state.size.height)
+      } else if (sec.type === 'text' && sec.dom) {
+        sec.__width = Utils.computeTextLength(sec.text)
+      } else if (sec.type === 'image' && sec.dom) {
+        sec.__width = sec.width
       }
+      offsetx += sec.__width
       offsetx += space
     }
 
     offsetx -= space
-    option.state.contentWidth = offsetx + padding.right
-    option.state.contentHeight = contentHeight + padding.top + padding.bottom
-
-    // 如果是表达式
-    if (this.def.type === 'express') {
-
-    }
+    state.size.contentWidth = offsetx + padding.right
+    state.size.contentHeight = contentHeight + padding.top + padding.bottom
 
     // 调整容器大小
     let $shape = $dom.children('path')
-    logger.debug('Stack resize =====', option.state)
     $shape.trigger(ShapeUtils.events.resize, [{
-      contentWidth: option.state.contentWidth,
-      contentHeight: option.state.contentHeight
+      contentWidth: state.size.contentWidth,
+      contentHeight: state.size.contentHeight
     }])
 
-    // 更新大小
-    option.state.width = $shape[0].__boundbox__.width
-    option.state.height = $shape[0].__boundbox__.height
-    option.state.contentWidth = $shape[0].__boundbox__.contentWidth
-    option.state.contentHeight = $shape[0].__boundbox__.contentHeight
+    // 更新容器大小
+    state.size.width = $shape[0].__boundbox.width
+    state.size.height = $shape[0].__boundbox.height
+    state.size.contentWidth = $shape[0].__boundbox.contentWidth
+    state.size.contentHeight = $shape[0].__boundbox.contentHeight
 
     offsetx = padding.left
-
-    // 调整位置
-    for (let sec of sections.values()) {
+    // 根据新大小调整位置
+    for (let sec of sections) {
       let $child = null
       if (sec.type === 'argument' && sec.instance) {
         // 根据高度调整文本位置
         sec.instance.update({
           x: offsetx,
-          y: (option.state.height - sec.instance.state.height) / 2
+          y: (state.size.height - sec.instance.state.size.height) / 2 + 2 // 微调
         })
-        offsetx += sec.instance.state.width
-      } else if (sec.type === 'text' && sec.elem) {
-        $child = $(sec.elem)
-        let bbox = sec.elem.getBBox()
+      } else if (sec.type === 'text' && sec.dom) {
+        $child = $(sec.dom)
         // 根据高度调整文本位置
         $child.trigger(ShapeUtils.events.positionText, [{
-          x: bbox.width / 2, // 文字宽度一半
+          x: sec.__width / 2,
           y: 0,
           translatex: offsetx,
-          translatey: option.state.height / 2
+          translatey: state.size.height / 2 + 2 // 中心定位
         }])
-        offsetx += bbox.width
-      } else if (sec.type === 'image' && sec.elem) {
-        $child = $(sec.elem)
-        let l = sec.width ? sec.width : 24
+      } else if (sec.type === 'image' && sec.dom) {
+        $child = $(sec.dom)
         // 根据高度调整文本位置
         $child.trigger(ShapeUtils.events.position, [{
           translatex: offsetx,
-          translatey: (option.state.height - sec.height) / 2
+          translatey: (state.size.height - sec.height) / 2 + 2
         }])
-        offsetx += l
       }
+      offsetx += sec.__width
       offsetx += space
     }
   }
 
-
-
+    /**
+   * 克隆一个对象实例, state为实例的状态变量
+   */
+  instance(state) {
+    var inst = super.instance(state)
+    // 更新Section
+    // 当前inst.state.data.sections中的dom还是指向原型
+    // 需要重新更新dom
+    const sections = inst.state.data.sections
+    let $dom = $(inst.element())
+    $dom.children().each(function() {
+      if (this.__index) {
+        sections[this.__index].dom = this
+      }
+    })
+    return inst
+  }
 }
 
 class BlockExpress extends BlockStack {
@@ -1076,107 +877,29 @@ class BlockControl extends BlockStack {
 }
 
 class BlockAction extends BlockStack {
-  constructor(def) {
-    def.state.contentHeight = 40
-    def.display.minContentHeight = 40
-    super(def)
+  constructor(option) {
+    option.state = $.extend(true, {
+      size: {
+        contentHeight: 40,
+        minContentHeight: 40
+      }
+    }, option.state)
+    super(option)
+  }
+
+  padding(option) {
+    let p = super.padding(option)
+    p.top += 2 // 微调
+    return p
   }
 
   createContainer() {
-    let g = ShapeUtils.base.group(this.def)
-    let opt = Object.assign({}, this.def.background)
+    let g = super.createContainer()
+    let opt = Object.assign({}, this.def.state.background)
     // 缺省外形
     let shape = ShapeUtils.path.slot(opt)
     $(g).append(shape)
-
-    // 更新大小
-    this.def.state.width = shape.__boundbox__.width
-    this.def.state.height = shape.__boundbox__.height
-    this.def.state.contentWidth = shape.__boundbox__.contentWidth
-    this.def.state.contentHeight = shape.__boundbox__.contentHeight
-
     return g
-  }
-
-  adjust(option) {
-    const $dom = $(option.dom)
-    const def = option.proto.def
-    const padding = option.proto.padding()
-    const sections = option.proto.sections
-
-    // 计算section尺寸
-    let space = def.display.space
-    let offsetx = padding.left
-    let contentHeight = 20
-
-    // 先计算宽度和最大高度
-    for (let sec of sections.values()) {
-      if (sec.type === 'argument' && sec.instance) {
-        offsetx += sec.instance.state.width
-        contentHeight = Math.max(contentHeight, sec.instance.state.height)
-      } else if (sec.type === 'text' && sec.elem) {
-        let l = Utils.computeTextLength(sec.text)
-        offsetx += l
-      } else if (sec.type === 'image' && sec.elem) {
-        let l = sec.width ? sec.width : 24
-        offsetx += l
-      }
-      offsetx += space
-    }
-
-    offsetx -= space
-    option.state.contentWidth = offsetx + padding.right
-    option.state.contentHeight = contentHeight + padding.top + padding.bottom
-
-    logger.debug('ACTION ======', option.state)
-    // 调整容器大小
-    let $shape = $dom.children('path')
-    $shape.trigger(ShapeUtils.events.resize, [{
-      contentWidth: option.state.contentWidth,
-      contentHeight: option.state.contentHeight
-    }])
-
-    // 更新大小
-    option.state.width = $shape[0].__boundbox__.width
-    option.state.height = $shape[0].__boundbox__.height
-    option.state.contentWidth = $shape[0].__boundbox__.contentWidth
-    option.state.contentHeight = $shape[0].__boundbox__.contentHeight
-
-    offsetx = padding.left
-
-    // 根据新大小调整位置
-    for (let sec of sections.values()) {
-      let $child = null
-      if (sec.type === 'argument' && sec.instance) {
-        // 根据高度调整文本位置
-        sec.instance.update({
-          x: offsetx,
-          y: (option.state.height - sec.instance.state.height) / 2 + 2 // 微调
-        })
-        offsetx += sec.instance.state.width
-      } else if (sec.type === 'text' && sec.elem) {
-        $child = $(sec.elem)
-        let l = Utils.computeTextLength(sec.text)
-        // 根据高度调整文本位置
-        $child.trigger(ShapeUtils.events.positionText, [{
-          x: l / 2,
-          y: 0,
-          translatex: offsetx,
-          translatey: option.state.height / 2 + 2 // 中心定位
-        }])
-        offsetx += l
-      } else if (sec.type === 'image' && sec.elem) {
-        $child = $(sec.elem)
-        let l = sec.width ? sec.width : 24
-        // 根据高度调整文本位置
-        $child.trigger(ShapeUtils.events.position, [{
-          translatex: offsetx,
-          translatey: (option.state.height - sec.height) / 2 + 2
-        }])
-        offsetx += l
-      }
-      offsetx += space
-    }
   }
 }
 
@@ -1187,17 +910,11 @@ class BlockEvent extends BlockAction {
 
   createContainer() {
     let g = ShapeUtils.base.group(this.def)
-    let opt = Object.assign({}, this.def.background)
+    let opt = Object.assign({}, this.def.state.background)
 
     // 缺省外形
     let shape = ShapeUtils.path.cap(opt)
     $(g).append(shape)
-
-    // 更新大小
-    this.def.state.width = shape.__boundbox__.width
-    this.def.state.height = shape.__boundbox__.height
-    this.def.state.contentWidth = shape.__boundbox__.contentWidth
-    this.def.state.contentHeight = shape.__boundbox__.contentHeight
 
     return g
   }
@@ -1226,8 +943,8 @@ const Blocks = {
       proto = new BlockExpress(option)
     } else if (option.type === 'control') {
       proto = new BlockControl(option)
-    } else if (option.type === 'argument') {
-      proto = new BlockArgument(option)
+    } else {
+      logger.warn(`createPrototype failed: unkown type -- ${option.type}`)
     }
     return proto
   }

@@ -16,6 +16,13 @@ export default [
             text: '移动'
           },
           {
+            type: 'argument',
+            datatype: 'number',
+            data: {
+              value: 1
+            }
+          },
+          {
             type: 'text',
             text: '步'
           }
