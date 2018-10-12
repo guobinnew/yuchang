@@ -28,8 +28,10 @@ export default {
       name: '布尔值',
       shape: 'boolean',
       category: 'argument',
-      background: {
-        fill: '#389438'
+      state: {
+        background: {
+          fill: '#389438'
+        }
       },
       exports: {
         json: function (elem) {
@@ -42,13 +44,17 @@ export default {
       name: '枚举值',
       shape: 'dropdown',
       category: 'argument',
-      background: {
-        fill: '#389438'
-      },
-      button: {
-        url: '/img/dropdown-arrow.be850da5.svg',
-        width: 12,
-        height: 12
+      state: {
+        background: {
+          fill: '#389438'
+        },
+        data: {
+          button: {
+            url: '/img/dropdown-arrow.be850da5.svg',
+            width: 12,
+            height: 12
+          }
+        }
       },
       values: [],
       exports: {

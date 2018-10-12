@@ -944,21 +944,11 @@ const ShapeUtils = {
     group: function (option) {
       let g = document.createElementNS(ycSvgNS, 'g')
       let $elem = $(g)
-      option.type && $elem.attr('data-type', option.type)
-      option.shape && $elem.attr('data-shape', option.shape)
-      option.category && $elem.attr('data-category', option.category)
-
-      if (option.draggable === true) {
-        $elem.addClass('ycBlockDraggable')
-      }
-      $elem.addClass((option.classes ? (' ' + option.classes) : ''))
-
       // 绑定事件
       const bindEvents = [ycEvents.position]
       for (let evt of bindEvents.values()) {
         $elem.on(evt, ycEventFunctions[evt])
       }
-
       return g
     },
     /*

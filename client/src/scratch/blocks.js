@@ -132,7 +132,7 @@ class Block {
     $.extend(true, this.def, option)
 
     // 创建原型节点，当创建Block实例时，只需要clone节点即可
-    this.prototypeElement = this.createElement()
+    this.prototypeElement = this.createPrototype()
     if (this.prototypeElement) {
       $(this.prototypeElement).attr('data-block', this.def.id)
     }
@@ -170,9 +170,49 @@ class Block {
     return p
   }
 
-  // 创建DOM对象原型
+  /**
+   * 创建原型
+   */
+  createPrototype() {
+    const elem = this.createElement()
+    this.adjust({
+      dom: elem,
+      def: this.def,
+      state: this.def.state
+    })
+    return elem
+  }
+
+  /**
+   * 创建DOM对象原型
+   */
   createElement() {
-    return null
+    return this.createContainer()
+  }
+
+  /**
+   * 创建顶层容器
+   */
+  createContainer() {
+    // 创建顶层group
+    const elem = ShapeUtils.base.group()
+    const $elem = $(elem)
+
+    const props = ['id', 'shape', 'type', 'category']
+    for (let i of props) {
+      let v = this.def[i]
+      if (!yuchg.isString(v)) {
+        logger.warn(`create Block: ${i} is not string --`, v)
+      } else {
+        $elem.attr('data-' + i, v)
+      }
+    }
+
+    if (this.def.draggable === true) {
+      $elem.addClass('ycBlockDraggable')
+    }
+
+    return elem
   }
 
   /**
@@ -227,16 +267,11 @@ class Block {
     }])
   }
 
-  // 克隆一个对象实例, state为状态变量 
-  /*
-  {
-     x: // X坐标
-     y: // Y坐标
-  }
+  /**
+   * 克隆一个对象实例, state为实例的状态变量
    */
   instance(state) {
-    let s = Object.assign({}, this.def.state, state) // 拷贝当前的state
-    var inst = new BlockInstance(this, s)
+    var inst = new BlockInstance(this, state)
     this.instances.push(inst)
     return inst
   }
@@ -455,30 +490,24 @@ class BlockMarker extends Block {
     super(option)
   }
 
-  createElement() {
-    let elem = ShapeUtils.base.group(this.def)
+  createContainer() {
+    let elem = super.createContainer()
     let $elem = $(elem)
     if (this.def.id === 'insertmarker') {
       $elem.addClass('ycBlockInsertionMarker')
     }
-    $elem.append(ShapeUtils.path.marker(this.def.background))
-    this.adjust({
-      dom: elem,
-      def: this,
-      state: this.def.state
-    })
     return elem
   }
 }
 
 class BlockVariant extends Block {
   constructor(option) {
-    option.state = $.extend(true, option.state, {
+    option.state = $.extend(true, {
       size: {
         minHeight: 40,
         height: 40
       }
-    })
+    }, option.state)
     super(option)
   }
 
@@ -489,18 +518,21 @@ class BlockVariant extends Block {
       if (yuchg.isNull(state.size.padding)) {
         p.left = p.right = state.size.height / 2 // 默认取高度一半
       }
-      logger.debug('PADDING====', state, yuchg.isNull(state.size.padding), p)
     }
     return p
   }
 
   createElement() {
-    let elem = ShapeUtils.base.group(this.def)
+    // 创建顶层容器
+    let elem = this.createContainer()
     let $elem = $(elem)
+    const state = this.def.state
+
+    // 创建shape
     let opt = {
-      height: this.def.state.height
+      height: state.size.height
     }
-    $.extend(opt, this.def.background)
+    $.extend(opt, state.background)
     let shape = null
     if (this.def.shape === 'boolean') { // 布尔类型
       shape = ShapeUtils.path.diamondRect(opt)
@@ -510,22 +542,9 @@ class BlockVariant extends Block {
     }
     $elem.append(shape)
 
-    // 更新大小
-    const state = this.def.state
-    state.width = shape.__boundbox.width
-    state.height = shape.__boundbox.height
-    state.contentWidth = shape.__boundbox.contentWidth
-    state.contentHeight = shape.__boundbox.contentHeight
+    // 创建text
+    $elem.append(ShapeUtils.base.text())
 
-    $elem.append(ShapeUtils.base.text({
-      text: state.data.text
-    }))
-
-    this.adjust({
-      dom: elem,
-      def: this.def,
-      state: state
-    })
     return elem
   }
 
@@ -584,6 +603,7 @@ class BlockStack extends Block {
     let elem = this.createContainer()
     let $elem = $(elem)
     this.sections = []
+
     // 创建Section
     for (let sec of this.def.sections.values()) {
       let secblock = Object.assign({}, sec)
@@ -602,13 +622,6 @@ class BlockStack extends Block {
       }
       $elem.append($child)
     }
-
-    this.adjust({
-      dom: elem,
-      proto: this,
-      state: this.def.state
-    })
-
     return elem
   }
 
@@ -755,9 +768,7 @@ class BlockStack extends Block {
     }
   }
 
-  createContainer() {
-    return null
-  }
+
 
 }
 

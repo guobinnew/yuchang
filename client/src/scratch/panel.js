@@ -342,6 +342,7 @@ class Panel {
   }
 
   setOption(option) {
+    // 清空之前的定义
     this.option.blocks.defs = null
     // 合并
     $.extend(true, this.option, option)
@@ -408,21 +409,22 @@ class Panel {
   }
 
   initCategoryToolbox() {
-    var categories = this.option.blocks.categories
-    var dom = this.dom
-    var registries = this.registries
+    const categories = this.option.blocks.categories
+    const registries = this.registries
     let zoom = this.flyoutZoomFactor
     let that = this
 
     function createMenu(key, offset) {
-      var cate = categories[key]
+      let cate = categories[key]
+     
       if (!cate) {
         logger.debug('category can not found: ' + key)
         return
       }
+      let state = cate.state
       var $menurow = $('<div class="ycBlockCategoryMenuRow"></div>')
       var $menuitem = $(`<div class="ycBlockCategoryMenuItem" data-id="${ key }"></div>`)
-      $menuitem.append($(`<div class="ycBlockCategoryItemBubble" style="background-color: ${ cate.background.fill }; border-color: ${ cate.background.stroke };"></div>`))
+      $menuitem.append($(`<div class="ycBlockCategoryItemBubble" style="background-color: ${ state.background.fill }; border-color: ${ state.background.stroke };"></div>`))
       $menuitem.append($(`<div class="ycBlockCategoryMenuItemLabel">${ cate.name }</div>`))
       $menurow.append($menuitem)
 
@@ -440,8 +442,8 @@ class Panel {
     let padding = 12
     let offsety = padding
     let toolboxspace = 64
-    let $menu = $(dom.menu)
-    let $flyoutcanvas = $(dom.flyoutcanvas)
+    let $menu = $(this.dom.menu)
+    let $flyoutcanvas = $(this.dom.flyoutcanvas)
     $.each(categories, function (key, val) {
       if (!val.display || val.display !== 'none') {
         // 创建菜单
@@ -662,11 +664,11 @@ class Panel {
 
     // 获取默认类目信息
     let cate = acquireCategoryContext(def.category)
-    if (cate && cate.background) {
-      if (!def.background) {
-        def.background = {}
+    if (cate && cate.state) {
+      if (!def.state) {
+        def.state = {}
       }
-      Object.assign(def.background, cate.background)
+      def.state = $.extend(true, def.state, cate.state)
     }
 
     registries[def.id] = Blocks.createPrototype(Object.assign({
