@@ -121,7 +121,7 @@ class Panel {
       } else if (that.selected) {
         let $selected = $(that.selected)
         // 如果Block被选中（点击）并且没有拖动
-        if ( $selected.hasClass('ycBlockSelected') && !$selected.hasClass('ycBlockDragging')) {
+        if ($selected.hasClass('ycBlockSelected') && !$selected.hasClass('ycBlockDragging')) {
           // 插入占位
           var $marker = $(that.marker.element())
           $marker.insertAfter($selected)
@@ -154,7 +154,13 @@ class Panel {
             // 更新变换
             let dm = $(that.dom.dragsurface).css('transform').replace(/[^0-9\-,]/g, '').split(',')
             let m = that.selected.getCTM()
-            $selected.attr('transform', 'translate(' + (Number(dm[4]) + that.grapPoint.x) / Number(m.a) + ',' + (Number(dm[5]) + that.grapPoint.y) / Number(m.d) + ')')
+
+            that.selected.__instance.update({
+              transform: {
+                x: (Number(dm[4]) + that.grapPoint.x) / Number(m.a),
+                y: (Number(dm[5]) + that.grapPoint.y) / Number(m.d)
+              }
+            })
           }
           $marker.remove()
           $(that.dom.dragsurface).css('display', 'none;')
@@ -393,7 +399,7 @@ class Panel {
 
     function createMenu(key, offset) {
       let cate = categories[key]
-     
+
       if (!cate) {
         logger.debug('category can not found: ' + key)
         return
@@ -452,7 +458,7 @@ class Panel {
               $elem.addClass('ycBlockFlyout')
               $flyoutcanvas.append($elem)
 
-               // 获取包围盒大小
+              // 获取包围盒大小
               let bbox = $elem[0].getBBox()
               offsety += (-bbox.y)
               $elem.attr('transform', `translate(36, ${offsety})`)
@@ -527,28 +533,41 @@ class Panel {
 
     let that = this
     let $input = null
-    if (option.type === 'string') {
-      $parent.addClass('fieldTextInput')
-      $parent.attr('style', 'direction: ltr; margin-left: 0px; border-radius: 16.5px; border-color: rgb(204, 153, 0); transition: box-shadow 0.25s ease 0s; box-shadow: rgba(255, 255, 255, 0.3) 0px 0px 0px 4px;')
-      $parent.css('direction', 'ltr')
+    let dom = option.dom
 
-      $parent.css('top', option.y)
-      $parent.css('left', option.x)
-      $parent.css('width', option.width)
-      $parent.css('height', option.height)
+    $parent.addClass('fieldTextInput')
+    $parent.attr('style', 'direction: ltr; margin-left: 0px; border-radius: 16.5px; border-color: rgb(204, 153, 0); transition: box-shadow 0.25s ease 0s; box-shadow: rgba(255, 255, 255, 0.3) 0px 0px 0px 4px;')
+    $parent.css('direction', 'ltr')
 
-      $input = $('<input class="ycBlockHtmlInput" spellcheck="true" value="">')
-      $input.val(10)
+    $parent.css('top', option.y)
+    $parent.css('left', option.x)
+    $parent.css('width', option.width)
+    $parent.css('height', option.height)
 
-      let callback = option.callback
-      $input.on('blur', function () {
-        let newValue = $(this).val()
-        callback && callback(newValue)
-        that.hideInputWidget()
-      })
-      $parent.append($input)
-      $input.focus()
-    }
+    $input = $(`<input class="ycBlockHtmlInput" spellcheck="true" value="">`)
+    $input.attr('type', 'text')
+    $input.val(option.value)
+
+    $input.on('input', function () {
+      let newValue = $(this).val()
+      if (option.type === 'number') {
+        newValue = newValue.replace(/[^\d]/g, '')
+      }
+      $(this).val(newValue)
+      // 动态刷新大小
+      callback && callback(newValue)
+      // 调整控件大小
+      logger.debug('@@@@@@@@@', newValue, Utils.computeTextLength(newValue))
+      $parent.css('width', dom.__section.data.size.width)
+    })
+    let callback = option.callback
+    $input.on('blur', function () {
+      let newValue = $(this).val()
+      callback && callback(newValue)
+      that.hideInputWidget()
+    })
+    $parent.append($input)
+    $input.focus()
 
     $parent.css('display', 'block')
     $input.focus()
@@ -623,8 +642,8 @@ class Panel {
   }
 
   /**
- * 注册Block
- */
+   * 注册Block
+   */
   registerBlock(def, list) {
     let registries = this.registries
     // 提示重复
@@ -659,8 +678,8 @@ class Panel {
   }
 
   /**
- * 检查Block是否注册
- */
+   * 检查Block是否注册
+   */
   hasRegistered(type) {
     if (this.registries.hasOwnProperty(type) && this.registries[type]) {
       return true

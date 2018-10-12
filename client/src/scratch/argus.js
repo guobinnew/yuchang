@@ -66,6 +66,21 @@ class Argument {
     this.section = option
   }
 
+  /**
+   * 计算文字长度
+   */
+  textWidth(text) {
+    const $parent = $(this.section.dom.__panel.dom.canvas)
+    let t = ShapeUtils.base.text({
+      text: text
+    })
+    $(t).css('visibility', 'hidden')
+    $parent.append(t)
+    let w = t.getComputedTextLength()
+    t.remove()
+    return w
+  }
+
   static argument(section) {
     if (section.type !== 'argument') {
       logger.warn(`Argument wrapper failed: invalid param --`, section)
@@ -210,7 +225,7 @@ class ArgumentText extends Argument {
 
     // 根据文字计算长度
     let padding = data.size.height / 2
-    let length = Utils.computeTextLength('' + data.value)
+    let length = this.textWidth('' + data.value)
     data.size.width = Math.max(length + padding * 2, data.size.minWidth)
 
     // 调整尺寸
@@ -264,7 +279,7 @@ class ArgumentNumber extends Argument {
 
     // 根据文字计算长度
     let padding = data.size.height / 2
-    let length = Utils.computeTextLength('' + data.value)
+    let length = this.textWidth('' + data.value)
     data.size.width = Math.max(length + padding * 2, data.size.minWidth)
 
     // 调整尺寸
@@ -370,7 +385,7 @@ class ArgumentEnum extends Argument {
     let length = 0
     let padding = data.size.height / 2
     for (let item of option.state.data.values) {
-      length = Math.max(Utils.computeTextLength(item.name), length)
+      length = Math.max(this.textWidth('' + item.name), length)
     }
     length += data.button.width // 按钮宽度
     data.size.width = Math.max(length + padding * 2, data.size.minWidth)

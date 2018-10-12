@@ -63,6 +63,7 @@ class BlockInstance {
       }
     }
 
+    logger.debug('####################', this.state)
     // 根据新状态重新渲染
     this.__proto.adjust({
       dom: this.element(),
@@ -135,6 +136,21 @@ class Block {
 
     // 创建原型节点，当创建Block实例时，只需要clone节点即可
     this.prototypeElement = this.createPrototype()
+  }
+
+   /**
+   * 计算文字长度
+   */
+  textWidth(text) {
+    const $parent = $(this.def.__panel.dom.canvas)
+    let t = ShapeUtils.base.text({
+      text: text
+    })
+    $(t).css('visibility', 'hidden')
+    $parent.append(t)
+    let w = t.getComputedTextLength()
+    t.remove()
+    return w
   }
 
   /**
@@ -276,6 +292,9 @@ class Block {
    */
   instance(state) {
     var inst = new BlockInstance(this, state)
+    const dom = inst.element()
+    dom.__instance = inst
+    dom.__panel = inst.__proto.def.__panel
     this.instances.set(inst.uid, inst)
     return inst
   }
@@ -422,7 +441,7 @@ class BlockStack extends Block {
           logger.debug(`Block<${ this.def.id }> createSection failed:`, sec)
         } else {
           sec.dom = child
-          sec.dom.__index = i
+          $(sec.dom).attr('data-index', i)
           $elem.append(child)
         }
       })
@@ -439,6 +458,40 @@ class BlockStack extends Block {
     let elem = null
     if (sec.type === 'argument') {
       elem = Argument.createElement(sec)
+
+      if (elem) {
+        let $elem = $(elem)
+        $elem.__panel = this.def.__panel
+
+        // 绑定事件
+        if (sec.datatype === 'number' || sec.datatype === 'string') {
+          $elem.on('mouseup', function() {
+            let $this = $(this)
+            let $path = $this.children('path')
+            let $text = $this.find('.ycBlockEditableText>text')
+            
+            let m = $path[0].getCTM()
+            let bbox = $path[0].getBBox()
+            if (!$this.parent().hasClass('ycBlockFlyout')) {
+              // 显示输入框
+              this.__panel.showInputWidget({
+                dom: this,
+                type: this.__section.datatype,
+                x: Number(m.e),
+                y: Number(m.f),
+                width: bbox.width + 1,
+                height: bbox.height + 1,
+                value: $text.html(),
+                callback: (v) => {
+                  this.__section.data.value = v
+                  // 更新整个Block
+                  this.__instance.update(null, true)
+                }
+              })
+            }
+          })
+        }
+      }
     } else if (sec.type === 'text') {
       elem = ShapeUtils.base.text(sec)
     } else if (sec.type === 'image') {
@@ -474,6 +527,7 @@ class BlockStack extends Block {
     const state = option.state
     for (let sec of state.data.sections) {
       if (sec.type === 'argument' && sec.dom) { // 只修改参数内容
+        sec.dom.__panel = option.def.__panel
         let argu = Argument.argument(sec)
         argu.adjust()
       }
@@ -556,15 +610,20 @@ class BlockStack extends Block {
    * 克隆一个对象实例, state为实例的状态变量
    */
   instance(state) {
-    var inst = super.instance(state)
+    const inst = super.instance(state)
     // 更新Section
     // 当前inst.state.data.sections中的dom还是指向原型
     // 需要重新更新dom
     const sections = inst.state.data.sections
-    let $dom = $(inst.element())
+    const $dom = $(inst.element())
     $dom.children().each(function() {
-      if (this.__index) {
-        sections[this.__index].dom = this
+      const index = $(this).attr('data-index')
+      if (index) {
+        const section = sections[index]
+        section.dom = this
+        section.dom.__panel = inst.__proto.def.__panel
+        section.dom.__section = sections[index]
+        section.dom.__instance = inst
       }
     })
     return inst
