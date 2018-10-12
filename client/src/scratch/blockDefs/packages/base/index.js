@@ -8,8 +8,8 @@ import controls from './control'
 export default {
   variant: variants,
   marker: markers,
-  action: actions,
-  event: events,
-  express: exps,
-  control: controls
+  action: [],
+  event: [],
+  express: [],
+  control: []
 }

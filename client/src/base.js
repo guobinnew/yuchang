@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-var yuchg = yuchg || {}
+let yuchg = {}
 
 yuchg.global = this // 大多情况为window
 
@@ -48,12 +48,12 @@ yuchg.isNumber = function (val) {
 /**
  * 根据字符串名字获取对象
  */
-yuchg.getObjectByName = function (name, opt_obj) {
+yuchg.getObjectByName = function (name, optObj) {
   let parts = name.split('.')
-  let cur = opt_obj || yuchg.global
+  let cur = optObj || yuchg.global
   for (let i = 0; i < parts.length; i++) {
     cur = cur[parts[i]]
-    if (!goog.isDefAndNotNull(cur)) {
+    if (!yuchg.isDefAndNotNull(cur)) {
       return null
     }
   }
@@ -87,7 +87,7 @@ yuchg.abstractMethod = function () {
  */
 yuchg.typeOf = function (value) {
   let s = typeof value
-  if (s == 'object') {
+  if (s === 'object') {
     if (value) {
       if (value instanceof Array) {
         return 'array'
@@ -96,21 +96,22 @@ yuchg.typeOf = function (value) {
       }
 
       let className = Object.prototype.toString.call(/** @type {!Object} */(value))
-      if (className == '[object Window]') {
+      if (className === '[object Window]') {
         return 'object'
       }
 
-      if ((className == '[object Array]' ||
-          typeof value.length === 'number' &&
+      // 判断是否为数组类型
+      if (className === '[object Array]' ||
+          (typeof value.length === 'number' &&
           typeof value.splice !== 'undefined' &&
           typeof value.propertyIsEnumerable !== 'undefined' &&
-          !value.propertyIsEnumerable('splice')
-      )) {
+          !value.propertyIsEnumerable('splice'))) {
         return 'array'
       }
 
-      if ((className == '[object Function]' ||
-        typeof value.call !== 'undefined' &&
+      // 判断是否为函数类型
+      if (className === '[object Function]' ||
+        (typeof value.call !== 'undefined' &&
         typeof value.propertyIsEnumerable !== 'undefined' &&
         !value.propertyIsEnumerable('call'))) {
         return 'function'
@@ -118,7 +119,7 @@ yuchg.typeOf = function (value) {
     } else {
       return 'null'
     }
-  } else if (s == 'function' && typeof value.call === 'undefined') {
+  } else if (s === 'function' && typeof value.call === 'undefined') {
     return 'object'
   }
   return s
@@ -128,7 +129,7 @@ yuchg.typeOf = function (value) {
  * 判断是否为空
  */
 yuchg.isNull = function (val) {
-  return val === null
+  return val == null
 }
 
 /**
@@ -142,7 +143,7 @@ yuchg.isDefAndNotNull = function (val) {
  * 判断是否为数组
  */
 yuchg.isArray = function (val) {
-  return yuchg.typeOf(val) == 'array'
+  return yuchg.typeOf(val) === 'array'
 }
 
 /**
@@ -150,14 +151,14 @@ yuchg.isArray = function (val) {
  */
 yuchg.isArrayLike = function (val) {
   var type = yuchg.typeOf(val)
-  return type == 'array' || type == 'object' && typeof val.length === 'number'
+  return type === 'array' || (type === 'object' && typeof val.length === 'number')
 }
 
 /**
  * 判断是否为函数
  */
 yuchg.isFunction = function (val) {
-  return yuchg.typeOf(val) == 'function'
+  return yuchg.typeOf(val) === 'function'
 }
 
 /**
@@ -165,19 +166,19 @@ yuchg.isFunction = function (val) {
  */
 yuchg.isObject = function (val) {
   var type = typeof val
-  return type == 'object' && val != null || type == 'function'
+  return (type === 'object' && val != null) || type === 'function'
 }
 
 /**
  * 克隆对象（深度递归）
  */
 yuchg.cloneObject = function (obj) {
-  var type = goog.typeOf(obj)
-  if (type == 'object' || type == 'array') {
+  var type = yuchg.typeOf(obj)
+  if (type === 'object' || type === 'array') {
     if (obj.clone) {
       return obj.clone()
     }
-    var clone = type == 'array' ? [] : {}
+    var clone = type === 'array' ? [] : {}
     for (var key in obj) {
       clone[key] = yuchg.cloneObject(obj[key])
     }
@@ -191,16 +192,16 @@ yuchg.cloneObject = function (obj) {
  */
 yuchg.inherits = function (childCtor, parentCtor) {
   /** @constructor */
-  function tempCtor () {
+  function TempCtor () {
   }
 
-  tempCtor.prototype = parentCtor.prototype
+  TempCtor.prototype = parentCtor.prototype
   childCtor.superClass_ = parentCtor.prototype
-  childCtor.prototype = new tempCtor()
+  childCtor.prototype = new TempCtor()
   /** @override */
   childCtor.prototype.constructor = childCtor
 
-  childCtor.base = function (me, methodName, var_args) {
+  childCtor.base = function (me, methodName, varArgs) {
     var args = new Array(arguments.length - 2)
     for (var i = 2; i < arguments.length; i++) {
       args[i - 2] = arguments[i]
@@ -216,6 +217,5 @@ yuchg.strByteLength = function (str) {
   var arr = str.match(/[^\x00-\xff]/ig)
   return str.length + (arr == null ? 0 : arr.length)
 }
-
 
 export default yuchg

@@ -7,6 +7,6 @@ import chinese from './packages/chinese'
 
 export default {
   categories: categories,
-  args: args,
-  packages: [base, chinese]
+  args: null,
+  packages: [base]
 }

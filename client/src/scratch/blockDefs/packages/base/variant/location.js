@@ -5,7 +5,11 @@ export default [
     shape: 'round',
     category: 'sensing',
     draggable: true,
-    text: 'X坐标',
+    state: {
+      data: {
+        text: 'X坐标'
+      }
+    },
     exports: {
       json: function (elem) {
         return {}
@@ -18,7 +22,11 @@ export default [
     shape: 'round',
     category: 'sensing',
     draggable: true,
-    text: 'Y坐标',
+    state: {
+      data: {
+        text: 'Y坐标'
+      }
+    },
     exports: {
       json: function (elem) {
         return {}
@@ -31,7 +39,11 @@ export default [
     shape: 'boolean',
     category: 'sensing',
     draggable: true,
-    text: '是否在原点',
+    state: {
+      data: {
+        text: '是否在原点'
+      }
+    },
     exports: {
       json: function (elem) {
         return {}

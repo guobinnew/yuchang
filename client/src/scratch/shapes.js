@@ -273,11 +273,11 @@ const ShapeUtils = {
         boundbox = _size(boundbox, opt)
         const $this = $(this)
         $this.attr('d', _dfunc(boundbox))
-        this.__boundbox__ = boundbox
+        this.__boundbox = boundbox
       })
 
       // 计算大小
-      path.__boundbox__ = boundbox
+      path.__boundbox = boundbox
       return path
     },
 
@@ -378,11 +378,11 @@ const ShapeUtils = {
         boundbox = _size(boundbox, opt)
         const $this = $(this)
         $this.attr('d', _dfunc(boundbox))
-        this.__boundbox__ = boundbox
+        this.__boundbox = boundbox
       })
 
       // 计算大小
-      path.__boundbox__ = boundbox
+      path.__boundbox = boundbox
       return path
     },
     /**
@@ -494,11 +494,11 @@ const ShapeUtils = {
 
         const $this = $(this)
         $this.attr('d', _dfunc(boundbox))
-        this.__boundbox__ = boundbox
+        this.__boundbox = boundbox
       })
 
       // 计算大小
-      path.__boundbox__ = boundbox
+      path.__boundbox = boundbox
       return path
     },
 
@@ -583,15 +583,15 @@ const ShapeUtils = {
         opt.contentWidth = checkParameter(opt.contentWidth, yuchg.isNumber)
         opt.contentHeight = checkParameter(opt.contentHeight, yuchg.isNumber)
 
-        logger.debug('SLOT ===========######1', opt, this.__boundbox__)
+        logger.debug('SLOT ===========######1', opt, this.__boundbox)
         boundbox = _size(boundbox, opt)
-        logger.debug('SLOT ===========######2', opt, this.__boundbox__)
+        logger.debug('SLOT ===========######2', opt, this.__boundbox)
         const $this = $(this)
         $this.attr('d', _dfunc(boundbox))
-        this.__boundbox__ = boundbox
+        this.__boundbox = boundbox
       })
 
-      path.__boundbox__ = boundbox
+      path.__boundbox = boundbox
       return path
     },
 
@@ -672,10 +672,10 @@ const ShapeUtils = {
         boundbox = _size(boundbox, opt)
         const $this = $(this)
         $this.attr('d', _dfunc(boundbox))
-        this.__boundbox__ = boundbox
+        this.__boundbox = boundbox
       })
 
-      path.__boundbox__ = boundbox
+      path.__boundbox = boundbox
       return path
     },
 
@@ -757,9 +757,9 @@ const ShapeUtils = {
         boundbox = _size(boundbox, opt)
         const $this = $(this)
         $this.attr('d', _dfunc(boundbox))
-        this.__boundbox__ = boundbox
+        this.__boundbox = boundbox
       })
-      path.__boundbox__ = boundbox
+      path.__boundbox = boundbox
       return path
     },
     /*

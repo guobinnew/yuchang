@@ -224,8 +224,10 @@ class Panel {
         let newInst = that.addBlock({
           type: proto.def.id,
           state: {
-            x: that.grapPoint.x,
-            y: that.grapPoint.y
+            transform: {
+              x: that.grapPoint.x,
+              y: that.grapPoint.y
+            }
           }
         }, that.dom.dragcanvas)
 
@@ -358,9 +360,11 @@ class Panel {
     }
 
     // 先注册参数对象（后面注册Block需要用到）
-    for (let def of args.members.values()) {
-      def.type = 'argument'
-      this.registerBlock(def)
+    if (yuchg.isObject(args)) {
+      for (let def of args.members.values()) {
+        def.type = 'argument'
+        this.registerBlock(def)
+      }  
     }
 
     // 注册Block
@@ -475,7 +479,7 @@ class Panel {
               logger.debug('FLYOUT=====', bbox)
               offsety += (-bbox.y)
               $elem.attr('transform', `translate(36, ${offsety})`)
-              
+
               offsety += (bbox.height + 16)
 
               // 添加事件
@@ -667,9 +671,7 @@ class Panel {
 
     registries[def.id] = Blocks.createPrototype(Object.assign({
       type: def.type,
-      __panel__: this,
-      display: {},
-      background: {},
+      __panel: this,
       state: {}
     }, def))
     if (!registries[def.id]) {
