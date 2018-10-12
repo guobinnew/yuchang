@@ -97,7 +97,7 @@ class BlockInstance {
   }
 }
 
-const minWidth = 8 // Block头部最小宽度
+const minWidth = 40 // Block头部最小宽度
 const minHeight = 32 // Block头部最小高度
 const minSpace = 4 // Section最小间距
 /*
@@ -473,9 +473,9 @@ class BlockStack extends Block {
     // 修改section内容
     const state = option.state
     for (let sec of state.data.sections) {
-      if (sec.type === 'argument' && sec.instance) { // 只修改参数内容
-        let $child = $(sec.instance.element())
-        
+      if (sec.type === 'argument' && sec.dom) { // 只修改参数内容
+        let argu = Argument.argument(sec)
+        argu.adjust()
       }
     }
   }
@@ -493,9 +493,9 @@ class BlockStack extends Block {
 
     // 先计算宽度和最大高度
     for (let sec of sections.values()) {
-      if (sec.type === 'argument' && sec.instance) {
-        sec.__width = sec.instance.state.size.width
-        contentHeight = Math.max(contentHeight, sec.instance.state.size.height)
+      if (sec.type === 'argument' && sec.dom) {
+        sec.__width = sec.data.size.width
+        contentHeight = Math.max(contentHeight, sec.data.size.height)
       } else if (sec.type === 'text' && sec.dom) {
         sec.__width = Utils.computeTextLength(sec.text)
       } else if (sec.type === 'image' && sec.dom) {
@@ -526,12 +526,10 @@ class BlockStack extends Block {
     // 根据新大小调整位置
     for (let sec of sections) {
       let $child = null
-      if (sec.type === 'argument' && sec.instance) {
+      if (sec.type === 'argument' && sec.dom) {
         // 根据高度调整文本位置
-        sec.instance.update({
-          x: offsetx,
-          y: (state.size.height - sec.instance.state.size.height) / 2 + 2 // 微调
-        })
+        let argu = Argument.argument(sec)
+        argu.translate(offsetx, (state.size.height - sec.data.size.height) / 2 + 2)
       } else if (sec.type === 'text' && sec.dom) {
         $child = $(sec.dom)
         // 根据高度调整文本位置

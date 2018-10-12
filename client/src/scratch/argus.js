@@ -62,7 +62,8 @@ const ArgumentDefs = {
 Argument
 */
 class Argument {
-  constructor(section) {
+  constructor(option) {
+    this.section = option
   }
 
   static argument(section) {
@@ -73,11 +74,11 @@ class Argument {
     if (section.datatype === 'string') {
       return new ArgumentText(section)
     } else if (section.datatype === 'number') {
-      return new ArgumentText(section)
+      return new ArgumentNumber(section)
     } else if (section.datatype === 'boolean') {
-      return new ArgumentText(section)
+      return new ArgumentBool(section)
     } else if (section.datatype === 'enum') {
-      return new ArgumentText(section)
+      return new ArgumentEnum(section)
     } else {
       logger.warn(`Argument wrapper failed: invalid datatype --`, section)
     }
@@ -99,7 +100,7 @@ class Argument {
       }
     }
 
-    let opt = $.extend(true, {}, def.data.background)
+    let opt = $.extend(true, {}, def.data.size, def.data.background)
 
     let shape = null
     if (def.shape === 'round') {
@@ -131,7 +132,14 @@ class Argument {
     def.shape = _def.shape
     def['argument-type'] = def.datatype
     if (yuchg.isObject(_def.data)) {
-      def.data = $.extend(true, _def.data, def.data)
+      def.data = $.extend(true, {
+        size: { // 尺寸设置
+          minWidth: 40, // 最小宽度
+          minHeight: 32,
+          width: 40,
+          height: 32
+        }
+      }, _def.data, def.data)
     }
 
     let elem = null
@@ -146,18 +154,23 @@ class Argument {
     } else {
       logger.warn(`addArgument failed: unkown argument type -- ${def.datatype}`)
     }
+
     return elem
   }
 
-  /**
-   * 获取尺寸
+   /**
+   * 位移
    */
-  size() {
-
+  translate(x, y) {
+    let $dom = $(this.section.dom)
+    $dom.trigger(ShapeUtils.events.position, [{
+      translatex: x,
+      translatey: y
+    }])
   }
 
   /**
-   * 根据state调整布局
+   * 调整布局
    */
   adjust() {
 
@@ -171,7 +184,6 @@ class ArgumentText extends Argument {
 
   static createElement(def) {
     // 获取
-    let opt = $.extend(true, ArgumentDefs['text'])
     let elem = Argument.createContainer(def)
     let $elem = $(elem)
     const state = def.state
@@ -188,59 +200,36 @@ class ArgumentText extends Argument {
     return elem
   }
 
-  createElement() {
-    let elem = this.createContainer()
-    let $elem = $(elem)
-    const state = this.def.state
+  adjust() {
+    const $dom = $(this.section.dom)
+    const data = this.section.data
 
-    if (!yuchg.isString(state.data.value)) {
-      state.data.value = ''
-    }
-
-    let text = ShapeUtils.group.editableText({
-      text: state.data.value
-    })
-    $elem.append(text)
-
-    return elem
-  }
-
-  adjustData(option) {
-    const $dom = $(option.dom)
-    const state = option.state
-
-    let $text = $dom.children('text')
-    $text.trigger(ShapeUtils.events.change, [state.data.value])
-  }
-
-  adjust(option) {
-    const $dom = $(option.dom)
-    const padding = this.padding(option)
-    const state = option.state
+    // 设置文字
+    let $text = $dom.children('.ycBlockEditableText')
+    $text.trigger(ShapeUtils.events.change, [data.value])
 
     // 根据文字计算长度
-    let length = Utils.computeTextLength(state.data.value)
-    state.size.contentWidth = Math.max(length, state.size.minContentWidth)
-    state.size.width = state.size.contentWidth + padding.left + padding.right
+    let padding = data.size.height / 2
+    let length = Utils.computeTextLength('' + data.value)
+    data.size.width = Math.max(length + padding * 2, data.size.minWidth)
 
+    // 调整尺寸
     let $shape = $dom.children('path')
     $shape.trigger(ShapeUtils.events.resize, [{
-      width: state.size.width,
-      height: state.size.height
+      width: data.size.width,
+      height: data.size.height
     }])
 
     // 更新大小
-    state.size.width = $shape[0].__boundbox.width
-    state.size.height = $shape[0].__boundbox.height
-    state.size.contentWidth = $shape[0].__boundbox.contentWidth
-    state.size.contentHeight = $shape[0].__boundbox.contentHeight
-
-    let $text = $dom.children('text')
+    data.size.width = $shape[0].__boundbox.width
+    data.size.height = $shape[0].__boundbox.height
+   
+    // 调整文字位置
     $text.trigger(ShapeUtils.events.positionText, [{
-      x: state.size.width / 2,
+      x: data.size.width / 2,
       y: 0,
       translatex: 0,
-      translatey: state.size.height / 2
+      translatey: data.size.height / 2
     }])
   }
 }
@@ -265,42 +254,36 @@ class ArgumentNumber extends Argument {
     return elem
   }
 
-  adjustData(option) {
-    const $dom = $(option.dom)
-    const state = option.state
+  adjust() {
+    const $dom = $(this.section.dom)
+    const data = this.section.data
 
-    let $text = $dom.children('text')
-    $text.trigger(ShapeUtils.events.change, ['' + state.data.value])
-  }
-
-  adjust(option) {
-    const $dom = $(option.dom)
-    const padding = this.padding(option)
-    const state = option.state
+    // 设置文字
+    let $text = $dom.children('.ycBlockEditableText')
+    $text.trigger(ShapeUtils.events.change, ['' + data.value])
 
     // 根据文字计算长度
-    let length = Utils.computeTextLength('' + state.data.value)
-    state.size.contentWidth = Math.max(length, state.size.minContentWidth)
-    state.size.width = state.size.contentWidth + padding.left + padding.right
+    let padding = data.size.height / 2
+    let length = Utils.computeTextLength('' + data.value)
+    data.size.width = Math.max(length + padding * 2, data.size.minWidth)
 
+    // 调整尺寸
     let $shape = $dom.children('path')
     $shape.trigger(ShapeUtils.events.resize, [{
-      width: state.size.width,
-      height: state.size.height
+      width: data.size.width,
+      height: data.size.height
     }])
 
     // 更新大小
-    state.size.width = $shape[0].__boundbox.width
-    state.size.height = $shape[0].__boundbox.height
-    state.size.contentWidth = $shape[0].__boundbox.contentWidth
-    state.size.contentHeight = $shape[0].__boundbox.contentHeight
+    data.size.width = $shape[0].__boundbox.width
+    data.size.height = $shape[0].__boundbox.height
 
-    let $text = $dom.children('text')
+    // 调整文字位置
     $text.trigger(ShapeUtils.events.positionText, [{
-      x: state.size.width / 2,
+      x: data.size.width / 2,
       y: 0,
       translatex: 0,
-      translatey: state.size.height / 2
+      translatey: data.size.height / 2
     }])
   }
 }
@@ -311,10 +294,9 @@ class ArgumentBool extends Argument {
   }
 
   static createElement(def) {
-    def.state = $.extend(true, {
+    def.data = $.extend(true, {
       size: {
-        minContentWidth: 16,
-        contentWidth: 16
+        minWidth: 16
       }
     }, def.state)
     let elem = Argument.createContainer(def)
@@ -325,21 +307,19 @@ class ArgumentBool extends Argument {
     return elem
   }
 
-  adjust(option) {
-    const $dom = $(option.dom)
-    const state = option.state
+  adjust() {
+    const $dom = $(this.section.dom)
+    const data = this.section.data
 
     let $shape = $dom.children('path')
     $shape.trigger(ShapeUtils.events.resize, [{
-      width: state.size.width,
-      height: state.size.height
+      width: data.size.width,
+      height: data.size.height
     }])
 
     // 更新大小
-    state.size.width = $shape[0].__boundbox.width
-    state.size.height = $shape[0].__boundbox.height
-    state.size.contentWidth = $shape[0].__boundbox.contentWidth
-    state.size.contentHeight = $shape[0].__boundbox.contentHeight
+    data.size.width = $shape[0].__boundbox.width
+    data.size.height = $shape[0].__boundbox.height
   }
 }
 
@@ -383,37 +363,34 @@ class ArgumentEnum extends Argument {
   }
 
   adjust(option) {
-    const $dom = $(option.dom)
-    const padding = this.padding(option)
-    const state = option.state
+    const $dom = $(this.section.dom)
+    const data = this.section.data
 
     // 根据文字计算最大长度
     let length = 0
+    let padding = data.size.height / 2
     for (let item of option.state.data.values) {
       length = Math.max(Utils.computeTextLength(item.name), length)
     }
-    length += state.data.button.width // 按钮宽度
-    state.size.contentWidth = Math.max(length, state.size.minContentWidth)
-    state.size.width = state.size.contentWidth + padding.left + padding.right
+    length += data.button.width // 按钮宽度
+    data.size.width = Math.max(length + padding * 2, data.size.minWidth)
 
     let $shape = $dom.children('path')
     $shape.trigger(ShapeUtils.events.resize, [{
-      width: state.size.width,
-      height: state.size.height
+      width: data.size.width,
+      height: data.size.height
     }])
 
     // 更新大小
-    state.size.width = $shape[0].__boundbox.width
-    state.size.height = $shape[0].__boundbox.height
-    state.size.contentWidth = $shape[0].__boundbox.contentWidth
-    state.size.contentHeight = $shape[0].__boundbox.contentHeight
-
+    data.size.width = $shape[0].__boundbox.width
+    data.size.height = $shape[0].__boundbox.height
+  
     let $text = $dom.children('text')
     $text.trigger(ShapeUtils.events.positionText, [{
-      x: state.size.width / 2,
+      x: data.size.width / 2,
       y: 0,
       translatex: 0,
-      translatey: state.size.height / 2
+      translatey: data.size.height / 2
     }])
   }
 }
