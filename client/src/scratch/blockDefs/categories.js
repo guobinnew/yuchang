@@ -69,5 +69,35 @@ export default {
         opacity: '1'
       }
     }
+  },
+  'presentation': {
+    name: '外观',
+    state: {
+      background: {
+        stroke: '#774DCB',
+        fill: '#9966FF',
+        opacity: '1'
+      }
+    }
+  },
+  'media': {
+    name: '多媒体',
+    state: {
+      background: {
+        stroke: '#BD42BD',
+        fill: '#CF63CF',
+        opacity: '1'
+      }
+    }
+  },
+  'custom': {
+    name: '自定义',
+    state: {
+      background: {
+        stroke: '#FF3355',
+        fill: '#FF6680',
+        opacity: '1'
+      }
+    }
   }
 }
