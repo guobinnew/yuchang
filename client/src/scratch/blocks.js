@@ -193,7 +193,12 @@ class Block {
    * 创建DOM对象原型
    */
   createElement() {
-    return this.createContainer()
+    const container = this.createContainer()
+    const shape = this.createShape()
+    if (shape) {
+      $(container).append(shape)
+    }
+    return container
   }
 
   /**
@@ -220,6 +225,13 @@ class Block {
     }
 
     return elem
+  }
+
+   /**
+   * 创建Shape
+   */
+  createShape() {
+    
   }
 
   /**
@@ -328,14 +340,11 @@ class BlockVariant extends Block {
     return p
   }
 
-  /**
-   * 创建顶层容器
+   /**
+   * 创建Shape
    */
-  createContainer() {
-    let elem = super.createContainer()
-    let $elem = $(elem)
+  createShape() {
     const state = this.def.state
-
     // 创建shape
     let opt = {
       height: state.size.height
@@ -348,14 +357,12 @@ class BlockVariant extends Block {
       // 缺省外形
       shape = ShapeUtils.path.roundRect(opt)
     }
-    $elem.append(shape)
-
-    return elem
+    return shape
   }
 
   createElement() {
     // 创建顶层容器
-    let elem = this.createContainer()
+    let elem = super.createElement()
     let $elem = $(elem)
 
     // 创建text
@@ -420,7 +427,7 @@ class BlockStack extends Block {
   }
 
   createElement() {
-    let elem = this.createContainer()
+    let elem = super.createElement()
     let $elem = $(elem)
 
     const state = this.def.state
@@ -448,6 +455,7 @@ class BlockStack extends Block {
     let that = this
     let elem = null
     if (sec.type === 'argument') {
+      // 如果当前有highlightFill
       elem = Argument.createElement(sec)
 
       if (elem) {
@@ -504,10 +512,16 @@ class BlockStack extends Block {
       if (sec.type === 'argument' && sec.dom) { // 只修改参数内容
         let $child = $(sec.dom)
         // 修改边框颜色
-        if (state.background && state.background.stroke) {
-          $child.trigger(ShapeUtils.events.background, [{
-            stroke: state.background.stroke
-          }])
+        let opt = {}
+        if (state.background) {
+          if (state.background.stroke) {
+            opt.stroke = state.background.stroke
+          }
+
+          if (sec.data.background.chameleon) {
+            opt.fill = state.background.stroke
+          }
+          $child.trigger(ShapeUtils.events.background, [opt])
         }
       }
     }
@@ -527,6 +541,7 @@ class BlockStack extends Block {
 
   adjustSize(option) {
     const $dom = $(option.dom)
+    const def = option.def
     const padding = this.padding(option)
     const state = option.state
     const sections = state.data.sections
@@ -542,31 +557,40 @@ class BlockStack extends Block {
         sec.__width = sec.data.size.width
         contentHeight = Math.max(contentHeight, sec.data.size.height)
       } else if (sec.type === 'text' && sec.dom) {
-        sec.__width = this.textWidth(sec.text) //Utils.computeTextLength(sec.text)
+        sec.__width = this.textWidth(sec.text)
       } else if (sec.type === 'image' && sec.dom) {
         sec.__width = sec.width
       }
       offsetx += sec.__width
       offsetx += space
     }
-
     offsetx -= space
-    state.size.contentWidth = offsetx + padding.right
-    state.size.contentHeight = contentHeight + padding.top + padding.bottom
 
     // 调整容器大小
     let $shape = $dom.children('path')
-    $shape.trigger(ShapeUtils.events.resize, [{
-      contentWidth: state.size.contentWidth,
-      contentHeight: state.size.contentHeight
-    }])
-
+    if (def.shape === 'round' || def.shape === 'diamond') {
+      state.size.width = offsetx + padding.right
+      state.size.height = contentHeight + padding.top + padding.bottom
+      $shape.trigger(ShapeUtils.events.resize, [{
+        width: state.size.width,
+        height: state.size.height
+      }])
+    } else {
+      state.size.contentWidth = offsetx + padding.right
+      state.size.contentHeight = contentHeight + padding.top + padding.bottom
+      $shape.trigger(ShapeUtils.events.resize, [{
+        contentWidth: state.size.contentWidth,
+        contentHeight: state.size.contentHeight
+      }])
+    }
+    
     // 更新容器大小
     state.size.width = $shape[0].__boundbox.width
     state.size.height = $shape[0].__boundbox.height
     state.size.contentWidth = $shape[0].__boundbox.contentWidth
     state.size.contentHeight = $shape[0].__boundbox.contentHeight
 
+    contentHeight = state.size.height - padding.top - padding.bottom
     offsetx = padding.left
     // 根据新大小调整位置
     for (let sec of sections) {
@@ -574,7 +598,7 @@ class BlockStack extends Block {
       if (sec.type === 'argument' && sec.dom) {
         // 根据高度调整文本位置
         let argu = Argument.argument(sec)
-        argu.translate(offsetx, (state.size.height - sec.data.size.height) / 2 + 2)
+        argu.translate(offsetx, (contentHeight - sec.data.size.height) / 2 + padding.top)
       } else if (sec.type === 'text' && sec.dom) {
         $child = $(sec.dom)
         // 根据高度调整文本位置
@@ -582,14 +606,14 @@ class BlockStack extends Block {
           x: sec.__width / 2,
           y: 0,
           translatex: offsetx,
-          translatey: state.size.height / 2 + 2 // 中心定位
+          translatey: contentHeight / 2 + padding.top // 中心定位
         }])
       } else if (sec.type === 'image' && sec.dom) {
         $child = $(sec.dom)
         // 根据高度调整文本位置
         $child.trigger(ShapeUtils.events.position, [{
           translatex: offsetx,
-          translatey: (state.size.height - sec.height) / 2 + 2
+          translatey: (contentHeight - sec.height) / 2 + padding.top
         }])
       }
       offsetx += sec.__width
@@ -626,135 +650,50 @@ class BlockExpress extends BlockStack {
     super(def)
   }
 
-  createContainer() {
-    let g = ShapeUtils.base.group(this.def)
-    let opt = Object.assign({}, this.def.background)
+  /**
+   * 创建Shape
+   */
+  createShape() {
+    let opt = Object.assign({}, this.def.state.background)
     let shape = null
-    if (this.def.shape === 'boolean') { // 布尔类型
+    if (this.def.shape === 'diamond') { // 布尔类型
       shape = ShapeUtils.path.diamondRect(opt)
     } else {
       // 缺省外形
       shape = ShapeUtils.path.roundRect(opt)
     }
-    $(g).append(shape)
-    // 更新大小
-    this.def.state.width = shape.__boundbox__.width
-    this.def.state.height = shape.__boundbox__.height
-    this.def.state.contentWidth = shape.__boundbox__.contentWidth
-    this.def.state.contentHeight = shape.__boundbox__.contentHeight
-
-    return g
+    return shape
   }
 
-  adjust(option) {
-    const $dom = $(option.dom)
-    const def = option.proto.def
-    const padding = option.proto.padding()
-    const sections = option.proto.sections
-
-    // 计算section尺寸
-    let space = def.display.space
-    let offsetx = padding.left
-    let contentHeight = 20
-
-    // 先计算宽度和最大高度
-    for (let sec of sections.values()) {
-      if (sec.type === 'argument' && sec.instance) {
-        offsetx += sec.instance.state.width
-        contentHeight = Math.max(contentHeight, sec.instance.state.height)
-      } else if (sec.type === 'text' && sec.elem) {
-        let l = this.textWidth(sec.text) //Utils.computeTextLength(sec.text)
-        offsetx += l
-      } else if (sec.type === 'image' && sec.elem) {
-        let l = sec.width ? sec.width : 24
-        offsetx += l
-      }
-      offsetx += space
-    }
-
-    offsetx -= space
-    option.state.width = option.state.contentWidth = offsetx + padding.right
-    option.state.height = option.state.contentHeight = contentHeight + padding.top + padding.bottom
-
-    // 调整容器大小
-    let $shape = $dom.children('path')
-    $shape.trigger(ShapeUtils.events.resize, [{
-      width: option.state.width,
-      height: option.state.height
-    }])
-
-    // 更新大小
-    option.state.width = $shape[0].__boundbox__.width
-    option.state.height = $shape[0].__boundbox__.height
-    option.state.contentWidth = $shape[0].__boundbox__.contentWidth
-    option.state.contentHeight = $shape[0].__boundbox__.contentHeight
-
-    offsetx = padding.left
-    // 调整位置
-    for (let sec of sections.values()) {
-      let $child = null
-      if (sec.type === 'argument' && sec.instance) {
-        sec.instance.update({
-          x: offsetx,
-          y: (option.state.height - sec.instance.state.height) / 2
-        })
-        offsetx += sec.instance.state.width
-      } else if (sec.type === 'text' && sec.elem) {
-        $child = $(sec.elem)
-        let l = this.textWidth(sec.text) //Utils.computeTextLength(sec.text)
-        // 根据高度调整文本位置
-        $child.trigger(ShapeUtils.events.positionText, [{
-          x: l / 2, // 文字宽度一半
-          y: 0,
-          translatex: offsetx,
-          translatey: option.state.height / 2
-        }])
-        offsetx += l
-      } else if (sec.type === 'image' && sec.elem) {
-        $child = $(sec.elem)
-        let l = sec.width ? sec.width : 24
-        // 根据高度调整文本位置
-        $child.trigger(ShapeUtils.events.position, [{
-          translatex: offsetx,
-          translatey: (option.state.height - sec.height) / 2
-        }])
-        offsetx += l
-      }
-      offsetx += space
-    }
+  padding(option) {
+    let p = super.padding(option)
+    return p
   }
 }
 
 class BlockControl extends BlockStack {
-  constructor(def) {
-    def.state.contentHeight = 40
-    def.display.minContentHeight = 40
-    super(def)
+  constructor(option) {
+    option.state = $.extend(true, {
+      size: {
+        space: 8,
+        padding: {
+          left: 8,
+          right: 8,
+          top: 8,
+          bottom: 4
+        },
+        contentHeight: 40,
+        minContentHeight: 40
+      }
+    }, option.state)
+    super(option)
   }
 
   createElement() {
-    let elem = this.createContainer()
+    let elem = super.createElement()
     let $elem = $(elem)
-    this.sections = []
-    // 创建Section
-    for (let sec of this.def.sections.values()) {
-      let secblock = Object.assign({}, sec)
-      this.sections.push(secblock)
-      let $child = $(this.createSection(secblock))
-      if (!$child) {
-        logger.warn('block' + this.name + 'createSection failed:' + sec)
-        continue
-      }
-      // 修改边框颜色
-      if (this.def.background && this.def.background.stroke) {
-        $child.trigger(ShapeUtils.events.background, [{
-          stroke: this.def.background.stroke
-        }])
-      }
 
-      $elem.append($child)
-    }
-
+    // 创建补充部分
     this.others = []
     if (this.def.others) {
       // 创建Section
@@ -775,20 +714,14 @@ class BlockControl extends BlockStack {
         $elem.append($child)
       }
     }
-
-    this.adjust({
-      dom: elem,
-      proto: this,
-      state: this.def.state
-    })
-
     return elem
   }
 
-
-  createContainer() {
-    let g = ShapeUtils.base.group(this.def)
-    let opt = Object.assign({}, this.def.background)
+    /**
+   * 创建Shape
+   */
+  createShape() {
+    let opt = Object.assign({}, this.def.state.background)
     // 默认为非中止block
     opt.end = !!this.def.end
     // 缺省外形
@@ -798,16 +731,10 @@ class BlockControl extends BlockStack {
     } else if (this.def.shape === 'cuptwo') {
       shape = ShapeUtils.path.cuptwo(opt)
     }
-    $(g).append(shape)
-    // 更新大小
-    this.def.state.width = shape.__boundbox__.width
-    this.def.state.height = shape.__boundbox__.height
-    this.def.state.contentWidth = shape.__boundbox__.contentWidth
-    this.def.state.contentHeight = shape.__boundbox__.contentHeight
-    return g
+    return shape
   }
 
-  adjust(option) {
+  adjustSize(option) {
     const $dom = $(option.dom)
     const def = option.proto.def
     const padding = option.proto.padding()
@@ -930,7 +857,12 @@ class BlockAction extends BlockStack {
     option.state = $.extend(true, {
       size: {
         space: 8,
-        padding: 8,
+        padding: {
+          left: 8,
+          right: 8,
+          top: 8,
+          bottom: 4
+        },
         contentHeight: 40,
         minContentHeight: 40
       }
@@ -938,19 +870,14 @@ class BlockAction extends BlockStack {
     super(option)
   }
 
-  padding(option) {
-    let p = super.padding(option)
-    p.top += 2 // 微调
-    return p
-  }
-
-  createContainer() {
-    let g = super.createContainer()
+  /**
+   * 创建Shape
+   */
+  createShape() {
     let opt = Object.assign({}, this.def.state.background)
     // 缺省外形
     let shape = ShapeUtils.path.slot(opt)
-    $(g).append(shape)
-    return g
+    return shape
   }
 }
 
@@ -959,15 +886,14 @@ class BlockEvent extends BlockAction {
     super(def)
   }
 
-  createContainer() {
-    let g = super.createContainer()
+  /**
+   * 创建Shape
+   */
+  createShape() {
     let opt = Object.assign({}, this.def.state.background)
-
     // 缺省外形
     let shape = ShapeUtils.path.cap(opt)
-    $(g).append(shape)
-
-    return g
+    return shape
   }
 }
 

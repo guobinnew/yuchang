@@ -5,23 +5,27 @@ export default [
     shape: 'round',
     category: 'operator',
     draggable: true,
-    display: {
-      padding: 4
-    },
-    sections: [
-      {
-        type: 'argument',
-        datatype: 'number'
+    state: {
+      size: {
+        padding: 4
       },
-      {
-        type: 'text',
-        text: '+'
-      },
-      {
-        type: 'argument',
-        datatype: 'number'
+      data: {
+        sections: [
+          {
+            type: 'argument',
+            datatype: 'number'
+          },
+          {
+            type: 'text',
+            text: '+'
+          },
+          {
+            type: 'argument',
+            datatype: 'number'
+          }
+        ]
       }
-    ],
+    },
     exports: {
       json: function (elem) {
         return {}
@@ -34,23 +38,27 @@ export default [
     shape: 'round',
     category: 'operator',
     draggable: true,
-    display: {
-      padding: 4
-    },
-    sections: [
-      {
-        type: 'argument',
-        datatype: 'number'
+    state: {
+      size: {
+        padding: 4
       },
-      {
-        type: 'text',
-        text: '-'
-      },
-      {
-        type: 'argument',
-        datatype: 'number'
+      data: {
+        sections: [
+          {
+            type: 'argument',
+            datatype: 'number'
+          },
+          {
+            type: 'text',
+            text: '-'
+          },
+          {
+            type: 'argument',
+            datatype: 'number'
+          }
+        ]
       }
-    ],
+    },
     exports: {
       json: function (elem) {
         return {}
@@ -63,23 +71,27 @@ export default [
     shape: 'round',
     category: 'operator',
     draggable: true,
-    display: {
-      padding: 4
-    },
-    sections: [
-      {
-        type: 'argument',
-        datatype: 'number'
+    state: {
+      size: {
+        padding: 4
       },
-      {
-        type: 'text',
-        text: '/'
-      },
-      {
-        type: 'argument',
-        datatype: 'number'
+      data: {
+        sections: [
+          {
+            type: 'argument',
+            datatype: 'number'
+          },
+          {
+            type: 'text',
+            text: '/'
+          },
+          {
+            type: 'argument',
+            datatype: 'number'
+          }
+        ]
       }
-    ],
+    },
     exports: {
       json: function (elem) {
         return {}
@@ -92,23 +104,27 @@ export default [
     shape: 'round',
     category: 'operator',
     draggable: true,
-    display: {
-      padding: 4
-    },
-    sections: [
-      {
-        type: 'argument',
-        datatype: 'number'
+    state: {
+      size: {
+        padding: 4
       },
-      {
-        type: 'text',
-        text: '✖'
-      },
-      {
-        type: 'argument',
-        datatype: 'number'
+      data: {
+        sections: [
+          {
+            type: 'argument',
+            datatype: 'number'
+          },
+          {
+            type: 'text',
+            text: '✖'
+          },
+          {
+            type: 'argument',
+            datatype: 'number'
+          }
+        ]
       }
-    ],
+    },
     exports: {
       json: function (elem) {
         return {}
@@ -118,31 +134,35 @@ export default [
   {
     id: 'logicadd',
     name: '逻辑与',
-    shape: 'boolean',
+    shape: 'diamond',
     category: 'operator',
     draggable: true,
-    display: {
-      padding: {
-        left: 8,
-        right: 8,
-        top: 4,
-        bottom: 4
+    state: {
+      size: {
+        padding: {
+          left: 8,
+          right: 8,
+          top: 4,
+          bottom: 4
+        }
+      },
+      data: {
+        sections: [
+          {
+            type: 'argument',
+            datatype: 'boolean'
+          },
+          {
+            type: 'text',
+            text: '与'
+          },
+          {
+            type: 'argument',
+            datatype: 'boolean'
+          }
+        ]
       }
     },
-    sections: [
-      {
-        type: 'argument',
-        datatype: 'boolean'
-      },
-      {
-        type: 'text',
-        text: '与'
-      },
-      {
-        type: 'argument',
-        datatype: 'boolean'
-      }
-    ],
     exports: {
       json: function (elem) {
         return {}
@@ -152,31 +172,35 @@ export default [
   {
     id: 'logicor',
     name: '逻辑或',
-    shape: 'boolean',
+    shape: 'diamond',
     category: 'operator',
     draggable: true,
-    display: {
-      padding: {
-        left: 8,
-        right: 8,
-        top: 4,
-        bottom: 4
+    state: {
+      size: {
+        padding: {
+          left: 8,
+          right: 8,
+          top: 4,
+          bottom: 4
+        }
+      },
+      data: {
+        sections: [
+          {
+            type: 'argument',
+            datatype: 'boolean'
+          },
+          {
+            type: 'text',
+            text: '或'
+          },
+          {
+            type: 'argument',
+            datatype: 'boolean'
+          }
+        ]
       }
     },
-    sections: [
-      {
-        type: 'argument',
-        datatype: 'boolean'
-      },
-      {
-        type: 'text',
-        text: '或'
-      },
-      {
-        type: 'argument',
-        datatype: 'boolean'
-      }
-    ],
     exports: {
       json: function (elem) {
         return {}
@@ -186,31 +210,35 @@ export default [
   {
     id: 'greater',
     name: '大于',
-    shape: 'boolean',
+    shape: 'diamond',
     category: 'operator',
     draggable: true,
-    display: {
-      padding: {
-        left: 16,
-        right: 16,
-        top: 4,
-        bottom: 4
+    state: {
+      size: {
+        padding: {
+          left: 16,
+          right: 16,
+          top: 4,
+          bottom: 4
+        }
+      },
+      data: {
+        sections: [
+          {
+            type: 'argument',
+            datatype: 'number'
+          },
+          {
+            type: 'text',
+            text: '>'
+          },
+          {
+            type: 'argument',
+            datatype: 'number'
+          }
+        ]
       }
     },
-    sections: [
-      {
-        type: 'argument',
-        datatype: 'number'
-      },
-      {
-        type: 'text',
-        text: '>'
-      },
-      {
-        type: 'argument',
-        datatype: 'number'
-      }
-    ],
     exports: {
       json: function (elem) {
         return {}
@@ -220,31 +248,35 @@ export default [
   {
     id: 'less',
     name: '小于',
-    shape: 'boolean',
+    shape: 'diamond',
     category: 'operator',
     draggable: true,
-    display: {
-      padding: {
-        left: 16,
-        right: 16,
-        top: 4,
-        bottom: 4
+    state: {
+      size: {
+        padding: {
+          left: 16,
+          right: 16,
+          top: 4,
+          bottom: 4
+        }
+      },
+      data: {
+        sections: [
+          {
+            type: 'argument',
+            datatype: 'number'
+          },
+          {
+            type: 'text',
+            text: '<'
+          },
+          {
+            type: 'argument',
+            datatype: 'number'
+          }
+        ]
       }
     },
-    sections: [
-      {
-        type: 'argument',
-        datatype: 'number'
-      },
-      {
-        type: 'text',
-        text: '<'
-      },
-      {
-        type: 'argument',
-        datatype: 'number'
-      }
-    ],
     exports: {
       json: function (elem) {
         return {}

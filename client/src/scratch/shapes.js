@@ -33,18 +33,18 @@ ycEventFunctions[ycEvents.resize] = function (event, opt) {
   const log = logPrefix(this, ycEvents.resize)
 
   if (!opt) {
-    logger.debug(log + 'opt is null')
+    logger.warn(log + 'opt is null')
     return
   }
 
   if (!yuchg.isNumber(opt.width)) {
-    logger.debug(log + `width is not number`)
+    logger.warn(log + `width is not number`)
   } else {
     $this.attr('width', opt.width)
   }
 
   if (!yuchg.isNumber(opt.height)) {
-    logger.debug(log + `height is not number`)
+    logger.warn(log + `height is not number`)
   } else {
     $this.attr('width', opt.height)
   }
@@ -56,7 +56,7 @@ ycEventFunctions[ycEvents.position] = function (event, opt) {
   const log = logPrefix(this, ycEvents.position)
 
   if (!opt) {
-    logger.debug(log + 'opt is null')
+    logger.warn(log + 'opt is null')
     return
   }
 
@@ -64,14 +64,14 @@ ycEventFunctions[ycEvents.position] = function (event, opt) {
   let ty = 0
   if (opt.translatex) {
     if (!yuchg.isNumber(opt.translatex)) {
-      logger.debug(log + `translatex is not number`)
+      logger.warn(log + `translatex is not number`)
     } else {
       tx = opt.translatex
     }
   }
   if (opt.translatey) {
     if (!yuchg.isNumber(opt.translatey)) {
-      logger.debug(log + `translatey is not number`)
+      logger.warn(log + `translatey is not number`)
     } else {
       ty = opt.translatey
     }
@@ -85,13 +85,13 @@ ycEventFunctions[ycEvents.positionText] = function (event, opt) {
   const log = logPrefix(this, ycEvents.positionText)
 
   if (!opt) {
-    logger.debug(log + 'opt is null')
+    logger.warn(log + 'opt is null')
     return
   }
 
   if (opt.x) {
     if (!yuchg.isNumber(opt.x)) {
-      logger.debug(log + `x is not number`)
+      logger.warn(log + `x is not number`)
     } else {
       $this.attr('x', opt.x)
     }
@@ -99,7 +99,7 @@ ycEventFunctions[ycEvents.positionText] = function (event, opt) {
 
   if (opt.y) {
     if (!yuchg.isNumber(opt.y)) {
-      logger.debug(log + `y is not number`)
+      logger.warn(log + `y is not number`)
     } else {
       $this.attr('y', opt.y)
     }
@@ -109,14 +109,14 @@ ycEventFunctions[ycEvents.positionText] = function (event, opt) {
   let ty = 0
   if (opt.translatex) {
     if (!yuchg.isNumber(opt.translatex)) {
-      logger.debug(log + `translatex is not number`)
+      logger.warn(log + `translatex is not number`)
     } else {
       tx = opt.translatex
     }
   }
   if (opt.translatey) {
     if (!yuchg.isNumber(opt.translatey)) {
-      logger.debug(log + `translatey is not number`)
+      logger.warn(log + `translatey is not number`)
     } else {
       ty = opt.translatey
     }
@@ -131,13 +131,13 @@ ycEventFunctions[ycEvents.background] = function (event, opt) {
   const log = logPrefix(this, ycEvents.background)
 
   if (!opt) {
-    logger.debug(log + 'opt is null')
+    logger.warn(log + 'opt is null')
     return
   }
 
   if (opt.stroke) {
     if (!yuchg.isString(opt.stroke)) {
-      logger.debug(log + `stroke is not string`)
+      logger.warn(log + `stroke is not string`)
     } else {
       $this.attr('stroke', opt.stroke)
     }
@@ -145,7 +145,7 @@ ycEventFunctions[ycEvents.background] = function (event, opt) {
 
   if (opt.fill) {
     if (!yuchg.isString(opt.fill)) {
-      logger.debug(log + `fill is not string`)
+      logger.warn(log + `fill is not string`)
     } else {
       $this.attr('fill', opt.fill)
     }
@@ -153,7 +153,7 @@ ycEventFunctions[ycEvents.background] = function (event, opt) {
 
   if (opt.opacity) {
     if (!yuchg.isNumber(+opt.opacity)) {
-      logger.debug(log + `opacity is not number`)
+      logger.warn(log + `opacity is not number`)
     } else {
       $this.attr('fill-opacity', opt.opacity)
     }
@@ -166,13 +166,13 @@ ycEventFunctions[ycEvents.changeImage] = function (event, opt) {
   const log = logPrefix(this, ycEvents.changeImage)
 
   if (!opt) {
-    logger.debug(log + 'opt is null')
+    logger.warn(log + 'opt is null')
     return
   }
 
   if (opt.url) {
     if (!yuchg.isString(opt.url)) {
-      logger.debug(log + `url is not string`)
+      logger.warn(log + `url is not string`)
     } else {
       $this[0].href.baseVal = opt.url
     }
@@ -665,7 +665,7 @@ const ShapeUtils = {
 
         const log = logPrefix(this, ycEvents.resize)
         if (!opt) {
-          logger.debug(log + `opt is null`)
+          logger.warn(log + `opt is null`)
           return
         }
 
@@ -749,7 +749,7 @@ const ShapeUtils = {
         const log = logPrefix(this, ycEvents.resize)
 
         if (!opt) {
-          logger.debug(log + `opt is null`)
+          logger.warn(log + `opt is null`)
           return
         }
 
@@ -832,7 +832,7 @@ const ShapeUtils = {
         const $this = $(this)
         const log = logPrefix(this, ycEvents.positionText)
         if (!opt) {
-          logger.debug(log + 'opt is null')
+          logger.warn(log + 'opt is null')
           return
         }
 
@@ -840,14 +840,14 @@ const ShapeUtils = {
         let ty = 0
         if (opt.translatex) {
           if (!yuchg.isNumber(opt.translatex)) {
-            logger.debug(log + `translatex is not number`)
+            logger.warn(log + `translatex is not number`)
           } else {
             tx = opt.translatex
           }
         }
         if (opt.translatey) {
           if (opt.translatey && !yuchg.isNumber(opt.translatey)) {
-            logger.debug(log + `translatey is not number`)
+            logger.warn(log + `translatey is not number`)
           } else {
             ty = opt.translatey
           }
@@ -931,7 +931,7 @@ const ShapeUtils = {
 
         if (v) {
           if (!yuchg.isString(v)) {
-            logger.debug(log + 'value is not string')
+            logger.warn(log + 'value is not string')
           } else {
             $this.html('' + v)
           }
@@ -977,13 +977,13 @@ const ShapeUtils = {
         const $path = $this.children('path')
         const log = `arguGroup ${ycEvents.background} event: `
         if (!opt) {
-          logger.debug(log + 'opt is null')
+          logger.warn(log + 'opt is null')
           return
         }
 
         if (opt.stroke) {
           if (!yuchg.isString(opt.stroke)) {
-            logger.debug(log + `stroke is not string`)
+            logger.warn(log + `stroke is not string`)
           } else {
             $path.attr('stroke', opt.stroke)
           }
@@ -991,7 +991,7 @@ const ShapeUtils = {
 
         if (opt.fill) {
           if (!yuchg.isString(opt.fill)) {
-            logger.debug(log + `fill is not string`)
+            logger.warn(log + `fill is not string`)
           } else {
             $path.attr('fill', opt.stroke)
           }
@@ -999,7 +999,7 @@ const ShapeUtils = {
 
         if (opt.opacity) {
           if (!yuchg.isNumber(+opt.opacity)) {
-            logger.debug(log + `opacity is not number`)
+            logger.warn(log + `opacity is not number`)
           } else {
             $path.attr('fill-opacity', opt.opacity)
           }
@@ -1040,7 +1040,6 @@ const ShapeUtils = {
 
       $img.attr('height', option.width ? option.width : 0)
       $img.attr('width', option.height ? option.height : 0)
-      $img.attr('xlink:href', '')
       $img.attr('transform', 'translate(0,0)')
       img.href.baseVal = option.url
 

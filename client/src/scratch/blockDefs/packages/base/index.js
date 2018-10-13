@@ -9,7 +9,7 @@ export default {
   variant: variants,
   marker: markers,
   action: actions,
-  event: [],
-  express: [],
+  event: events,
+  express: exps,
   control: []
 }

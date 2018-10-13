@@ -34,6 +34,7 @@ const ArgumentDefs = {
     shape: 'diamond',
     data: {
       background: {
+        chameleon: true,
         stroke: '#333333',
         fill: '#FFFFFF',
         opacity: '1'
@@ -45,12 +46,14 @@ const ArgumentDefs = {
     shape: 'round',
     data: {
       background: {
+        chameleon: true,
         stroke: '#333333',
         fill: '#FFFFFF',
         opacity: '1'
       },
+      space: 4,
       button: {
-        url: '/img/dropdown-arrow.be850da5.svg',
+        url: '/img/dropdown-arrow.svg',
         width: 12,
         height: 12
       }
@@ -134,7 +137,7 @@ class Argument {
       let $shape = $(this).children('path')
       $shape.trigger(ShapeUtils.events.background, [opt])
     })
-    
+
     return elem
   }
 
@@ -318,15 +321,16 @@ class ArgumentBool extends Argument {
   }
 
   static createElement(def) {
-    def.data = $.extend(true, {
+    def.data = $.extend(true, def.data, {
       size: {
-        minWidth: 16
+        minWidth: 48,
+        width: 48
       }
-    }, def.state)
+    })
     let elem = Argument.createContainer(def)
-    const state = def.state
-    if (!yuchg.isBoolean(state.data.value)) {
-      state.data.value = false
+
+    if (!yuchg.isBoolean(def.data.value)) {
+      def.data.value = false
     }
     return elem
   }
@@ -355,48 +359,44 @@ class ArgumentEnum extends Argument {
   static createElement(def) {
     let elem = Argument.createContainer(def)
     let $elem = $(elem)
-    const state = this.def.state
-
-    if (!yuchg.isArray(state.data.values)) {
-      state.data.values = [
+  
+    if (!yuchg.isArray(def.data.values)) {
+      def.data.values = [
         { name: '空', value: -1 }
       ]
     }
 
-    if (!yuchg.isNumber(state.data.currentIndex) || state.data.currentIndex >= state.data.values.length) {
-      state.data.currentIndex = 0
+    if (!yuchg.isNumber(def.data.currentIndex) || def.data.currentIndex >= def.data.values.length) {
+      def.data.currentIndex = 0
     }
 
     // 文字
-    let text = state.data.values[state.data.currentIndex]
+    let text = def.data.values[def.data.currentIndex]
     $elem.append(ShapeUtils.base.text({
       text: text
     }))
 
     // 下拉按钮
-    $elem.append(ShapeUtils.base.image(state.data.button))
+    $elem.append(ShapeUtils.base.image(def.data.button))
     return elem
   }
 
-  adjustData(option) {
-    const $dom = $(option.dom)
-    const state = option.state
-
-    let $text = $dom.children('text')
-    $text.trigger(ShapeUtils.events.change, [state.data.values[state.data.currentIndex]])
-  }
-
-  adjust(option) {
+  adjust() {
     const $dom = $(this.section.dom)
     const data = this.section.data
+
+    let $text = $dom.children('text')
+    let currentText = data.values[data.currentIndex].name
+    $text.trigger(ShapeUtils.events.change, [currentText])
 
     // 根据文字计算最大长度
     let length = 0
     let padding = data.size.height / 2
-    for (let item of option.state.data.values) {
+    for (let item of data.values) {
       length = Math.max(this.textWidth('' + item.name), length)
     }
     length += data.button.width // 按钮宽度
+    length += data.space // 间距
     data.size.width = Math.max(length + padding * 2, data.size.minWidth)
 
     let $shape = $dom.children('path')
@@ -409,12 +409,21 @@ class ArgumentEnum extends Argument {
     data.size.width = $shape[0].__boundbox.width
     data.size.height = $shape[0].__boundbox.height
   
-    let $text = $dom.children('text')
+    // 更新文字位置
+    padding = data.size.height / 2
+    length = this.textWidth('' + currentText)
     $text.trigger(ShapeUtils.events.positionText, [{
-      x: data.size.width / 2,
+      x: length / 2,
       y: 0,
-      translatex: 0,
-      translatey: data.size.height / 2
+      translatex: padding,
+      translatey: padding
+    }])
+
+    // 更新按钮位置
+    let $image = $dom.children('image')
+    $image.trigger(ShapeUtils.events.position, [{
+      translatex: data.size.width - padding - data.button.width / 2,
+      translatey: (data.size.height - data.button.height) / 2
     }])
   }
 }
