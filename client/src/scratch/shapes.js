@@ -62,16 +62,19 @@ ycEventFunctions[ycEvents.position] = function (event, opt) {
 
   let tx = 0
   let ty = 0
-  if (!yuchg.isNumber(opt.translatex)) {
-    logger.debug(log + `translatex is not number`)
-  } else {
-    tx = opt.translatex
+  if (opt.translatex) {
+    if (!yuchg.isNumber(opt.translatex)) {
+      logger.debug(log + `translatex is not number`)
+    } else {
+      tx = opt.translatex
+    }
   }
-
-  if (!yuchg.isNumber(opt.translatey)) {
-    logger.debug(log + `translatey is not number`)
-  } else {
-    ty = opt.translatey
+  if (opt.translatey) {
+    if (!yuchg.isNumber(opt.translatey)) {
+      logger.debug(log + `translatey is not number`)
+    } else {
+      ty = opt.translatey
+    }
   }
   $this.attr('transform', `translate(${tx}, ${ty})`)
 }
@@ -104,16 +107,19 @@ ycEventFunctions[ycEvents.positionText] = function (event, opt) {
 
   let tx = 0
   let ty = 0
-  if (!yuchg.isNumber(opt.translatex)) {
-    logger.debug(log + `translatex is not number`)
-  } else {
-    tx = opt.translatex
+  if (opt.translatex) {
+    if (!yuchg.isNumber(opt.translatex)) {
+      logger.debug(log + `translatex is not number`)
+    } else {
+      tx = opt.translatex
+    }
   }
-
-  if (!yuchg.isNumber(opt.translatey)) {
-    logger.debug(log + `translatey is not number`)
-  } else {
-    ty = opt.translatey
+  if (opt.translatey) {
+    if (!yuchg.isNumber(opt.translatey)) {
+      logger.debug(log + `translatey is not number`)
+    } else {
+      ty = opt.translatey
+    }
   }
   $this.attr('transform', `translate(${tx}, ${ty})`)
 }
@@ -164,24 +170,26 @@ ycEventFunctions[ycEvents.changeImage] = function (event, opt) {
     return
   }
 
-  if (!yuchg.isString(opt.url)) {
-    logger.debug(log + `url is not string`)
-  } else {
-    $this[0].href.baseVal = opt.url
+  if (opt.url) {
+    if (!yuchg.isString(opt.url)) {
+      logger.debug(log + `url is not string`)
+    } else {
+      $this[0].href.baseVal = opt.url
+    }
   }
 }
 
-const ycCaveRight = 48  // 凹槽起右边位置
-const ycCaveSecondRight = 64  // 子凹槽起右边位置
-const ycCapBulgeWidth = 96  // 帽子凸起宽度
+const ycCaveRight = 48 // 凹槽起右边位置
+const ycCaveSecondRight = 64 // 子凹槽起右边位置
+const ycCapBulgeWidth = 96 // 帽子凸起宽度
 const ycCapBulgeHeight = 22 // 帽子凸起高度
 const ycCornerRadius = 4 // 圆角半径
 
-    /**
-    * 参数合法检验
-    * param：Any
-    * validate： Function 返回布尔值
-     */
+/**
+ * 参数合法检验
+ * param：Any
+ * validate： Function 返回布尔值
+ */
 function checkParameter(param, validate) {
   if (!yuchg.isFunction(validate)) {
     return param
@@ -193,7 +201,7 @@ const ShapeUtils = {
   events: ycEvents,
   path: {
     /**
-    * 帽子
+     * 帽子
      */
     cap: function (option) {
       const path = document.createElementNS(ycSvgNS, 'path')
@@ -204,7 +212,7 @@ const ShapeUtils = {
       }
 
       const minContentWidth = ycCapBulgeWidth + 16 // 包含左右padding
-      const minContentHeight = 40  // 包含上下padding
+      const minContentHeight = 40 // 包含上下padding
 
       // 最小尺寸
       let boundbox = {
@@ -218,9 +226,9 @@ const ShapeUtils = {
         contentHeight: minContentHeight
       }
 
-       /**
-      * 根据content大小计算外形大小
-      */
+      /**
+       * 根据content大小计算外形大小
+       */
       const _size = (box, opt) => {
         let _boundbox = Object.assign({}, box)
         if (!opt) {
@@ -269,7 +277,7 @@ const ShapeUtils = {
 
         opt.contentWidth = checkParameter(opt.contentWidth, yuchg.isNumber)
         opt.contentHeight = checkParameter(opt.contentHeight, yuchg.isNumber)
-     
+
         boundbox = _size(boundbox, opt)
         const $this = $(this)
         $this.attr('d', _dfunc(boundbox))
@@ -374,7 +382,7 @@ const ShapeUtils = {
         opt.contentWidth = checkParameter(opt.contentWidth, yuchg.isNumber)
         opt.contentHeight = checkParameter(opt.contentHeight, yuchg.isNumber)
         opt.slotHeight = checkParameter(opt.slotHeight, yuchg.isNumber)
-     
+
         boundbox = _size(boundbox, opt)
         const $this = $(this)
         $this.attr('d', _dfunc(boundbox))
@@ -489,7 +497,7 @@ const ShapeUtils = {
         } else {
           opt.slotHeight = null
         }
-       
+
         boundbox = _size(boundbox, opt)
 
         const $this = $(this)
@@ -572,20 +580,14 @@ const ShapeUtils = {
       // 自定义事件
       $elem.on(ycEvents.resize, function (event, opt) {
         event.stopPropagation()
-
-        logger.debug('SLOT ===========', opt)
         let log = logPrefix(this, ycEvents.resize)
         if (!opt) {
           logger.warn(log + `opt is null`)
           return
         }
-
         opt.contentWidth = checkParameter(opt.contentWidth, yuchg.isNumber)
         opt.contentHeight = checkParameter(opt.contentHeight, yuchg.isNumber)
-
-        logger.debug('SLOT ===========######1', opt, this.__boundbox)
         boundbox = _size(boundbox, opt)
-        logger.debug('SLOT ===========######2', opt, this.__boundbox)
         const $this = $(this)
         $this.attr('d', _dfunc(boundbox))
         this.__boundbox = boundbox
@@ -595,12 +597,12 @@ const ShapeUtils = {
       return path
     },
 
-  /*
-   */
+    /*
+     */
     roundRect: function (option) {
       let path = document.createElementNS(ycSvgNS, 'path')
       let $elem = $(path)
-   
+
       if (!option) {
         option = {}
       }
@@ -660,7 +662,7 @@ const ShapeUtils = {
       // 自定义事件
       $elem.on(ycEvents.resize, function (event, opt) {
         event.stopPropagation()
-       
+
         const log = logPrefix(this, ycEvents.resize)
         if (!opt) {
           logger.debug(log + `opt is null`)
@@ -814,7 +816,7 @@ const ShapeUtils = {
       return g
     },
     /*
-    */
+     */
     editableText: function (option) {
       let g = document.createElementNS(ycSvgNS, 'g')
       let $elem = $(g)
@@ -836,16 +838,19 @@ const ShapeUtils = {
 
         let tx = 0
         let ty = 0
-        if (!yuchg.isNumber(opt.translatex)) {
-          logger.debug(log + `translatex is not number`)
-        } else {
-          tx = opt.translatex
+        if (opt.translatex) {
+          if (!yuchg.isNumber(opt.translatex)) {
+            logger.debug(log + `translatex is not number`)
+          } else {
+            tx = opt.translatex
+          }
         }
-
-        if (!yuchg.isNumber(opt.translatey)) {
-          logger.debug(log + `translatey is not number`)
-        } else {
-          ty = opt.translatey
+        if (opt.translatey) {
+          if (opt.translatey && !yuchg.isNumber(opt.translatey)) {
+            logger.debug(log + `translatey is not number`)
+          } else {
+            ty = opt.translatey
+          }
         }
         $this.attr('transform', `translate(${tx}, ${ty})`)
 
@@ -858,11 +863,6 @@ const ShapeUtils = {
       }).on(ycEvents.change, function (event, v) {
         event.stopPropagation()
         const $this = $(this)
-        const log = logPrefix(this, ycEvents.change)
-        if (!v) {
-          logger.debug(log + 'value is null')
-          return
-        }
         let $thistext = $this.children('text')
         $thistext.trigger(ycEvents.change, [v])
       })
@@ -899,7 +899,7 @@ const ShapeUtils = {
   },
   base: {
     /*
-      */
+     */
     text: function (option) {
       let text = document.createElementNS(ycSvgNS, 'text')
       let $elem = $(text)
@@ -929,18 +929,20 @@ const ShapeUtils = {
         const $this = $(this)
         const log = logPrefix(this, ycEvents.change)
 
-        if (!v) {
-          logger.debug(log + 'value is null')
-          return
+        if (v) {
+          if (!yuchg.isString(v)) {
+            logger.debug(log + 'value is not string')
+          } else {
+            $this.html('' + v)
+          }
         }
 
-        $this.html('' + v)
       })
       return text
     },
 
     /*
-      */
+     */
     group: function (option) {
       let g = document.createElementNS(ycSvgNS, 'g')
       let $elem = $(g)

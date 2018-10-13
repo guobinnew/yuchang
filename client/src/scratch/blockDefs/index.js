@@ -5,5 +5,5 @@ import chinese from './packages/chinese'
 
 export default {
   categories: categories,
-  packages: [base]
+  packages: [base, chinese]
 }

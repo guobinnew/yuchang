@@ -63,7 +63,6 @@ class BlockInstance {
       }
     }
 
-    logger.debug('####################', this.state)
     // 根据新状态重新渲染
     this.__proto.adjust({
       dom: this.element(),
@@ -88,12 +87,8 @@ class BlockInstance {
         this.next.prev = this.prev
       }
     }
-    let index = this.__proto.instances.indexOf(this)
-    if (index >= 0) {
-      this.__proto.instances.splice(index, 1)
-    }
+    this.__proto.instances.delete(this.uid)
     $(this.dom).remove()
-
     // 通知父对象更新
   }
 }
@@ -166,22 +161,18 @@ class Block {
 
     // 获取state中的padding定义，如果没有，则默认为0
     if (yuchg.isObject(option)) {
-      const state = option.state
-      if (yuchg.isDefAndNotNull(state.size.padding)) {
-        const pd = state.size.padding
-        // 如果定义padding
-        if (yuchg.isNumber(pd)) { // 如果是单个数值
-          for (let key of Object.keys(p)) {
-            p[key] = pd
-          }
-        } else if (yuchg.isObject(pd)) { // 分别指定, 默认为0
-          for (let key of Object.keys(p)) {
-            pd[key] && (p[key] = pd[key])
-          }
+      const pd = option.state.size.padding
+      // 如果定义padding
+      if (yuchg.isNumber(pd)) { // 如果是单个数值
+        for (let key of Object.keys(p)) {
+          p[key] = pd
+        }
+      } else if (yuchg.isObject(pd)) { // 分别指定, 默认为0
+        for (let key of Object.keys(p)) {
+          pd[key] && (p[key] = pd[key])
         }
       }
     }
-
     return p
   }
 
@@ -386,7 +377,7 @@ class BlockVariant extends Block {
     const def = option.def
     const state = option.state
     const padding = this.padding(option)
-    let length = Utils.computeTextLength(state.data.text)
+    let length = this.textWidth(state.data.text) //Utils.computeTextLength(state.data.text)
     state.size.contentWidth = Math.max(length, state.size.minContentWidth)
 
     if (def.shape === 'dropdown') {
@@ -551,7 +542,7 @@ class BlockStack extends Block {
         sec.__width = sec.data.size.width
         contentHeight = Math.max(contentHeight, sec.data.size.height)
       } else if (sec.type === 'text' && sec.dom) {
-        sec.__width = Utils.computeTextLength(sec.text)
+        sec.__width = this.textWidth(sec.text) //Utils.computeTextLength(sec.text)
       } else if (sec.type === 'image' && sec.dom) {
         sec.__width = sec.width
       }
@@ -672,7 +663,7 @@ class BlockExpress extends BlockStack {
         offsetx += sec.instance.state.width
         contentHeight = Math.max(contentHeight, sec.instance.state.height)
       } else if (sec.type === 'text' && sec.elem) {
-        let l = Utils.computeTextLength(sec.text)
+        let l = this.textWidth(sec.text) //Utils.computeTextLength(sec.text)
         offsetx += l
       } else if (sec.type === 'image' && sec.elem) {
         let l = sec.width ? sec.width : 24
@@ -710,7 +701,7 @@ class BlockExpress extends BlockStack {
         offsetx += sec.instance.state.width
       } else if (sec.type === 'text' && sec.elem) {
         $child = $(sec.elem)
-        let l = Utils.computeTextLength(sec.text)
+        let l = this.textWidth(sec.text) //Utils.computeTextLength(sec.text)
         // 根据高度调整文本位置
         $child.trigger(ShapeUtils.events.positionText, [{
           x: l / 2, // 文字宽度一半
@@ -836,7 +827,7 @@ class BlockControl extends BlockStack {
         offsetx += sec.instance.state.width
         contentHeight = Math.max(contentHeight, sec.instance.state.height)
       } else if (sec.type === 'text' && sec.elem) {
-        let l = Utils.computeTextLength(sec.text) // 字体大小固定，不需要考虑字体
+        let l = this.textWidth(sec.text) //Utils.computeTextLength(sec.text) // 字体大小固定，不需要考虑字体
         offsetx += l
       } else if (sec.type === 'image' && sec.elem) {
         let l = sec.width ? sec.width : 24
@@ -855,7 +846,7 @@ class BlockControl extends BlockStack {
         offsetx += sec.instance.state.width
         otherHeight = Math.max(otherHeight, sec.instance.state.height)
       } else if (sec.type === 'text' && sec.elem) {
-        let l = Utils.computeTextLength(sec.text)
+        let l = this.textWidth(sec.text) //Utils.computeTextLength(sec.text)
         offsetx += l
       } else if (sec.type === 'image' && sec.elem) {
         let l = sec.width ? sec.width : 24
@@ -937,6 +928,8 @@ class BlockAction extends BlockStack {
   constructor(option) {
     option.state = $.extend(true, {
       size: {
+        space: 8,
+        padding: 8,
         contentHeight: 40,
         minContentHeight: 40
       }

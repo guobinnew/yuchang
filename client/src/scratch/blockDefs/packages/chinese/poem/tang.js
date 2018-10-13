@@ -5,12 +5,16 @@ export default [
     shape: 'cap',
     category: 'data',
     draggable: true,
-    sections: [
-      {
-        type: 'text',
-        text: '《咏鹅》'
+    state: {
+      data: {
+        sections: [
+          {
+            type: 'text',
+            text: '《咏鹅》'
+          }
+        ]
       }
-    ],
+    },
     exports: {
       json: function (elem) {
         return {}
@@ -23,12 +27,16 @@ export default [
     shape: 'slot',
     category: 'data',
     draggable: true,
-    sections: [
-      {
-        type: 'text',
-        text: '鹅鹅鹅，'
+    state: {
+      data: {
+        sections: [
+          {
+            type: 'text',
+            text: '鹅鹅鹅，'
+          }
+        ]
       }
-    ],
+    },
     exports: {
       json: function (elem) {
         return {}
@@ -41,16 +49,20 @@ export default [
     shape: 'slot',
     category: 'data',
     draggable: true,
-    sections: [
-      {
-        type: 'argument',
-        datatype: 'string'
-      },
-      {
-        type: 'text',
-        text: '向天歌。'
+    state: {
+      data: {
+        sections: [
+          {
+            type: 'argument',
+            datatype: 'string'
+          },
+          {
+            type: 'text',
+            text: '向天歌。'
+          }
+        ]
       }
-    ],
+    },
     exports: {
       json: function (elem) {
         return {}
@@ -63,20 +75,24 @@ export default [
     shape: 'slot',
     category: 'data',
     draggable: true,
-    sections: [
-      {
-        type: 'text',
-        text: '白毛'
-      },
-      {
-        type: 'argument',
-        datatype: 'string'
-      },
-      {
-        type: 'text',
-        text: '绿水，'
+    state: {
+      data: {
+        sections: [
+          {
+            type: 'text',
+            text: '白毛'
+          },
+          {
+            type: 'argument',
+            datatype: 'string'
+          },
+          {
+            type: 'text',
+            text: '绿水，'
+          }
+        ]
       }
-    ],
+    },
     exports: {
       json: function (elem) {
         return {}
@@ -89,20 +105,24 @@ export default [
     shape: 'slot',
     category: 'data',
     draggable: true,
-    sections: [
-      {
-        type: 'text',
-        text: '红掌拨'
-      },
-      {
-        type: 'argument',
-        datatype: 'string'
-      },
-      {
-        type: 'text',
-        text: '。'
+    state: {
+      data: {
+        sections: [
+          {
+            type: 'text',
+            text: '红掌拨'
+          },
+          {
+            type: 'argument',
+            datatype: 'string'
+          },
+          {
+            type: 'text',
+            text: '。'
+          }
+        ]
       }
-    ],
+    },
     exports: {
       json: function (elem) {
         return {}

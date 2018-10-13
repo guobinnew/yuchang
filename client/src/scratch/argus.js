@@ -155,6 +155,10 @@ class Argument {
           height: 32
         }
       }, _def.data, def.data)
+    } 
+
+    if (yuchg.isNull(def.data)) {
+      def.data = {}
     }
 
     let elem = null
@@ -188,7 +192,6 @@ class Argument {
    * 调整布局
    */
   adjust() {
-
   }
 }
 
@@ -201,14 +204,13 @@ class ArgumentText extends Argument {
     // 获取
     let elem = Argument.createContainer(def)
     let $elem = $(elem)
-    const state = def.state
 
-    if (!yuchg.isString(state.data.value)) {
-      state.data.value = ''
+    if (!yuchg.isString(def.data.value)) {
+      def.data.value = ''
     }
 
     let text = ShapeUtils.group.editableText({
-      text: state.data.value
+      text: def.data.value
     })
     $elem.append(text)
 
@@ -221,7 +223,7 @@ class ArgumentText extends Argument {
 
     // 设置文字
     let $text = $dom.children('.ycBlockEditableText')
-    $text.trigger(ShapeUtils.events.change, [data.value])
+    $text.trigger(ShapeUtils.events.change, ['' + data.value])
 
     // 根据文字计算长度
     let padding = data.size.height / 2
@@ -238,7 +240,7 @@ class ArgumentText extends Argument {
     // 更新大小
     data.size.width = $shape[0].__boundbox.width
     data.size.height = $shape[0].__boundbox.height
-   
+
     // 调整文字位置
     $text.trigger(ShapeUtils.events.positionText, [{
       x: data.size.width / 2,

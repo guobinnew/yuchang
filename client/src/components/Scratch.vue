@@ -1,5 +1,5 @@
 <template>
-    <div :id="id" class="scratch" style="position: relative">
+    <div :id="id" class="scratch" style="position: relative" onselectstart="return false">
         <svg class="ycBlockSvg"
              :width="size.width"
              :height="size.height"

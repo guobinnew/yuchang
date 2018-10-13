@@ -91,11 +91,15 @@ class Panel {
     let that = this
     // 鼠标事件
     $(this.dom.svg).on('mousedown', () => {
+      event.stopPropagation()
+
       this.lastPoint.x = event.pageX
       this.lastPoint.y = event.pageY
       this.startDrag = true
       $(this.dom.flyout).css('pointer-events', 'none')
     }).on('mousemove', function () {
+      event.stopPropagation()
+
       // 获取SVG的位置
       let X = $(this).offset().left
       let Y = $(this).offset().top
@@ -133,9 +137,12 @@ class Panel {
         $(that.dom.dragsurface).attr('style', 'display: block; transform: translate3d(' + deltaX + 'px,' + deltaY + 'px,0px)')
       }
     }).on('mouseup mouseleave', () => {
+      event.stopPropagation()
+
       that.startDrag = false
       $(this.dom.flyout).css('pointer-events', 'auto')
-
+      let $dragsurface = $(that.dom.dragsurface)
+      
       if (that.selected) {
         let $selected = $(that.selected)
         if ($selected.hasClass('ycBlockSelected') && $selected.hasClass('ycBlockDragging')) {
@@ -146,8 +153,6 @@ class Panel {
             // 删除Block实例
             let uid = $selected.attr('data-uid')
             this.removeBlock(uid)
-            that.selected = null
-            return
           } else {
             $selected.insertBefore($marker)
             $selected.removeClass('ycBlockDragging')
@@ -161,11 +166,12 @@ class Panel {
                 y: (Number(dm[5]) + that.grapPoint.y) / Number(m.d)
               }
             })
+            $selected.removeClass('ycBlockSelected')
           }
           $marker.remove()
-          $(that.dom.dragsurface).css('display', 'none;')
+          $dragsurface.css('display', 'none')
+          $dragsurface.attr('style', 'transform: translate3d(0px,0px,0px)')
         }
-        $selected.removeClass('ycBlockSelected')
         that.selected = null
       }
     })
@@ -216,8 +222,8 @@ class Panel {
           type: proto.def.id,
           state: {
             transform: {
-              x: that.grapPoint.x,
-              y: that.grapPoint.y
+              x: that.grapPoint.x / that.currentZoomFactor,
+              y: that.grapPoint.y / that.currentZoomFactor
             }
           }
         }, that.dom.dragcanvas)
@@ -236,7 +242,7 @@ class Panel {
         let deltaY = event.pageY - that.lastPoint.y
         // 根据鼠标位置调整surface
         let $dragsurface = $(that.dom.dragsurface)
-        $dragsurface.attr('style', 'display: block; transform: translate3d(' + deltaX + 'px,' + deltaY + 'px,0px)')
+        $dragsurface.attr('style', 'transform: translate3d(' + deltaX + 'px,' + deltaY + 'px,0px)')
         $dragsurface.css('display', 'block')
 
         that.startDrag = true
@@ -342,9 +348,8 @@ class Panel {
     for (let p of this.option.blocks.packages.values()) {
       this.processPackage(p)
     }
-    logger.debug(this.option.blocks.defs)
+  
     let defs = this.option.blocks.defs
-    let args = this.option.blocks.args
     //
     let cates = this.option.blocks.categories
     for (let val of Object.values(cates)) {
@@ -401,7 +406,7 @@ class Panel {
       let cate = categories[key]
 
       if (!cate) {
-        logger.debug('category can not found: ' + key)
+        logger.warn('category can not found: ' + key)
         return
       }
       let state = cate.state
@@ -474,7 +479,7 @@ class Panel {
                 }
               })
             } else {
-              logger.debug('block registry is corrupted:' + block)
+              logger.warn('block registry is corrupted:' + block)
             }
           })
         }
@@ -522,7 +527,7 @@ class Panel {
   }
 
   showInputWidget(option) {
-    logger.debug('input')
+  
     if (!option) {
       this.hideInputWidget()
       return
@@ -557,7 +562,6 @@ class Panel {
       // 动态刷新大小
       callback && callback(newValue)
       // 调整控件大小
-      logger.debug('@@@@@@@@@', newValue, Utils.computeTextLength(newValue))
       $parent.css('width', dom.__section.data.size.width)
     })
     let callback = option.callback
@@ -648,7 +652,7 @@ class Panel {
     let registries = this.registries
     // 提示重复
     if (registries[def.id]) {
-      logger.debug(`${def.type} registered repeated:  ${def.id}`)
+      logger.warn(`${def.type} registered repeated:  ${def.id}`)
     }
 
     // 获取默认类目信息
@@ -666,10 +670,10 @@ class Panel {
       state: {}
     }, def))
     if (!registries[def.id]) {
-      logger.debug(`${def.type} registered failed:  ${def.id}`)
+      logger.warn(`${def.type} registered failed:  ${def.id}`)
     } else {
       list && list[def.category].blocks.push(def.id)
-      logger.debug(`${def.type} registered successed:  ${def.id}`)
+      logger.log(`${def.type} registered successed:  ${def.id}`)
     }
   }
 
