@@ -429,7 +429,7 @@ class BlockStack extends Block {
       state.data.sections.forEach((sec, i) => {
         let child = this.createSection(sec)
         if (!child) {
-          logger.debug(`Block<${ this.def.id }> createSection failed:`, sec)
+          logger.warn(`Block<${ this.def.id }> createSection failed:`, sec)
         } else {
           sec.dom = child
           $(sec.dom).attr('data-index', i)
@@ -501,7 +501,7 @@ class BlockStack extends Block {
     // 修改Section边框
     const state = option.state
     for (let sec of state.data.sections) {
-      if (sec.dom) {
+      if (sec.type === 'argument' && sec.dom) { // 只修改参数内容
         let $child = $(sec.dom)
         // 修改边框颜色
         if (state.background && state.background.stroke) {
@@ -742,7 +742,7 @@ class BlockControl extends BlockStack {
       this.sections.push(secblock)
       let $child = $(this.createSection(secblock))
       if (!$child) {
-        logger.debug('block' + this.name + 'createSection failed:' + sec)
+        logger.warn('block' + this.name + 'createSection failed:' + sec)
         continue
       }
       // 修改边框颜色
@@ -763,7 +763,7 @@ class BlockControl extends BlockStack {
         this.others.push(secblock)
         let $child = $(this.createSection(secblock))
         if (!$child) {
-          logger.debug('block' + this.name + 'createSection failed:' + sec)
+          logger.warn('block' + this.name + 'createSection failed:' + sec)
           continue
         }
         // 修改边框颜色
