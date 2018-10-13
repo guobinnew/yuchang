@@ -215,18 +215,25 @@ class Panel {
 
         // 根据Block尺寸调整位置
         let bbox = that.flyoutselected.getBBox()
-        that.grapPoint.x = event.pageX - bbox.width / 2 - X + bbox.x - Number(cm.e)
-        that.grapPoint.y = event.pageY - bbox.height / 2 - Y + bbox.y - Number(cm.f)
+
+        // 根据鼠标位置计算得到在Canvas中的位置，然后根据Block的包围盒计算中心锚点偏移
+        // 这样就能将Block的中心放在当前鼠标的位置
+        that.grapPoint.x = (event.pageX - X - Number(cm.e)) / Number(cm.a) - (bbox.width / 2 + bbox.x) 
+        that.grapPoint.y = (event.pageY - Y - Number(cm.f)) / Number(cm.a) - (bbox.height / 2 + bbox.y)
 
         let newInst = that.addBlock({
           type: proto.def.id,
           state: {
             transform: {
-              x: that.grapPoint.x / that.currentZoomFactor,
-              y: that.grapPoint.y / that.currentZoomFactor
+              x: that.grapPoint.x,
+              y: that.grapPoint.y
             }
           }
         }, that.dom.dragcanvas)
+
+        // 将坐标转回屏幕位置
+        that.grapPoint.x *= Number(cm.a)
+        that.grapPoint.y *= Number(cm.d)
 
         that.selected = newInst.element()
         $(that.selected).addClass('ycBlockSelected ycBlockDragging')

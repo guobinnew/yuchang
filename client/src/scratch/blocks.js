@@ -785,6 +785,7 @@ class BlockControl extends BlockStack {
     return elem
   }
 
+
   createContainer() {
     let g = ShapeUtils.base.group(this.def)
     let opt = Object.assign({}, this.def.background)
@@ -959,7 +960,7 @@ class BlockEvent extends BlockAction {
   }
 
   createContainer() {
-    let g = ShapeUtils.base.group(this.def)
+    let g = super.createContainer()
     let opt = Object.assign({}, this.def.state.background)
 
     // 缺省外形
