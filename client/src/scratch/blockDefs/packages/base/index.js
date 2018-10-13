@@ -11,5 +11,5 @@ export default {
   action: actions,
   event: events,
   express: exps,
-  control: []
+  control: controls
 }

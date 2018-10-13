@@ -17,8 +17,8 @@ export default [
             data: {
               currentIndex: 0,
               values: [
-                { name: '打开我爹的', value: 1 },
-                { name: '关闭', value: 0 }
+                { name: '关闭', value: 0 },
+                { name: '打开', value: 1 }
               ]
             }
           }

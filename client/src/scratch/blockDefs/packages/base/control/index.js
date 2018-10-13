@@ -6,4 +6,3 @@ let blocks = []
 blocks = blocks.concat(loops, conditions)
 
 export default blocks
-

@@ -5,12 +5,21 @@ export default [
     category: 'control',
     end: true,
     draggable: true,
-    sections: [
-      {
-        type: 'text',
-        text: '重复执行'
+    state: {
+      data: {
+        sections: [
+          {
+            type: 'text',
+            text: '重复执行'
+          }
+        ],
+        subscript: {
+          url: '/img/repeat.svg',
+          width: 24,
+          height: 24
+        }
       }
-    ],
+    },
     exports: {
       json: function (elem) {
         return {}
@@ -23,23 +32,32 @@ export default [
     category: 'control',
     end: false,
     draggable: true,
-    sections: [
-      {
-        type: 'text',
-        text: '重复执行'
-      },
-      {
-        type: 'argument',
-        datatype: 'number',
-        state: {
-          value: 1
+    state: {
+      data: {
+        sections: [
+          {
+            type: 'text',
+            text: '重复执行'
+          },
+          {
+            type: 'argument',
+            datatype: 'number',
+            data: {
+              value: 1
+            }
+          },
+          {
+            type: 'text',
+            text: '次'
+          }
+        ],
+        subscript: {
+          url: '/img/repeat.svg',
+          width: 24,
+          height: 24
         }
-      },
-      {
-        type: 'text',
-        text: '次'
       }
-    ],
+    },
     exports: {
       json: function (elem) {
         return {}

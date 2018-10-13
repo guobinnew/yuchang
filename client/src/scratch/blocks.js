@@ -133,7 +133,7 @@ class Block {
     this.prototypeElement = this.createPrototype()
   }
 
-   /**
+  /**
    * 计算文字长度
    */
   textWidth(text) {
@@ -227,11 +227,11 @@ class Block {
     return elem
   }
 
-   /**
+  /**
    * 创建Shape
    */
   createShape() {
-    
+
   }
 
   /**
@@ -340,7 +340,7 @@ class BlockVariant extends Block {
     return p
   }
 
-   /**
+  /**
    * 创建Shape
    */
   createShape() {
@@ -464,11 +464,11 @@ class BlockStack extends Block {
 
         // 绑定事件
         if (sec.datatype === 'number' || sec.datatype === 'string') {
-          $elem.on('mouseup', function() {
+          $elem.on('mouseup', function () {
             let $this = $(this)
             let $path = $this.children('path')
             let $text = $this.find('.ycBlockEditableText>text')
-            
+
             let m = $path[0].getCTM()
             let bbox = $path[0].getBBox()
             if (!$this.parent().hasClass('ycBlockFlyout')) {
@@ -583,7 +583,7 @@ class BlockStack extends Block {
         contentHeight: state.size.contentHeight
       }])
     }
-    
+
     // 更新容器大小
     state.size.width = $shape[0].__boundbox.width
     state.size.height = $shape[0].__boundbox.height
@@ -621,7 +621,7 @@ class BlockStack extends Block {
     }
   }
 
-    /**
+  /**
    * 克隆一个对象实例, state为实例的状态变量
    */
   instance(state) {
@@ -631,7 +631,7 @@ class BlockStack extends Block {
     // 需要重新更新dom
     const sections = inst.state.data.sections
     const $dom = $(inst.element())
-    $dom.children().each(function() {
+    $dom.children().each(function () {
       const index = $(this).attr('data-index')
       if (index) {
         const section = sections[index]
@@ -690,34 +690,37 @@ class BlockControl extends BlockStack {
   }
 
   createElement() {
-    let elem = super.createElement()
-    let $elem = $(elem)
+    const elem = super.createElement()
+    const $elem = $(elem)
+    const state = this.def.state
 
-    // 创建补充部分
-    this.others = []
-    if (this.def.others) {
-      // 创建Section
-      for (let sec of this.def.others.values()) {
-        let secblock = Object.assign({}, sec)
-        this.others.push(secblock)
-        let $child = $(this.createSection(secblock))
-        if (!$child) {
-          logger.warn('block' + this.name + 'createSection failed:' + sec)
-          continue
-        }
-        // 修改边框颜色
-        if (this.def.background && this.def.background.stroke) {
-          $child.trigger(ShapeUtils.events.background, [{
-            stroke: this.def.background.stroke
-          }])
-        }
-        $elem.append($child)
+    // other
+    if (this.def.shape === 'cuptwo' && state.data.other) {
+      if (state.data.other.type === 'text') {
+        let other = ShapeUtils.base.text(state.data.other)
+        $(other).addClass('ycBlockOther')
+        $elem.append(other)
       }
     }
+
+    // subscript
+    if (state.data.subscript) {
+      let sub = state.data.subscript
+      if (!sub.width) {
+        sub.width = 0
+      }
+      if (!sub.height) {
+        sub.height = 0
+      }
+      let subscript = ShapeUtils.group.image(sub)
+      $(subscript).addClass('ycBlockSubscript')
+      $elem.append(subscript)
+    }
+
     return elem
   }
 
-    /**
+  /**
    * 创建Shape
    */
   createShape() {
@@ -736,118 +739,119 @@ class BlockControl extends BlockStack {
 
   adjustSize(option) {
     const $dom = $(option.dom)
-    const def = option.proto.def
-    const padding = option.proto.padding()
-    const sections = option.proto.sections
-    const others = option.proto.others
+    const def = option.def
+    const padding = this.padding(option)
+    const state = option.state
+    const sections = state.data.sections
 
     // 计算section尺寸
-    let space = def.display.space
-    let offsetx = padding.left
-    let contentWidth = 0
+    let space = state.size.space
     let contentHeight = 20
-    let otherWidth = 0
-    let otherHeight = 24
-
-    // 先计算Sections部分宽度和最大高度
+    let contentWidth = 0
+    // 先计算宽度和最大高度
     for (let sec of sections.values()) {
-      if (sec.type === 'argument' && sec.instance) {
-        offsetx += sec.instance.state.width
-        contentHeight = Math.max(contentHeight, sec.instance.state.height)
-      } else if (sec.type === 'text' && sec.elem) {
-        let l = this.textWidth(sec.text) //Utils.computeTextLength(sec.text) // 字体大小固定，不需要考虑字体
-        offsetx += l
-      } else if (sec.type === 'image' && sec.elem) {
-        let l = sec.width ? sec.width : 24
-        contentHeight = Math.max(otherHeight, sec.height)
-        offsetx += l
+      if (sec.type === 'argument' && sec.dom) {
+        sec.__width = sec.data.size.width
+        contentHeight = Math.max(contentHeight, sec.data.size.height)
+      } else if (sec.type === 'text' && sec.dom) {
+        sec.__width = this.textWidth(sec.text)
+      } else if (sec.type === 'image' && sec.dom) {
+        sec.__width = sec.width
       }
-      offsetx += space
+      contentWidth += sec.__width
+      contentWidth += space
     }
+    contentWidth -= space
 
-    contentWidth = offsetx - space + padding.right
-
-    offsetx = padding.left
-    // 先计算Others宽度和最大高度
-    for (let sec of others.values()) {
-      if (sec.type === 'argument' && sec.instance) {
-        offsetx += sec.instance.state.width
-        otherHeight = Math.max(otherHeight, sec.instance.state.height)
-      } else if (sec.type === 'text' && sec.elem) {
-        let l = this.textWidth(sec.text) //Utils.computeTextLength(sec.text)
-        offsetx += l
-      } else if (sec.type === 'image' && sec.elem) {
-        let l = sec.width ? sec.width : 24
-        offsetx += l
-        otherHeight = Math.max(otherHeight, sec.height)
+    if (def.shape === 'cuptwo' && state.data.other) {
+      const other = state.data.other
+      other.__width = 0
+      // 计算分支文字
+      if (other.type === 'text') {
+        other.__width = this.textWidth(other.text)
       }
-      offsetx += space
+      contentWidth = Math.max(contentWidth, other.__width)
     }
-    otherWidth = offsetx - space + padding.right
-
-    option.state.contentWidth = Math.max(otherWidth, contentWidth)
-    option.state.contentHeight = contentHeight + padding.top + padding.bottom
 
     // 调整容器大小
     let $shape = $dom.children('path')
+    state.size.contentWidth = contentWidth + padding.right + padding.left
+    state.size.contentHeight = contentHeight + padding.top + padding.bottom
     $shape.trigger(ShapeUtils.events.resize, [{
-      contentWidth: option.state.contentWidth,
-      contentHeight: option.state.contentHeight
+      contentWidth: state.size.contentWidth,
+      contentHeight: state.size.contentHeight
     }])
 
-    // 更新大小
-    option.state.width = $shape[0].__boundbox__.width
-    option.state.height = $shape[0].__boundbox__.height
-    option.state.contentWidth = $shape[0].__boundbox__.contentWidth
-    option.state.contentHeight = $shape[0].__boundbox__.contentHeight
-    option.state.outerWidth = $shape[0].__boundbox__.outerWidth
-    option.state.outerHeight = $shape[0].__boundbox__.outerHeight
+    // 更新容器大小
+    state.size.width = $shape[0].__boundbox.width
+    state.size.height = $shape[0].__boundbox.height
+    state.size.contentWidth = $shape[0].__boundbox.contentWidth
+    state.size.contentHeight = $shape[0].__boundbox.contentHeight
 
-    let adjustSection = function (sec, offx, offy) {
+    state.size.cornerRadius = $shape[0].__boundbox.cornerRadius
+    state.size.bottomHeight = $shape[0].__boundbox.bottomHeight
+    state.size.slotHeight = $shape[0].__boundbox.slotHeight
+
+    contentHeight = state.size.height - padding.top - padding.bottom
+    let offsety = padding.top
+    let offsetx = padding.left
+    // 根据新大小调整位置
+    for (let sec of sections) {
       let $child = null
-      if (sec.type === 'argument' && sec.instance) {
-        sec.instance.update({
-          x: offx,
-          y: (option.state.height - sec.instance.state.height) / 2 + offy
-        })
-        offx += sec.instance.state.width
-      } else if (sec.type === 'text' && sec.elem) {
-        $child = $(sec.elem)
-        let l = Utils.computeTextLength(sec.text)
+      if (sec.type === 'argument' && sec.dom) {
+        // 根据高度调整文本位置
+        let argu = Argument.argument(sec)
+        argu.translate(offsetx, (contentHeight - sec.data.size.height) / 2 + padding.top)
+      } else if (sec.type === 'text' && sec.dom) {
+        $child = $(sec.dom)
         // 根据高度调整文本位置
         $child.trigger(ShapeUtils.events.positionText, [{
-          x: l / 2,
+          x: sec.__width / 2,
           y: 0,
-          translatex: offx,
-          translatey: option.state.height / 2 + offy // 中心定位
+          translatex: offsetx,
+          translatey: contentHeight / 2 + padding.top // 中心定位
         }])
-        offx += l
-      } else if (sec.type === 'image' && sec.elem) {
-        $child = $(sec.elem)
-        let l = sec.width ? sec.width : 24
+      } else if (sec.type === 'image' && sec.dom) {
+        $child = $(sec.dom)
         // 根据高度调整文本位置
         $child.trigger(ShapeUtils.events.position, [{
-          translatex: offx,
-          translatey: (option.state.height - sec.height) / 2 + offy
+          translatex: offsetx,
+          translatey: (contentHeight - sec.height) / 2 + padding.top
         }])
-        offx += l
       }
-      return offx
-    }
-    // 根据新大小调整Sections位置
-    let offsety = 0
-    offsetx = padding.left
-    for (let sec of sections.values()) {
-      offsetx = adjustSection(sec, offsetx, offsety)
+      offsetx += sec.__width
       offsetx += space
+    }
+    offsety = state.size.height
+
+    // 调整位置
+    if (def.shape === 'cuptwo' && state.data.other) {
+      state.size.centerHeight = $shape[0].__boundbox.centerHeight
+      // 更新other文字位置
+      offsety += state.size.slotHeight[0]
+      offsety += state.size.cornerRadius * 3
+      let $other = $dom.children('.ycBlockOther')
+
+      $other.trigger(ShapeUtils.events.positionText, [{
+        x: padding.left + state.data.other.__width / 2,
+        y: 0,
+        translatex: 0,
+        translatey: offsety + state.size.centerHeight / 2
+      }])
+      offsety += state.size.cornerRadius
+    } else {
+      offsety += state.size.slotHeight
+      offsety += state.size.cornerRadius * 2
     }
 
-    // 根据新大小调整Others位置
-    offsety = option.state.height + 16 // 补充：计算child高度
-    offsetx = padding.left
-    for (let sec of others.values()) {
-      offsetx = adjustSection(sec, offsetx, offsety)
-      offsetx += space
+    // 调整下标位置
+    if (state.data.subscript) {
+      offsety += state.size.cornerRadius
+      let $sub = $dom.children('.ycBlockSubscript')
+      $sub.trigger(ShapeUtils.events.position, [{
+        translatex: state.size.width - padding.right - state.data.subscript.width,
+        translatey: offsety + (state.size.bottomHeight - state.data.subscript.height) / 2
+      }])
     }
   }
 }
