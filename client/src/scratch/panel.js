@@ -95,7 +95,7 @@ class Panel {
     $(this.dom.root).on('mousedown', () => {
       this.hideDropdownWidget()
     })
-    
+
     $(this.dom.svg).on('mousedown', () => {
       this.lastPoint.x = event.pageX
       this.lastPoint.y = event.pageY
@@ -142,7 +142,7 @@ class Panel {
       that.startDrag = false
       $(this.dom.flyout).css('pointer-events', 'auto')
       let $dragsurface = $(that.dom.dragsurface)
-      
+
       if (that.selected) {
         let $selected = $(that.selected)
         if ($selected.hasClass('ycBlockSelected') && $selected.hasClass('ycBlockDragging')) {
@@ -218,7 +218,7 @@ class Panel {
 
         // 根据鼠标位置计算得到在Canvas中的位置，然后根据Block的包围盒计算中心锚点偏移
         // 这样就能将Block的中心放在当前鼠标的位置
-        that.grapPoint.x = (event.pageX - X - Number(cm.e)) / Number(cm.a) - (bbox.width / 2 + bbox.x) 
+        that.grapPoint.x = (event.pageX - X - Number(cm.e)) / Number(cm.a) - (bbox.width / 2 + bbox.x)
         that.grapPoint.y = (event.pageY - Y - Number(cm.f)) / Number(cm.a) - (bbox.height / 2 + bbox.y)
 
         let newInst = that.addBlock({
@@ -361,7 +361,7 @@ class Panel {
     for (let p of this.option.blocks.packages.values()) {
       this.processPackage(p)
     }
-  
+
     let defs = this.option.blocks.defs
     //
     let cates = this.option.blocks.categories
@@ -540,7 +540,7 @@ class Panel {
   }
 
   showInputWidget(option) {
-  
+
     if (!option) {
       this.hideInputWidget()
       return
@@ -616,8 +616,8 @@ class Panel {
     // 根据option设置边框颜色
     $parent.css('border-color', option.background.stroke)
     $parent.css('background-color', option.background.fill)
-    
-    const createPopMenu = function(option) {
+
+    const createPopMenu = function (option) {
       let $menu = $('<div class="ycBlockDropDownMenu" role="menu" aria-haspopup="true" tabindex="0" style="user-select: none;">')
       // 添加菜单项
       option.values.forEach((item, i) => {
@@ -626,15 +626,18 @@ class Panel {
         if (i === option.select) {
           $menucontent.addClass('ycBlockSelected')
         }
+        let callback = option.callback
         // 
-        $menuitem.on('mouseover', function(){
+        $menuitem.on('mouseover', function () {
           $(this).addClass('ycBlockDropDownMenuItemHover')
-        }).on('mouseout', function() {
+        }).on('mouseout', function () {
           $(this).removeClass('ycBlockDropDownMenuItemHover')
-        }).on('mousedown', function(){
+        }).on('mousedown', function () {
           event.stopPropagation()
-
-
+          // 更新索引
+          let i = $(this).attr('data-value')
+          callback && callback(Number(i))
+          that.hideDropdownWidget()
         })
         $menuitem.append($menucontent)
         $menu.append($menuitem)
