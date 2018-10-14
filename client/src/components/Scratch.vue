@@ -79,14 +79,14 @@
                 </g>
             </g>
         </svg>
-        <div class="ycBlockToolbox" dir="LTR" :height="size.height">
+        <div class="ycBlockToolbox" style="direction: ltr;" :height="size.height">
             <div class="ycBlockCategoryMenu">
             </div>
         </div>
         <div class="ycBlockWidgetDiv"></div>
         <div class="ycBlockDropDownDiv">
           <div class="ycBlockDropDownContent"></div>
-          <div class="ycBlockDropDownArrow arrowBottom" style="transform: translate(77, 300) rotate(45deg);"></div>
+          <div class="ycBlockDropDownArrow"></div>
         </div>
         <div class="ycBlockTooltipDiv"></div>
     </div>
@@ -132,7 +132,7 @@
 }
 
 .ycBlockWsDragSurface.ycBlockOverflowVisible {
-    overflow: visible;
+  overflow: visible;
 }
 
 .ycBlockInsertionMarker > .ycBlockPath {
@@ -225,19 +225,22 @@
 }
 
 .ycBlockWidgetDiv {
-    display: none;
-    position: absolute;
-    z-index: 99999;
+  display: none;
+  position: absolute;
+  z-index: 99999;
+  direction: ltr;
+  margin-left: 0px;
+  border-radius: 16.5px;
 }
 
 .ycBlockWidgetDiv.fieldTextInput {
-    overflow: hidden;
-    border: 1px solid;
-    box-sizing: border-box;
-    transform-origin: 0 0;
-    -ms-transform-origin: 0 0;
-    -moz-transform-origin: 0 0;
-    -webkit-transform-origin: 0 0;
+  overflow: hidden;
+  border: 1px solid;
+  box-sizing: border-box;
+  transform-origin: 0 0;
+  -ms-transform-origin: 0 0;
+  -moz-transform-origin: 0 0;
+  -webkit-transform-origin: 0 0;
 }
 
 .ycBlockHtmlInput {
@@ -256,14 +259,100 @@
   font-weight: 500;
 }
 
-.ycBlockNonEditableText>text, .ycBlockEditableText>text {
-    fill: #575E75;
+.ycBlockNonEditableText > text,
+.ycBlockEditableText > text {
+  fill: #575e75;
 }
 
+.ycBlockDropDownDiv {
+  direction: ltr;
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  display: none;
+  border: 1px solid;
+  border-radius: 4px;
+  box-shadow: 0px 0px 8px 1px rgba(0, 0, 0, 0.3);
+  padding: 4px;
+  -webkit-user-select: none;
+  min-height: 26px;
+}
+
+.ycBlockDropDownContent {
+  max-height: 300px;
+  overflow: auto;
+}
+
+.ycBlockDropDownMenu {
+  cursor: default;
+  font: normal 13px "Helvetica Neue", Helvetica, sans-serif;
+  outline: none;
+  z-index: 20000;
+}
+
+.ycBlockDropDownDiv .ycBlockDropDownMenuItemHover {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.ycBlockDropDownMenuItem {
+  color: #fff;
+  font: normal 13px "Helvetica Neue", Helvetica, sans-serif;
+  font-weight: bold;
+  list-style: none;
+  margin: 0;
+  min-height: 18px;
+  padding: 4px 7em 4px 28px;
+  white-space: nowrap;
+}
+
+.ycBlockDropDownDiv .ycBlockSelected .ycBlockMenuItemCheckBox,
+.ycBlockDropDownDiv .ycBlockSelected .ycBlockMenuItemIcon {
+  background: url(../assets/sprites.png) no-repeat -48px -16px !important;
+  position: static;
+  float: left;
+  margin-left: -24px;
+}
+
+.ycBlockDropDownDiv .ycBlockMenuItemCheckBox, 
+.ycBlockDropDownDiv .ycBlockMenuItemIcon {
+    background-repeat: no-repeat;
+    height: 16px;
+    left: 6px;
+    position: absolute;
+    right: auto;
+    vertical-align: middle;
+    width: 16px;
+}
+
+.ycBlockDropDownArrow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 16px;
+  height: 16px;
+  z-index: -1;
+  background-color: inherit;
+  border-color: inherit;
+}
+
+.ycBlockArrowTop {
+  border-top: 1px solid;
+  border-left: 1px solid;
+  border-top-left-radius: 4px;
+  border-color: inherit;
+}
+
+.ycBlockArrowBottom {
+  border-bottom: 1px solid;
+  border-right: 1px solid;
+  border-bottom-right-radius: 4px;
+  border-color: inherit;
+}
 </style>
 
 <script>
-import Scratch from "../scratch/index"
+import Scratch from "../scratch/index";
 
 export default {
   name: "Scratch",
@@ -290,33 +379,33 @@ export default {
   },
   created: function() {
     if (this.width != undefined) {
-      this.size.width = parseInt(this.width)
+      this.size.width = parseInt(this.width);
     }
 
     if (this.height != undefined) {
-      this.size.height = parseInt(this.height)
+      this.size.height = parseInt(this.height);
     }
   },
   mounted: function() {
     let that = this;
-    that.editor = Scratch.init(that.$el)
+    that.editor = Scratch.init(that.$el);
 
-    let _flex = parseInt(that.flex)
+    let _flex = parseInt(that.flex);
     if (_flex === 1) {
       // 随窗口动态改变大小
       var resizeEditor = function() {
-        that.size.width = that.$el.clientWidth
-        that.size.height = that.$el.clientHeight
-      }
+        that.size.width = that.$el.clientWidth;
+        that.size.height = that.$el.clientHeight;
+      };
 
       window.onresize = function() {
-        resizeEditor()
-      }
+        resizeEditor();
+      };
 
-      resizeEditor()
+      resizeEditor();
     }
-    that.editor.setOption({})
+    that.editor.setOption({});
   },
   methods: {}
-}
+};
 </script>

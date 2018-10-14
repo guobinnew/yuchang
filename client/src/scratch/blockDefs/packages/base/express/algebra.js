@@ -230,7 +230,7 @@ export default [
           },
           {
             type: 'text',
-            text: '>'
+            text: '大于'
           },
           {
             type: 'argument',
@@ -268,7 +268,45 @@ export default [
           },
           {
             type: 'text',
-            text: '<'
+            text: '小于'
+          },
+          {
+            type: 'argument',
+            datatype: 'number'
+          }
+        ]
+      }
+    },
+    exports: {
+      json: function (elem) {
+        return {}
+      }
+    }
+  },
+  {
+    id: 'equal',
+    name: '等于',
+    shape: 'diamond',
+    category: 'operator',
+    draggable: true,
+    state: {
+      size: {
+        padding: {
+          left: 16,
+          right: 16,
+          top: 4,
+          bottom: 4
+        }
+      },
+      data: {
+        sections: [
+          {
+            type: 'argument',
+            datatype: 'number'
+          },
+          {
+            type: 'text',
+            text: '等于'
           },
           {
             type: 'argument',

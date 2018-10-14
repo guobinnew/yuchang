@@ -47,6 +47,8 @@ class Panel {
 
     this.dom.menu = $node.find('.ycBlockCategoryMenu')[0]
     this.dom.widget = $node.find('.ycBlockWidgetDiv')[0]
+    this.dom.dropdown = $node.find('.ycBlockDropDownDiv')[0]
+    this.dom.tooltip = $node.find('.ycBlockTooltipDiv')[0]
 
     this.marker = null // 辅助插入标志占位
 
@@ -90,16 +92,16 @@ class Panel {
 
     let that = this
     // 鼠标事件
+    $(this.dom.root).on('mousedown', () => {
+      this.hideDropdownWidget()
+    })
+    
     $(this.dom.svg).on('mousedown', () => {
-      event.stopPropagation()
-
       this.lastPoint.x = event.pageX
       this.lastPoint.y = event.pageY
       this.startDrag = true
       $(this.dom.flyout).css('pointer-events', 'none')
     }).on('mousemove', function () {
-      event.stopPropagation()
-
       // 获取SVG的位置
       let X = $(this).offset().left
       let Y = $(this).offset().top
@@ -137,8 +139,6 @@ class Panel {
         $(that.dom.dragsurface).attr('style', 'display: block; transform: translate3d(' + deltaX + 'px,' + deltaY + 'px,0px)')
       }
     }).on('mouseup mouseleave', () => {
-      event.stopPropagation()
-
       that.startDrag = false
       $(this.dom.flyout).css('pointer-events', 'auto')
       let $dragsurface = $(that.dom.dragsurface)
@@ -258,6 +258,12 @@ class Panel {
     }).on('mouseup mouseleave', () => {
       this.flyoutstartDrag = false
       this.flyoutselected = null
+    })
+
+    $(this.dom.dropdown).on('mousedown', () => {
+      event.stopPropagation()
+    }).on('mouseup', () => {
+      event.stopPropagation()
     })
   }
 
@@ -548,9 +554,11 @@ class Panel {
     let dom = option.dom
 
     $parent.addClass('fieldTextInput')
-    $parent.attr('style', 'direction: ltr; margin-left: 0px; border-radius: 16.5px; border-color: rgb(204, 153, 0); transition: box-shadow 0.25s ease 0s; box-shadow: rgba(255, 255, 255, 0.3) 0px 0px 0px 4px;')
-    $parent.css('direction', 'ltr')
-
+    $parent.attr('style', 'transition: box-shadow 0.25s ease 0s;box-shadow: rgba(255, 255, 255, 0.3) 0px 0px 0px 4px;')
+    // 根据option设置边框颜色
+    $parent.css('border-color', option.background.stroke)
+    // 设置缩放比例
+    $parent.css('transform', `scale(${that.currentZoomFactor})`)
     $parent.css('top', option.y)
     $parent.css('left', option.x)
     $parent.css('width', option.width)
@@ -589,6 +597,74 @@ class Panel {
     $parent.attr('class', 'ycBlockWidgetDiv')
     $parent.attr('style', '')
     $parent.children().remove()
+  }
+
+  showDropdownWidget(option) {
+    if (!option) {
+      this.hideDropdownWidget()
+      return
+    }
+
+    let $parent = $(this.dom.dropdown)
+    let $content = $parent.children('.ycBlockDropDownContent')
+    $content.children().remove()
+
+    let that = this
+    let dom = option.dom
+
+    $parent.attr('style', ' transition: transform 0.25s ease 0s, opacity 0.25s ease 0s; transform: translate(0px, 20px);')
+    // 根据option设置边框颜色
+    $parent.css('border-color', option.background.stroke)
+    $parent.css('background-color', option.background.fill)
+    
+    const createPopMenu = function(option) {
+      let $menu = $('<div class="ycBlockDropDownMenu" role="menu" aria-haspopup="true" tabindex="0" style="user-select: none;">')
+      // 添加菜单项
+      option.values.forEach((item, i) => {
+        let $menuitem = $(`<div class="ycBlockDropDownMenuItem" role="menuitemcheckbox" style="user-select: none;" data-value="${item.value}"></div>`)
+        let $menucontent = $(`<div class="ycBlockDropDownMenuItemContent" style="user-select: none;"><div class="ycBlockMenuItemCheckBox" style="user-select: none;"></div>${item.name}</div>`)
+        if (i === option.select) {
+          $menucontent.addClass('ycBlockSelected')
+        }
+        // 
+        $menuitem.on('mouseover', function(){
+          $(this).addClass('ycBlockDropDownMenuItemHover')
+        }).on('mouseout', function() {
+          $(this).removeClass('ycBlockDropDownMenuItemHover')
+        }).on('mousedown', function(){
+          event.stopPropagation()
+
+
+        })
+        $menuitem.append($menucontent)
+        $menu.append($menuitem)
+      })
+      return $menu
+    }
+
+    let $menu = createPopMenu(option)
+    $content.append($menu)
+
+    let menuWidth = $parent.outerWidth() / 2
+    $parent.css('top', option.y)
+    $parent.css('left', option.x - menuWidth)
+
+    // 根据屏幕位置，调整菜单
+    let $arrow = $parent.children('.ycBlockDropDownArrow')
+    $arrow.addClass('ycBlockArrowTop')
+    $arrow.attr('style', `transform: translate(${menuWidth - 9}px, -9px) rotate(45deg);`)
+
+    $parent.css('opacity', '1')
+    $parent.css('display', 'block')
+  }
+
+  hideDropdownWidget() {
+    let $parent = $(this.dom.dropdown)
+    $parent.attr('class', 'ycBlockDropDownDiv')
+    $parent.attr('style', 'display: none; opacity: 0;')
+
+    let $content = $parent.children('.ycBlockDropDownContent')
+    $content.children().remove()
   }
 
   addBlock(option, parent) {
