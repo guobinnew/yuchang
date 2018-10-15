@@ -60,7 +60,7 @@ class BlockInstance {
   // 调试使用
   nextString() {
     let str = this.__proto.def.id
-    $(this.element()).find('g.ycBlockDraggable').each(function () {
+    $(this.element()).find('g .ycBlockDraggable').each(function () {
       str += $(this).attr('data-id')
     })
     return str
@@ -69,7 +69,7 @@ class BlockInstance {
   // 下一个Block
   nextBlock() {
     let $dom = $(this.element())
-    let $next = $dom.children('g.ycBlockDraggable')
+    let $next = $dom.children('g .ycBlockDraggable')
     if ($next.length > 0) {
       let uid = $next.attr('data-uid')
       return this.__proto.def.__panel.instances[uid]
@@ -80,7 +80,7 @@ class BlockInstance {
   // 上一个Block
   prevBlock() {
     let $dom = $(this.element())
-    let $prev = $dom.parent('g.ycBlockDraggable')
+    let $prev = $dom.parent('g .ycBlockDraggable')
     if ($prev.length > 0) {
       let uid = $prev.attr('data-uid')
       return this.__proto.def.__panel.instances[uid]
@@ -112,6 +112,23 @@ class BlockInstance {
     $dom.append($path)
   }
 
+  pop() {
+    let prev = this.prevBlock()
+    let next = this.nextBlock()
+    let $dom = $(this.element())
+
+    prev.next(next, true)
+
+    logger.debug('###############pop', $dom.children('g .ycBlockDraggable').length)
+    this.clearNext()
+
+  }
+
+  clearNext() {
+    let $dom = $(this.element())
+    $dom.children('g .ycBlockDraggable').detach()
+  }
+
   // 在序列后面插入instance, 如果instance为空表示删除next
   next(instance, replace = false) {
     if (!instance) {
@@ -124,13 +141,17 @@ class BlockInstance {
 
     // 清除原有next序列
     if (replace) {
-      $(next.element()).remove()
-      $dom.append(instance.element())
-    } else {
-      if (next) {
-        instance.append(next) // 添加到末尾
+      if(next) {
+        $(next.element()).detach()
       }
       $dom.append(instance.element())
+    } else {
+      let $instElem = $(instance.element())
+      $dom.append($instElem)
+      if (next) {
+        let $nextElem = $(next.element())
+        $nextElem.appendTo($instElem)
+      }
     }
     // 返回旧nextBlock
     return next
@@ -142,28 +163,28 @@ class BlockInstance {
       logger.warn('BlockInstance append failed: instance is null')
       return null
     }
-
     let next = this.nextBlock()
-    let $dom = $(this.element())
-
     if (next) {
       next.append(instance)
     } else {
+      let $dom = $(this.element())
       $dom.append(instance.element())
     }
   }
 
   // 移除并返回nextBlock（没有删除）
   removeNext(recursive = false) {
+    let $dom = $(this.element())
     let next = this.nextBlock()
+    logger.debug('remove', next, $dom)
     if (next) {
       if (!recursive) {
         let nextnext = next.nextBlock()
         if (nextnext) {
-          $(nextnext.element()).insertAfter($(next.element()))
+          $(nextnext.element()).insertBefore(next.element())
         }
       }
-      $(next.element()).remove()
+      $(next.element()).detach()
     }
     return next
   }
@@ -253,6 +274,7 @@ class BlockInstance {
     }
     this.__proto.instances.delete(this.uid)
     $(this.dom).remove()
+    this.dom = null
   }
 }
 
@@ -299,6 +321,10 @@ class Block {
   canStack() {
     const list = ['action', 'event', 'control']
     return list.indexOf(this.def.type) >= 0
+  }
+
+  isStackBegin() {
+    return this.def.begin
   }
 
   isStackEnd() {

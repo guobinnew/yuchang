@@ -4,6 +4,7 @@ export default [
     shape: 'cap',
     category: 'event',
     draggable: true,
+    begin: true,
     state: {
       data: {
         sections: [

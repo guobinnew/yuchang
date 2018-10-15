@@ -194,8 +194,14 @@ class Panel {
           if (Utils.isIntersects(selectBox, cbox, 20)) {
             // 检测类型是否允许
             if (inst.__proto.canStack()) {
-              if (selectBox.top > cbox.top && inst.__proto.isStackEnd()) {
-                continue  // continue
+              if (selectBox.top > cbox.top &&
+                (inst.__proto.isStackEnd() || selectInst.__proto.isStackBegin())) {
+                continue
+              }
+
+              if (selectBox.top <= cbox.top &&
+                (inst.__proto.isStackBegin() || selectInst.__proto.isStackEnd())) {
+                continue
               }
               hostInst = inst
               break // break
@@ -207,22 +213,31 @@ class Panel {
         let $marker = $(that.marker.element())
         let prevBlock = that.marker.prevBlock()
 
+        if (prevBlock) {
+          let __nn = prevBlock.nextBlock()
+          logger.debug('#$#$#$#$#1555555', __nn, __nn === that.marker, prevBlock.uid, that.marker.uid)
+        }
+
          // 如果selectBox位于cbox下方
-        let insertBottom = hostInst ? selectBox.top > cbox.top : true
+        let insertBottom = true //hostInst ? selectBox.top > cbox.top : true
 
         if (!prevBlock) { // 在canvas上
           if (!hostInst) { // 没有新host, 仅更新位置
             $marker.attr('visibility', 'hidden')
             $marker.attr('transform', `translate(${canvasx},${canvasy})`)
           } else {  // 有新host, 将Marker添加到host中
-
             if (insertBottom) {
-              $(hostInst.element()).append($marker)
+              hostInst.next(that.marker)
             } else {
               // 从上方插入
+              let hostPrevBlock = hostInst.prevBlock()
+              if (hostPrevBlock) {
+                hostPrevBlock.next(that.marker)
+              } else {
+                that.marker.next(hostInst)
+                // 更新位置
+              }
             }
-
-         
             $marker.attr('visibility', 'visible')
             // 更新
             hostInst.update(null, {force: true})
@@ -230,15 +245,21 @@ class Panel {
         } else {  // 如果在oldhost上
           if (!hostInst) { // 如果没有新host, 从oldhost删除，添加到canvas中
             $marker.attr('visibility', 'hidden')
-            prevBlock.removeNext(that.marker)
+            prevBlock.xxx()
+            prevBlock.removeNext()
             $(that.dom.canvas).append($marker)
             // 更新transform
             $marker.attr('transform', `translate(${canvasx},${canvasy})`)
              // 更新
              prevBlock.update(null, {force: true})
-          } else { // 从oldhost移动到newhost上
-            prevBlock.removeNext(that.marker)
-            hostInst.next(that.marker)
+          } else if (prevBlock !== hostInst) { // 从oldhost移动到newhost上  
+            // 取出Marker
+            that.marker.pop()
+            
+            if (insertBottom) {
+              hostInst.next(that.marker)
+            } else {
+            }
             // 更新
             prevBlock.update(null, {force: true})
             // 更新
@@ -262,7 +283,16 @@ class Panel {
             // 删除Block实例
             this.removeBlock(uid)
           } else {
-            $selected.insertBefore($marker)
+            let prev = that.marker.prevBlock()
+            if (!prev) {
+              $selected.insertBefore($marker)
+            } else {
+              that.marker.pop()
+              let selectUid = $(that.selected).attr('data-uid')
+              let selectInst = that.instances[selectUid]
+              prev.next(selectInst, false)
+            }
+           
             $selected.removeClass('ycBlockDragging')
             // 更新变换
             let m = $marker.attr('transform').replace(/[^0-9\-.,]/g, '').split(',')
@@ -806,12 +836,21 @@ class Panel {
     let $elem = $(inst.element())
     $elem.attr('data-uid', inst.uid)
     $elem.on('mousedown', function () {
+      event.stopPropagation()
+
       that.selected = this
       let m = this.getCTM()
       let pm = dom.canvas.getCTM()
       that.grapPoint.x = (Number(m.e) - Number(pm.e))
       that.grapPoint.y = (Number(m.f) - Number(pm.f))
       $(that.selected).addClass('ycBlockSelected')
+
+      // 父类
+      that.lastPoint.x = event.pageX
+      that.lastPoint.y = event.pageY
+      that.startDrag = true
+      $(that.dom.flyout).css('pointer-events', 'none')
+      that.hideDropdownWidget()
     })
 
     if (parent) {
