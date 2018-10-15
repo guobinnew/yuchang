@@ -936,7 +936,6 @@ const ShapeUtils = {
             $this.html('' + v)
           }
         }
-
       })
       return text
     },

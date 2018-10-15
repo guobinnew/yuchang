@@ -129,7 +129,9 @@ class Panel {
         // 如果Block被选中（点击）并且没有拖动
         if ($selected.hasClass('ycBlockSelected') && !$selected.hasClass('ycBlockDragging')) {
           // 插入占位
-          var $marker = $(that.marker.element())
+          that.marker.ghost($selected)
+          let $marker = $(that.marker.element())
+          $marker.attr('visibility', 'hidden')
           $marker.insertAfter($selected)
           $(that.dom.dragsurface).css('display', 'block')
           $(that.dom.dragcanvas).append($selected)
@@ -137,6 +139,102 @@ class Panel {
         }
         // 根据鼠标位置调整surface
         $(that.dom.dragsurface).attr('style', 'display: block; transform: translate3d(' + deltaX + 'px,' + deltaY + 'px,0px)')
+        
+        // 判断selected与其他Block的相交距离，选取距离最小的Block
+        // 如果位于Block上方，则插入Marker，将Block设为Marker子节点
+        // 如果位于Block下方，则将Block中插入一个Marker
+
+        // 计算当前Selected的包围盒
+        let sbbox = that.selected.getBBox()
+        let sm = that.selected.getCTM()
+        let canvasx = (deltaX + that.grapPoint.x) / Number(sm.a)
+        let canvasy = (deltaY + that.grapPoint.y) / Number(sm.d)
+
+        // 计算AABB
+        const canvasBoundbox = function (x, y, bbox) {
+          return {
+            left: x + bbox.x,
+            top: y + bbox.y,
+            right: x + bbox.x + bbox.width,
+            bottom: y + bbox.y + bbox.height
+          }
+        }
+
+        let selectUid = $(that.selected).attr('data-uid')
+        let selectInst = that.instances[selectUid]
+        let selectBox = canvasBoundbox(canvasx, canvasy, sbbox)
+
+        // 遍历实例列表
+        let hostInst = null
+        let cbox = null
+        $(that.dom.canvas).children('g.ycBlockDraggable').each(function () {
+          if ($(this).attr('data-id') === 'insertmarker') {
+            return true
+          }
+
+          let uid = $(this).attr('data-uid')
+          let inst = that.instances[uid]
+          // 排除自己
+          if (inst.__proto.isInternal() || selectUid === inst.uid) {
+            return true  // continue
+          }
+
+          // 在Viewport之外的排除
+          let instbbox = inst.element().getBBox()
+          let instm = inst.element().getCTM()
+          cbox = canvasBoundbox(
+            Number(instm.e) * Number(instm.a),
+            Number(instm.f) * Number(instm.d),
+            instbbox
+          )
+
+          if (Utils.isIntersects(selectBox, cbox, 20)) {
+            // 检测类型是否允许
+            if (inst.__proto.canStack()) {
+              if (selectBox.top > cbox.top && inst.__proto.isStackEnd()) {
+                return true  // continue
+              }
+              hostInst = inst
+              return false // break
+            }
+          }
+        })
+        
+        // 调整marker状态
+        let $marker = $(that.marker.element())
+        let oldhost = that.marker.state.relation.prev
+  
+        if (!hostInst) { // 将marker加入canvas
+          if (oldhost) {
+            oldhost.next(null)
+            oldhost.update(null, {
+              force: true
+            })
+            $(that.dom.canvas).append($marker)
+          }
+          that.marker.state.relation.prev = null
+          $marker.attr('visibility', 'hidden')
+          $marker.attr('transform', `translate(${canvasx},${canvasy})`)
+        } else {
+          // 判断上下位置
+          // 如果selectBox位于cbox下方
+          if (selectBox.top > cbox.top) {
+            // 判断Marker是否已经存在
+            if (oldhost == null) {
+            } else if (oldhost !== hostInst) {
+              // 切换marker
+              //oldhost.next(null)
+              //oldhost.update(null, {
+                //force: true
+              //})
+            }
+            hostInst.next(that.marker)
+            hostInst.update(null, {
+              force: true
+            })
+           }
+          $marker.attr('visibility', 'visible')
+        }
       }
     }).on('mouseup mouseleave', () => {
       that.startDrag = false
@@ -157,18 +255,16 @@ class Panel {
             $selected.insertBefore($marker)
             $selected.removeClass('ycBlockDragging')
             // 更新变换
-            let dm = $(that.dom.dragsurface).css('transform').replace(/[^0-9\-,]/g, '').split(',')
-            let m = that.selected.getCTM()
-
+            let m = $marker.attr('transform').replace(/[^0-9\-.,]/g, '').split(',')
             that.selected.__instance.update({
               transform: {
-                x: (Number(dm[4]) + that.grapPoint.x) / Number(m.a),
-                y: (Number(dm[5]) + that.grapPoint.y) / Number(m.d)
+                x: Number(m[0]),
+                y: Number(m[1])
               }
             })
             $selected.removeClass('ycBlockSelected')
           }
-          $marker.remove()
+          that.marker.emptyMarker()
           $dragsurface.css('display', 'none')
           $dragsurface.attr('style', 'transform: translate3d(0px,0px,0px)')
         }
@@ -239,6 +335,7 @@ class Panel {
         $(that.selected).addClass('ycBlockSelected ycBlockDragging')
 
         // 插入占位(在末尾添加)
+        that.marker.ghost(that.selected)
         var $marker = $(that.marker.element())
         $(that.dom.canvas).append($marker)
 
@@ -265,6 +362,19 @@ class Panel {
     }).on('mouseup', () => {
       event.stopPropagation()
     })
+  }
+
+  /**
+   * 获取编辑面板的视口(SVG坐标)
+   */
+  viewPortBoundbox() {
+    let m = $(this.dom.canvas).getCTM()
+    return {
+      left: Number(m.e) * Number(m.a),
+      top: Number(m.f) * Number(m.d),
+      right: (Number(m.e) + $(this.dom.svg).attr('width')) * Number(m.a),
+      bottom: (Number(m.f) + $(this.dom.svg).attr('height')) * Number(m.d)
+    }
   }
 
   /**
@@ -571,7 +681,7 @@ class Panel {
     $input.on('input', function () {
       let newValue = $(this).val()
       if (option.type === 'number') {
-        newValue = newValue.replace(/[^\d]/g, '')
+        newValue = newValue.replace(/[^\d.]/g, '')
       }
       $(this).val(newValue)
       // 动态刷新大小

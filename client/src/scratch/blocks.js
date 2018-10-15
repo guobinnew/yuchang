@@ -13,14 +13,23 @@ class BlockInstance {
     this.uid = uuidv4() // 唯一标示
     this.__proto = proto // 原型Block对象
     this.dom = null // DOM根节点
-    this.prev = null // 序列上一个节点（DOM父节点），NULL表示为序列头
-    this.next = null // 序列下一个节点（DOM子节点），NULL表示为序列尾
-    this.parent = null // 父元素（DOM父节点）
-    this.children = [] // 内部子元素（DOM子节点）
+   
     // 复制状态
-    this.state = $.extend(true, {}, this.__proto.def.state)
+    this.state = $.extend(true, {
+      relation: {
+        prev: null, // 序列上一个节点（DOM父节点），NULL表示为序列头
+        next: null, // 序列下一个节点（DOM子节点），NULL表示为序列尾
+        parent: null, // 父元素（DOM父节点）
+        children: [] // 内部子元素（DOM子节点）
+      }
+    }, this.__proto.def.state)
     // 更新状态
-    this.update(state, true)
+    this.update(state, {force:true})
+  }
+
+  // 获取实例类型
+  type() {
+    return this.__proto ? this.__proto.def.type : 'unknown'
   }
 
   // 获取对应的DOM根元素
@@ -33,8 +42,74 @@ class BlockInstance {
     return this.dom
   }
 
+  // 仅用于Marker设置幽灵实例
+  ghost(elem) {
+    if (this.__proto.def.type !== 'marker') {
+      logger.warn('BlockInstance ghost failed: only use for marker --', this.__proto.def.type)
+      return
+    }
+
+    if (!elem) {
+      logger.warn('BlockInstance ghost failed: elem is null')
+      return
+    }
+
+    // 复制path
+    let $elem = $(elem)
+    let $path = $elem.children('path').clone()
+    $path.attr('fill', '#000000')
+    $path.attr('stroke', '#000000')
+    $path.attr('fill-opacity', '0.2')
+
+    let $dom = $(this.element())
+    $dom.children().remove()
+    $dom.append($path)
+  }
+
+  // 插入next
+  next(instance, replace = false) {
+    const relation = this.state.relation
+    if (replace) {
+      if (relation.next) {
+        relation.next.clear()
+        relation.next = null
+      }
+    }
+
+    if (!instance) { // 删除当前next
+      // 删除next
+      if (relation.next) {
+        let next = relation.next
+
+        if (replace) {
+        } else {
+          let nextnext = next.state.relation.next
+          if (nextnext) {
+            nextnext.state.relation.prev = this
+          }
+          relation.next = nextnext
+        }
+        return next
+      }
+    } else {
+      // 将当前子元素移动到instance，然后将instance作为新的子元素
+      let $dom = $(this.element())
+      let $instelem = $(instance.element())
+
+      if (relation.next) {
+        relation.next.state.relation.prev = instance
+        instance.state.relation.next = relation.next
+        $instelem.append(relation.next.element())
+      }
+   
+      instance.state.relation.prev = this
+      relation.next = instance
+      $dom.append($instelem)
+    }
+  }
+
   // 更新状态
-  update(newState, force = false) {
+  update(newState, option) {
     let modify = [] // modify 表明更新类型：size 更新大小 backgroud 更新背景 tansform 更新位置变换 data 更新显示内容
     let _newState = null
     if (yuchg.isFunction(newState)) {
@@ -43,12 +118,20 @@ class BlockInstance {
       _newState = newState
     }
 
-    if (yuchg.isNull(_newState) && !force) {
+    if (!option) {
+      option = {
+        force: false,
+        next: false,
+        prev: false
+      }
+    } 
+
+    if (yuchg.isNull(_newState) && !option.force) {
       logger.warn(`BlockInstance ${this.uid} update failed: newState is NULL`)
       return
     }
 
-    if (!yuchg.isObject(_newState) && !force) {
+    if (!yuchg.isObject(_newState) && !option.force) {
       logger.warn(`BlockInstance ${this.uid} update failed: newState is not a Object --`, _newState)
       return
     }
@@ -68,27 +151,55 @@ class BlockInstance {
       dom: this.element(),
       def: this.__proto.def,
       state: this.state,
-      modify: force ? null : modify
+      modify: option.force ? null : modify
     })
+
+    let relation = this.state.relation
+    if (option.next === true && relation.next) {
+      relation.next.update(null, {
+        force: true,
+        next: true,
+        prev: false
+      })
+    }
+
+    if (option.prev === true && relation.prev) {
+      relation.prev.update(null, {
+        force: true,
+        next: false,
+        prev: true
+      })
+    }
   }
 
-  // next为true时，删除所有nextBlock
+  // 仅用于marker
+  emptyMarker() {
+    $(this.dom).attr('visibility', 'hidden')
+    $(this.dom).remove()
+    this.state.relation.prev = null
+    this.state.relation.next = null
+    this.state.relation.parent = null
+    this.state.relation.children = []
+  }
+
+  // recursion为true时，删除所有nextBlock
   // 为false时，仅删除自己，nextBlock上移
-  clear(next = true) {
+  clear(recursion = true) {
     // 删除子节点children
-    for (let c of this.children.values()) {
+    let relation = this.state.relation
+    for (let c of relation.children.values()) {
       c.clear()
     }
     // 删除next
-    if (this.next) {
-      if (next) {
-        this.next.clear()
+    if (relation.next) {
+      if (recursion) {
+        relation.next.clear()
       } else {
-        this.next.prev = this.prev
+        relation.next.state.relation.prev = relation.prev
       }
     }
     this.__proto.instances.delete(this.uid)
-    $(this.dom).remove()
+   
     // 通知父对象更新
   }
 }
@@ -131,6 +242,20 @@ class Block {
 
     // 创建原型节点，当创建Block实例时，只需要clone节点即可
     this.prototypeElement = this.createPrototype()
+  }
+
+  canStack() {
+    const list = ['action', 'event', 'control']
+    return list.indexOf(this.def.type) >= 0
+  }
+
+  isStackEnd() {
+    return this.def.end
+  }
+
+  // 是否为内部对象
+  isInternal() {
+    return this.def.category === 'internal'
   }
 
   /**
@@ -314,8 +439,16 @@ class BlockMarker extends Block {
     if (this.def.id === 'insertmarker') {
       $elem.addClass('ycBlockInsertionMarker')
     }
+    $elem.attr('visibility', 'hidden')
     return elem
   }
+
+  adjustBackground(option) {
+  }
+
+  adjustTransform(option) {
+  }
+
 }
 
 class BlockVariant extends Block {
@@ -508,7 +641,7 @@ class BlockStack extends Block {
               callback: (v) => {
                 this.__section.data.value = v
                 // 更新整个Block
-                this.__instance.update(null, true)
+                this.__instance.update(null, {force:true})
               }
             })
           })
@@ -534,7 +667,7 @@ class BlockStack extends Block {
               background.fill = $parentpath.attr('fill')
               background.stroke = $parentpath.attr('stroke')
             }
-            
+
             // 显示输入框
             this.__panel.showDropdownWidget({
               dom: this,
@@ -547,7 +680,7 @@ class BlockStack extends Block {
               callback: (i) => {
                 this.__section.data.currentIndex = i
                 // 更新整个Block
-                this.__instance.update(null, true)
+                this.__instance.update(null, {force:true})
               }
             })
           })
@@ -611,6 +744,7 @@ class BlockStack extends Block {
     // 计算section尺寸
     let space = state.size.space
     let offsetx = padding.left
+    let offsety = padding.top
     let contentHeight = 20
 
     // 先计算宽度和最大高度
@@ -681,6 +815,15 @@ class BlockStack extends Block {
       offsetx += sec.__width
       offsetx += space
     }
+
+    // 更新子元素位置
+    offsety = state.size.height
+    $dom.children('g.ycBlockDraggable').each(function() {
+      $(this).attr('transform', `translate(0, ${offsety})`)
+      let $path = $(this).children('path')
+      let bbox = $path[0].getBBox()
+      offsety += bbox.height
+    })
   }
 
   /**
