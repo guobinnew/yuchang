@@ -167,20 +167,23 @@ class Panel {
         // 遍历实例列表
         let hostInst = null
         let cbox = null
-        $(that.dom.canvas).children('g.ycBlockDraggable').each(function () {
-          if ($(this).attr('data-id') === 'insertmarker') {
-            return true
+        for (let inst of Object.values(that.instances)) {
+          if (inst.__proto.id === 'insertmarker') {
+            continue
           }
-
-          let uid = $(this).attr('data-uid')
-          let inst = that.instances[uid]
           // 排除自己
           if (inst.__proto.isInternal() || selectUid === inst.uid) {
-            return true  // continue
+            continue 
+          }
+
+          // 排除选中序列中其他Block
+          if (selectInst.hasNext(inst)) {
+            continue
           }
 
           // 在Viewport之外的排除
-          let instbbox = inst.element().getBBox()
+          let $path = $(inst.element()).children('path')
+          let instbbox = $path[0].getBBox()
           let instm = inst.element().getCTM()
           cbox = canvasBoundbox(
             Number(instm.e) * Number(instm.a),
@@ -192,48 +195,55 @@ class Panel {
             // 检测类型是否允许
             if (inst.__proto.canStack()) {
               if (selectBox.top > cbox.top && inst.__proto.isStackEnd()) {
-                return true  // continue
+                continue  // continue
               }
               hostInst = inst
-              return false // break
+              break // break
             }
           }
-        })
-        
+        }
+    
         // 调整marker状态
         let $marker = $(that.marker.element())
-        let oldhost = that.marker.state.relation.prev
-  
-        if (!hostInst) { // 将marker加入canvas
-          if (oldhost) {
-            oldhost.next(null)
-            oldhost.update(null, {
-              force: true
-            })
-            $(that.dom.canvas).append($marker)
-          }
-          that.marker.state.relation.prev = null
-          $marker.attr('visibility', 'hidden')
-          $marker.attr('transform', `translate(${canvasx},${canvasy})`)
-        } else {
-          // 判断上下位置
-          // 如果selectBox位于cbox下方
-          if (selectBox.top > cbox.top) {
-            // 判断Marker是否已经存在
-            if (oldhost == null) {
-            } else if (oldhost !== hostInst) {
-              // 切换marker
-              //oldhost.next(null)
-              //oldhost.update(null, {
-                //force: true
-              //})
+        let prevBlock = that.marker.prevBlock()
+
+         // 如果selectBox位于cbox下方
+        let insertBottom = hostInst ? selectBox.top > cbox.top : true
+
+        if (!prevBlock) { // 在canvas上
+          if (!hostInst) { // 没有新host, 仅更新位置
+            $marker.attr('visibility', 'hidden')
+            $marker.attr('transform', `translate(${canvasx},${canvasy})`)
+          } else {  // 有新host, 将Marker添加到host中
+
+            if (insertBottom) {
+              $(hostInst.element()).append($marker)
+            } else {
+              // 从上方插入
             }
+
+         
+            $marker.attr('visibility', 'visible')
+            // 更新
+            hostInst.update(null, {force: true})
+          }
+        } else {  // 如果在oldhost上
+          if (!hostInst) { // 如果没有新host, 从oldhost删除，添加到canvas中
+            $marker.attr('visibility', 'hidden')
+            prevBlock.removeNext(that.marker)
+            $(that.dom.canvas).append($marker)
+            // 更新transform
+            $marker.attr('transform', `translate(${canvasx},${canvasy})`)
+             // 更新
+             prevBlock.update(null, {force: true})
+          } else { // 从oldhost移动到newhost上
+            prevBlock.removeNext(that.marker)
             hostInst.next(that.marker)
-            hostInst.update(null, {
-              force: true
-            })
-           }
-          $marker.attr('visibility', 'visible')
+            // 更新
+            prevBlock.update(null, {force: true})
+            // 更新
+            hostInst.update(null, {force: true})
+          }
         }
       }
     }).on('mouseup mouseleave', () => {
@@ -243,13 +253,13 @@ class Panel {
 
       if (that.selected) {
         let $selected = $(that.selected)
+        let uid = $selected.attr('data-uid')
         if ($selected.hasClass('ycBlockSelected') && $selected.hasClass('ycBlockDragging')) {
           // 插入占位
           var $marker = $(that.marker.element())
           // 判断是否在Flyout区域
           if (this.isInFlyoutRegion(event.pageX, event.pageY)) {
             // 删除Block实例
-            let uid = $selected.attr('data-uid')
             this.removeBlock(uid)
           } else {
             $selected.insertBefore($marker)
@@ -337,6 +347,7 @@ class Panel {
         // 插入占位(在末尾添加)
         that.marker.ghost(that.selected)
         var $marker = $(that.marker.element())
+        $marker.attr('visibility', 'hidden')
         $(that.dom.canvas).append($marker)
 
         that.flyoutselected = null
