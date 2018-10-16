@@ -126,6 +126,9 @@ class Panel {
         that.setCanvasTransfrom(that.dom.canvasList, trans)
       } else if (that.selected) {
         let $selected = $(that.selected)
+        let selectUid = $(that.selected).attr('data-uid')
+        let selectInst = that.instances[selectUid]
+
         // 如果Block被选中（点击）并且没有拖动
         if ($selected.hasClass('ycBlockSelected') && !$selected.hasClass('ycBlockDragging')) {
           // 插入占位
@@ -133,6 +136,15 @@ class Panel {
           let $marker = $(that.marker.element())
           $marker.attr('visibility', 'hidden')
           $marker.insertAfter($selected)
+         
+          // 如果有父节点给selected添加变换
+          if (selectInst.prevBlock()) {
+            let _m = $selected[0].getCTM()
+            let _x = Number(_m.e) / Number(_m.a)
+            let _y = Number(_m.f) / Number(_m.d)
+            $selected.attr('transform', `translate(${_x},${_y})`)
+          }
+          
           $(that.dom.dragsurface).css('display', 'block')
           $(that.dom.dragcanvas).append($selected)
           $selected.addClass('ycBlockDragging')
@@ -159,9 +171,6 @@ class Panel {
             bottom: y + bbox.y + bbox.height
           }
         }
-
-        let selectUid = $(that.selected).attr('data-uid')
-        let selectInst = that.instances[selectUid]
         let selectBox = canvasBoundbox(canvasx, canvasy, sbbox)
 
         // 遍历实例列表
