@@ -129,6 +129,7 @@ class BlockInstance {
 
   // 获取实例的投放区域
   updateDropRegions() {
+    logger.debug('updateDropRegions =====')
     this.regions = {}
 
     if (this.__proto.canStack()) {
@@ -140,14 +141,21 @@ class BlockInstance {
       }
     }
 
+    logger.debug('updateDropRegions ===== argu', this.__proto)
+
     // 计算参数投放区域
     if (this.__proto.canEmbed()) {
       this.regions.arguments = {}
-      for (let sec of this.state.data.sections) {
+      this.state.data.sections.forEach((sec, i) => {
         if (sec.type === 'argument') {
-
+          let argu = Argument.argument(sec)
+          if (argu) {
+            // 获取参数位置
+            this.regions.arguments[i] = argu.boundRect()
+          }
         }
-      }
+      })
+      logger.debug('updateDropRegions ===== argu', this.regions.arguments)
     }
   }
 
@@ -162,13 +170,21 @@ class BlockInstance {
 
   // 下一个Block
   nextBlock() {
-    let $dom = $(this.element())
-    let $next = $dom.children('g.ycBlockDraggable')
-    if ($next.length > 0) {
-      let uid = $next.attr('data-uid')
-      return this.__proto.def.__panel.instances[uid]
-    }
-    return null
+    const $dom = $(this.element())
+    const instances = this.__proto.def.__panel.instances
+    let next = null
+    $dom.children('g.ycBlockDraggable').each(function() {
+      let $this = $(this)
+      if ($this.hasClass('ycBlockArgument') ||
+      $this.hasClass('ycBlockResolve') ||
+      $this.hasClass('ycBlockReject')) {
+        return true
+      }
+      let uid = $this.attr('data-uid')
+      next = instances[uid]
+      return false
+    })
+    return next
   }
 
   // 上一个Block
@@ -853,6 +869,11 @@ class BlockStack extends Block {
     return pos
   }
 
+   // 是否嵌入Embed
+   canEmbed() {
+    return true
+  }
+
   createElement() {
     let elem = super.createElement()
     let $elem = $(elem)
@@ -879,6 +900,7 @@ class BlockStack extends Block {
 
   // 创建Sections
   createSection(sec) {
+    let that = this
     let elem = null
     if (sec.type === 'argument') {
       // 如果当前有highlightFill
@@ -903,6 +925,10 @@ class BlockStack extends Block {
             let $this = $(this)
             let $parent = $this.parent()
             if ($parent.hasClass('ycBlockFlyout')) {
+              return
+            }
+            // 如果是拖放状态
+            if (that.def.__panel.startDrag && that.def.__panel.selected) {
               return
             }
             event.stopPropagation()
@@ -946,6 +972,10 @@ class BlockStack extends Block {
             let $this = $(this)
             let $parent = $this.parent()
             if ($parent.hasClass('ycBlockFlyout')) {
+              return
+            }
+            // 如果是拖放状态
+            if (that.def.__panel.startDrag && that.def.__panel.selected) {
               return
             }
             event.stopPropagation()
@@ -1028,6 +1058,12 @@ class BlockStack extends Block {
         sec.dom.__panel = option.def.__panel
         let argu = Argument.argument(sec)
         argu.adjust()
+        if (!sec.__assign) {
+          argu.show()
+        } else {
+          argu.hide()
+          sec.__assign.update()
+        }
       }
     }
   }
@@ -1048,8 +1084,13 @@ class BlockStack extends Block {
     // 先计算宽度和最大高度
     for (let sec of sections.values()) {
       if (sec.type === 'argument' && sec.dom) {
-        sec.__width = sec.data.size.width
-        contentHeight = Math.max(contentHeight, sec.data.size.height)
+        if (sec.__assign) { // 计算Assgin Block的大小
+          sec.__width = sec.__assign.state.size.width
+          contentHeight = Math.max(contentHeight, sec.__assign.state.size.height)
+        } else {
+          sec.__width = sec.data.size.width
+          contentHeight = Math.max(contentHeight, sec.data.size.height)
+        }
       } else if (sec.type === 'text' && sec.dom) {
         sec.__width = this.textWidth(sec.text)
       } else if (sec.type === 'image' && sec.dom) {
@@ -1090,9 +1131,18 @@ class BlockStack extends Block {
     for (let sec of sections) {
       let $child = null
       if (sec.type === 'argument' && sec.dom) {
-        // 根据高度调整文本位置
-        let argu = Argument.argument(sec)
-        argu.translate(offsetx, (contentHeight - sec.data.size.height) / 2 + padding.top)
+        if (sec.__assign) {
+          sec.__assign.update({
+            transform: {
+              x: offsetx,
+              y: (contentHeight - sec.__assign.state.size.height) / 2 + padding.top
+            }
+          })
+        } else {
+          // 根据高度调整文本位置
+          let argu = Argument.argument(sec)
+          argu.translate(offsetx, (contentHeight - sec.data.size.height) / 2 + padding.top)
+        }
       } else if (sec.type === 'text' && sec.dom) {
         $child = $(sec.dom)
         // 根据高度调整文本位置
@@ -1117,6 +1167,10 @@ class BlockStack extends Block {
     // 更新子元素位置
     offsety = state.size.height
     $dom.children('g.ycBlockDraggable').each(function () {
+      let $this = $(this)
+      if ($this.hasClass('ycBlockArgument')) {
+        return true
+      }
       $(this).attr('transform', `translate(0, ${offsety})`)
       let $path = $(this).children('path')
       let bbox = $path[0].getBBox()

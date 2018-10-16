@@ -132,7 +132,7 @@ class Argument {
     $elem.append(shape)
 
     // 绑定事件
-    $elem.on(ShapeUtils.events.background, function(event, opt){
+    $elem.on(ShapeUtils.events.background, function (event, opt) {
       event.stopPropagation()
       let $shape = $(this).children('path')
       $shape.trigger(ShapeUtils.events.background, [opt])
@@ -165,7 +165,7 @@ class Argument {
           height: 32
         }
       }, _def.data, def.data)
-    } 
+    }
 
     if (yuchg.isNull(def.data)) {
       def.data = {}
@@ -187,7 +187,7 @@ class Argument {
     return elem
   }
 
-   /**
+  /**
    * 位移
    */
   translate(x, y) {
@@ -199,10 +199,46 @@ class Argument {
   }
 
   /**
+   * 包围盒（canvas坐标下）
+   */
+  boundRect() {
+    let $dom = $(this.section.dom)
+    let $path = $dom.children('path.ycBlockBackground')
+    let bbox = $path[0].getBBox()
+    let m = this.section.dom.getCTM()
+    logger.debug('Argument  boundRect', bbox, m)
+    return Utils.boundRect(
+      Number(m.e),
+      Number(m.f),
+      bbox.width,
+      bbox.height,
+      Number(m.a),
+      Number(m.d)
+    )
+  }
+
+  /**
+   * 设置高亮
+   * @param {*} enable 
+   */
+  highlight(enable = true) {
+    let $dom = $(this.section.dom)
+    let $path = $dom.children('path.ycBlockBackground')
+    $path.attr('filter', enable ? 'url(#ycBlockReplacementGlowFilter)' : '')
+  }
+
+  show() {
+    $(this.section.dom).attr('visibility', 'visible')
+  }
+
+  hide() {
+    $(this.section.dom).attr('visibility', 'hidden')
+  }
+
+  /**
    * 调整布局
    */
-  adjust() {
-  }
+  adjust() {}
 }
 
 class ArgumentText extends Argument {
@@ -269,7 +305,7 @@ class ArgumentNumber extends Argument {
   static createElement(def) {
     let elem = Argument.createContainer(def)
     let $elem = $(elem)
-   
+
     if (!yuchg.isNumber(def.data.value)) {
       def.data.value = 0
     }
@@ -359,11 +395,12 @@ class ArgumentEnum extends Argument {
   static createElement(def) {
     let elem = Argument.createContainer(def)
     let $elem = $(elem)
-  
+
     if (!yuchg.isArray(def.data.values)) {
-      def.data.values = [
-        { name: '空', value: -1 }
-      ]
+      def.data.values = [{
+        name: '空',
+        value: -1
+      }]
     }
 
     if (!yuchg.isNumber(def.data.currentIndex) || def.data.currentIndex >= def.data.values.length) {
@@ -408,7 +445,7 @@ class ArgumentEnum extends Argument {
     // 更新大小
     data.size.width = $shape[0].__boundbox.width
     data.size.height = $shape[0].__boundbox.height
-  
+
     // 更新文字位置
     padding = data.size.height / 2
     length = this.textWidth('' + currentText)
