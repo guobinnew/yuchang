@@ -50,7 +50,20 @@ const Utils = {
       newbox.bottom = box.top
     }
     return newbox
+  },
+
+  // 计算AABB Rect
+  boundRect(x, y, width, height, zoomx, zoomy) {
+    let zx = yuchg.isNumber(zoomx) ? zoomx : 1.0
+    let zy = yuchg.isNumber(zoomy) ? zoomy : 1.0
+    return {
+      left: x / zx,
+      top: y / zy,
+      right: (x / zx + width),
+      bottom: (y / zy + height)
+    }
   }
+
 }
 
 export default Utils

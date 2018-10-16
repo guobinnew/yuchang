@@ -13,6 +13,7 @@ class BlockInstance {
     this.uid = uuidv4() // 唯一标示
     this.__proto = proto // 原型Block对象
     this.dom = null // DOM根节点
+    this.regions = {}  // 可投放区域
 
     // 复制状态
     this.state = $.extend(true, {}, this.__proto.def.state)
@@ -57,6 +58,84 @@ class BlockInstance {
     return found
   }
 
+  // 获取实例的投放区域
+  updateDropRegions() {
+    this.regions = {}
+    let m = this.element().getCTM()
+    const shape = this.__proto.def.shape
+
+    if (this.__proto.canStack()) {
+      let $path = $(this.element()).children('path.ycBlockBackground')
+      let bbox = $path[0].getBBox()
+
+      // 根据Shape类型
+      if (shape === 'slot') {
+        if (!this.__proto.isStackBegin()) {
+          // top
+          this.regions.top = Utils.boundRect(
+            Number(m.e),
+            Number(m.f),
+            bbox.width,
+            bbox.height / 2,
+            Number(m.a),
+            Number(m.d)
+          )
+        }
+
+        if (!this.__proto.isStackEnd()) {
+          // bottom
+          this.regions.bottom = Utils.boundRect(
+            Number(m.e),
+            Number(m.f) + bbox.height / 2,
+            bbox.width,
+            bbox.height / 2,
+            Number(m.a),
+            Number(m.d)
+          )
+        }
+      } else if (shape === 'cup') {
+        const size = this.state.size
+        if (!this.__proto.isStackBegin()) {
+          // top
+          this.regions.top = Utils.boundRect(
+            Number(m.e),
+            Number(m.f),
+            bbox.width,
+            size.height / 2,
+            Number(m.a),
+            Number(m.d)
+          )
+        }
+
+        if (!this.__proto.isStackEnd()) {
+          // bottom
+          this.regions.bottom = Utils.boundRect(
+            Number(m.e),
+            Number(m.f) + bbox.height - size.bottomHeight / 2,
+            bbox.width,
+            size.bottomHeight / 2,
+            Number(m.a),
+            Number(m.d)
+          )
+        }
+      } else if (shape === 'cuptwo') {
+
+      }
+    }
+
+    // 计算参数投放区域
+    if (this.__proto.canEmbed()) {
+      this.regions.argus = []
+      for (let sec of this.state.data.sections) {
+        if (sec.type === 'argument') {
+
+        }
+      }
+    }
+
+    logger.debug('BbBBBBBBBBB', this.__proto.def.id, this.regions)
+  }
+
   // 调试使用
   nextString() {
     let str = this.__proto.def.id
@@ -69,7 +148,7 @@ class BlockInstance {
   // 下一个Block
   nextBlock() {
     let $dom = $(this.element())
-    let $next = $dom.children('g .ycBlockDraggable')
+    let $next = $dom.children('g.ycBlockDraggable')
     if ($next.length > 0) {
       let uid = $next.attr('data-uid')
       return this.__proto.def.__panel.instances[uid]
@@ -80,7 +159,7 @@ class BlockInstance {
   // 上一个Block
   prevBlock() {
     let $dom = $(this.element())
-    let $prev = $dom.parent('g .ycBlockDraggable')
+    let $prev = $dom.parent('g.ycBlockDraggable')
     if ($prev.length > 0) {
       let uid = $prev.attr('data-uid')
       return this.__proto.def.__panel.instances[uid]
@@ -116,21 +195,17 @@ class BlockInstance {
     let prev = this.prevBlock()
     let next = this.nextBlock()
     let $dom = $(this.element())
-
-    prev.next(next, true)
-
-    logger.debug('###############pop', $dom.children('g .ycBlockDraggable').length)
-    this.clearNext()
-
+    $dom.detach()
+    prev.next(next)
   }
 
   clearNext() {
     let $dom = $(this.element())
-    $dom.children('g .ycBlockDraggable').detach()
+    $dom.children('g.ycBlockDraggable').detach()
   }
 
-  // 在序列后面插入instance, 如果instance为空表示删除next
-  next(instance, replace = false) {
+  // 在序列后面插入instance
+  next(instance) {
     if (!instance) {
       logger.warn('BlockInstance append failed: instance is null')
       return null
@@ -138,23 +213,12 @@ class BlockInstance {
 
     let next = this.nextBlock()
     let $dom = $(this.element())
+    let $instElem = $(instance.element())
 
-    // 清除原有next序列
-    if (replace) {
-      if(next) {
-        $(next.element()).detach()
-      }
-      $dom.append(instance.element())
-    } else {
-      let $instElem = $(instance.element())
-      $dom.append($instElem)
-      if (next) {
-        let $nextElem = $(next.element())
-        $nextElem.appendTo($instElem)
-      }
+    $instElem.appendTo($dom)
+    if (next) {
+      $(next.element()).appendTo($instElem)
     }
-    // 返回旧nextBlock
-    return next
   }
 
   // 添加到序列末尾
@@ -254,6 +318,9 @@ class BlockInstance {
         prev: true
       })
     }
+
+    // 更新投放区域
+    this.updateDropRegions()
   }
 
   // 仅用于marker
@@ -323,12 +390,28 @@ class Block {
     return list.indexOf(this.def.type) >= 0
   }
 
+  isStackBlock() {
+    const list = ['action', 'event', 'control']
+    return list.indexOf(this.def.type) >= 0
+  }
+
+  canEmbed() {
+    const list = ['action', 'event', 'control', 'express']
+    return list.indexOf(this.def.type) >= 0
+  }
+
+  // 是否为嵌入Block类型
+  isEmbedBlock() {
+    const list = ['variant', 'express']
+    return list.indexOf(this.def.type) >= 0
+  }
+
   isStackBegin() {
-    return this.def.begin
+    return !!this.def.begin
   }
 
   isStackEnd() {
-    return this.def.end
+    return !!this.def.end
   }
 
   // 是否为内部对象
