@@ -207,11 +207,18 @@ class Panel {
           if (selectInst.__proto.isEmbedBlock() && regions.arguments) { // 仅判断参数位置
 
           } else if (selectInst.__proto.isStackBlock() && regions.stacks) { // 仅判断stack位置
+            let stackpos = selectInst.__proto.stackPosition()
+   
             for (let [pos, cbox] of Object.entries(regions.stacks)) {
+              if (stackpos.indexOf(pos) < 0) {
+                continue
+              }
+
               if (Utils.isIntersects(selectBox, cbox)) {
                 validPos.push(pos)
               }
             }
+            logger.debug('################### judge regions possssss', inst.__proto.def.id, stackpos, validPos)
           }
 
           logger.debug('################### judge regions pos', validPos)

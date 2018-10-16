@@ -14,7 +14,7 @@ class BlockInstance {
     this.uid = uuidv4() // 唯一标示
     this.__proto = proto // 原型Block对象
     this.dom = null // DOM根节点
-    this.regions = {}  // 可投放区域
+    this.regions = {} // 可投放区域
 
     // 复制状态
     this.state = $.extend(true, {}, this.__proto.def.state)
@@ -59,69 +59,84 @@ class BlockInstance {
     return found
   }
 
+  _updateregion_top(regions) {
+    let m = this.element().getCTM()
+    const shape = this.__proto.def.shape
+    let $path = $(this.element()).children('path.ycBlockBackground')
+    let bbox = $path[0].getBBox()
+
+    if (shape === 'cap') {
+      logger.debug('Instance _updateregion_top failed: cap can not stack in top')
+    } else if (shape === 'slot') {
+      regions.stacks.top = Utils.boundRect(
+        Number(m.e),
+        Number(m.f) - ycDropMargin,
+        bbox.width,
+        ycDropMargin,
+        Number(m.a),
+        Number(m.d)
+      )
+    }
+  }
+
+  _updateregion_bottom(regions) {
+    let m = this.element().getCTM()
+    const shape = this.__proto.def.shape
+    let $path = $(this.element()).children('path.ycBlockBackground')
+    let bbox = $path[0].getBBox()
+    const size = this.state.size
+
+    if (shape === 'slot') {
+      // bottom
+      regions.stacks.bottom = Utils.boundRect(
+        Number(m.e),
+        Number(m.f),
+        bbox.width,
+        bbox.height + ycDropMargin,
+        Number(m.a),
+        Number(m.d)
+      )
+    } else if (shape === 'cap') {
+      // 只有bottom
+      regions.stacks.bottom = Utils.boundRect(
+        Number(m.e),
+        Number(m.f),
+        bbox.width,
+        size.height + bbox.y + ycDropMargin,
+        Number(m.a),
+        Number(m.d)
+      )
+    } else if (shape === 'cup' || shape === 'cuptwo') {
+      // bottom
+      regions.stacks.bottom = Utils.boundRect(
+        Number(m.e),
+        Number(m.f) + bbox.height - size.bottomHeight / 2,
+        bbox.width,
+        size.bottomHeight / 2,
+        Number(m.a),
+        Number(m.d)
+      )
+    }
+  }
+
+  _updateregion_resolve(regions) {
+
+  }
+
+  _updateregion_reject(regions) {
+
+  }
+
   // 获取实例的投放区域
   updateDropRegions() {
     this.regions = {}
-    let m = this.element().getCTM()
-    const shape = this.__proto.def.shape
 
     if (this.__proto.canStack()) {
       this.regions.stacks = {}
-      let $path = $(this.element()).children('path.ycBlockBackground')
-      let bbox = $path[0].getBBox()
-
       // 根据Shape类型
-      if (shape === 'slot') {
-        if (!this.__proto.isStackBegin()) {
-          // top
-          this.regions.stacks.top = Utils.boundRect(
-            Number(m.e),
-            Number(m.f) - ycDropMargin,
-            bbox.width,
-            ycDropMargin,
-            Number(m.a),
-            Number(m.d)
-          )
-        }
-
-        if (!this.__proto.isStackEnd()) {
-          // bottom
-          this.regions.stacks.bottom = Utils.boundRect(
-            Number(m.e),
-            Number(m.f),
-            bbox.width,
-            bbox.height + ycDropMargin,
-            Number(m.a),
-            Number(m.d)
-          )
-        }
-      } else if (shape === 'cup') {
-        const size = this.state.size
-        if (!this.__proto.isStackBegin()) {
-          // top
-          this.regions.stacks.top = Utils.boundRect(
-            Number(m.e),
-            Number(m.f) - ycDropMargin,
-            bbox.width,
-            ycDropMargin,
-            Number(m.a),
-            Number(m.d)
-          )
-        }
-
-        if (!this.__proto.isStackEnd()) {
-          // bottom
-          this.regions.stacks.bottom = Utils.boundRect(
-            Number(m.e),
-            Number(m.f) + bbox.height - size.bottomHeight / 2,
-            bbox.width,
-            size.bottomHeight / 2,
-            Number(m.a),
-            Number(m.d)
-          )
-        }
-      } else if (shape === 'cuptwo') {
-
+      const pos = this.__proto.canStackPosition()
+      for (let p of pos) {
+        this[`_updateregion_${p}`](this.regions)
       }
     }
 
@@ -171,12 +186,11 @@ class BlockInstance {
     let prev = this.prevBlock()
     let next = this.nextBlock()
     let $dom = $(this.element())
-    
+
     if (prev) {
       $dom.detach()
       prev.next(next)
-    }
-    else { // 将子节点加入canvas
+    } else { // 将子节点加入canvas
       if (next) {
         let $canvas = $(this.__proto.def.__panel.dom.canvas)
         // 变换坐标
@@ -337,7 +351,10 @@ class BlockMarkerInstance extends BlockInstance {
   constructor(proto, state) {
     super(proto, state)
     this.ghostInstance = null
-    this.ghostOffset = {x:0,y:0}
+    this.ghostOffset = {
+      x: 0,
+      y: 0
+    }
     this.hostInstance = null
   }
 
@@ -349,12 +366,15 @@ class BlockMarkerInstance extends BlockInstance {
     $dom.children().detach()
     $dom.detach()
     this.ghostInstance = null
-    this.ghostOffset = {x:0,y:0}
+    this.ghostOffset = {
+      x: 0,
+      y: 0
+    }
     this.hostInstance = null
   }
 
-   // 仅用于Marker设置幽灵实例
-   ghost(inst, visible = true) {
+  // 仅用于Marker设置幽灵实例
+  ghost(inst, visible = true) {
     if (!inst) {
       this.empty()
       return
@@ -443,33 +463,33 @@ class Block {
     this.prototypeElement = this.createPrototype()
   }
 
+  // 是否可以Stack其他Block
   canStack() {
-    const list = ['action', 'event', 'control']
-    return list.indexOf(this.def.type) >= 0
+    return false
   }
 
   isStackBlock() {
-    const list = ['action', 'event', 'control']
-    return list.indexOf(this.def.type) >= 0
+    return false
   }
 
+  // 可以Stack其他Block的位置
+  canStackPosition() {
+    return []
+  }
+
+  // 自身可以Stack的位置
+  stackPosition() {
+    return []
+  }
+
+  // 是否嵌入Embed
   canEmbed() {
-    const list = ['action', 'event', 'control', 'express']
-    return list.indexOf(this.def.type) >= 0
+    return false
   }
 
   // 是否为嵌入Block类型
   isEmbedBlock() {
-    const list = ['variant', 'express']
-    return list.indexOf(this.def.type) >= 0
-  }
-
-  isStackBegin() {
-    return !!this.def.begin
-  }
-
-  isStackEnd() {
-    return !!this.def.end
+    return false
   }
 
   // 是否为内部对象
@@ -677,7 +697,6 @@ class BlockMarker extends Block {
     this.instances.set(inst.uid, inst)
     return inst
   }
-
 }
 
 class BlockVariant extends Block {
@@ -689,6 +708,16 @@ class BlockVariant extends Block {
       }
     }, option.state)
     super(option)
+  }
+
+  // 是否嵌入Embed
+  canEmbed() {
+    return false
+  }
+
+  // 是否为嵌入Block类型
+  isEmbedBlock() {
+    return true
   }
 
   padding(option) {
@@ -786,6 +815,42 @@ class BlockStack extends Block {
       }
     }, option.state)
     super(option)
+  }
+
+  // 是否可以Stack其他Block
+  canStack() {
+    return true
+  }
+
+  isStackBlock() {
+    return true
+  }
+
+  // 可以Stack其他Block的位置
+  canStackPosition() {
+    let pos = []
+    if (!!this.def.begin === false) {
+      pos.push('top')
+    }
+
+    if (!!this.def.end === false) {
+      pos.push('bottom')
+    }
+    // 根据形状来确定
+    return pos
+  }
+
+  // 自身可以Stack的位置
+  stackPosition() {
+    let pos = ['resolve', 'reject']
+    if (!!this.def.end === false) {
+      pos.push('top')
+    }
+
+    if (!!this.def.begin === false) {
+      pos.push('bottom')
+    }
+    return pos
   }
 
   createElement() {
@@ -1088,6 +1153,34 @@ class BlockExpress extends BlockStack {
     super(def)
   }
 
+  // 是否可以Stack其他Block
+  canStack() {
+    return false
+  }
+
+  isStackBlock() {
+    return false
+  }
+
+  // 可以Stack其他Block的位置
+  canStackPosition() {
+    return []
+  }
+
+  // 自身可以Stack的位置
+  stackPosition() {
+    return []
+  }
+
+  // 是否嵌入Embed
+  canEmbed() {
+    return true
+  }
+
+  // 是否为嵌入Block类型
+  isEmbedBlock() {
+    return true
+  }
   /**
    * 创建Shape
    */
