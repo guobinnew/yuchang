@@ -205,7 +205,9 @@ class BlockInstance {
 
     if (prev) {
       $dom.detach()
-      prev.next(next)
+      if (next) {
+        $(prev.element()).append(next.element())
+      }
     } else { // 将子节点加入canvas
       if (next) {
         let $canvas = $(this.__proto.def.__panel.dom.canvas)
@@ -240,23 +242,29 @@ class BlockInstance {
     let $dom = $(this.element())
     let $instElem = $(instance.element())
 
+    logger.debug('last last', next)
+
     $instElem.appendTo($dom)
     if (next) {
-      $(next.element()).appendTo($instElem)
+      logger.debug('last last')
+      instance.last(next)
+      //$(next.element()).appendTo($instElem)
     }
   }
 
   // 添加到序列末尾
-  append(instance) {
+  last(instance) {
+
     if (!instance) {
       logger.warn('BlockInstance append failed: instance is null')
       return null
     }
+
+    let $dom = $(this.element())
     let next = this.nextBlock()
     if (next) {
-      next.append(instance)
+      next.last(instance)
     } else {
-      let $dom = $(this.element())
       $dom.append(instance.element())
     }
   }
