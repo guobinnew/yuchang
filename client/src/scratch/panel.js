@@ -136,7 +136,7 @@ class Panel {
           let $marker = $(that.marker.element())
           $marker.attr('visibility', 'hidden')
           $marker.insertAfter($selected)
-         
+
           // 如果有父节点给selected添加变换
           if (selectInst.prevBlock()) {
             let _m = $selected[0].getCTM()
@@ -144,14 +144,14 @@ class Panel {
             let _y = Number(_m.f) / Number(_m.d)
             $selected.attr('transform', `translate(${_x},${_y})`)
           }
-          
+
           $(that.dom.dragsurface).css('display', 'block')
           $(that.dom.dragcanvas).append($selected)
           $selected.addClass('ycBlockDragging')
         }
         // 根据鼠标位置调整surface
         $(that.dom.dragsurface).attr('style', 'display: block; transform: translate3d(' + deltaX + 'px,' + deltaY + 'px,0px)')
-        
+
         // 判断selected与其他Block的相交距离，选取距离最小的Block
         // 如果位于Block上方，则插入Marker，将Block设为Marker子节点
         // 如果位于Block下方，则将Block中插入一个Marker
@@ -175,14 +175,13 @@ class Panel {
 
         // 遍历实例列表
         let validHostList = []
-        logger.debug('################### judge inst ##############', selectBox)
         for (let inst of Object.values(that.instances)) {
           if (inst.__proto.id === 'insertmarker') {
             continue
           }
           // 排除自己
           if (inst.__proto.isInternal() || selectUid === inst.uid) {
-            continue 
+            continue
           }
 
           // 排除选中序列中其他Block
@@ -195,35 +194,29 @@ class Panel {
             continue
           }
 
-           // 类型兼容
-           if (selectInst.__proto.isEmbedBlock() && !inst.__proto.canEmbed()) {
+          // 类型兼容
+          if (selectInst.__proto.isEmbedBlock() && !inst.__proto.canEmbed()) {
             continue
           }
 
           // 获取可投放区域
           let regions = inst.regions
-          if (Object.values(regions).length === 0) {
-            continue
-          }
-
           logger.debug('################### judge inst', inst.__proto.def.id, regions)
 
           let validPos = []
-          for (let [pos, cbox] of Object.entries(regions)) {
-            logger.debug('BBBBBBBB cbox', cbox)
-            if (pos === 'argus') {
+          if (selectInst.__proto.isEmbedBlock() && regions.arguments) { // 仅判断参数位置
 
-            } else {
+          } else if (selectInst.__proto.isStackBlock() && regions.stacks) { // 仅判断stack位置
+            for (let [pos, cbox] of Object.entries(regions.stacks)) {
               if (Utils.isIntersects(selectBox, cbox, 10)) {
                 validPos.push(pos)
               }
             }
           }
 
-          logger.debug('BBBBBB pos', validPos)
           if (validPos.length > 0) {
-            validHostList.push({ 
-              instance: inst, 
+            validHostList.push({
+              instance: inst,
               pos: validPos // 投放位置
             })
           }
@@ -236,7 +229,7 @@ class Panel {
         // 3: argu类型，优先子节点
         let hostInst = null
         if (validHostList.length > 0) {
-          for (let h of validHostList.reverse()) {  // 倒序检查
+          for (let h of validHostList.reverse()) { // 倒序检查
             if (!hostInst) {
               hostInst = h
             } else {
@@ -249,17 +242,18 @@ class Panel {
         }
 
         if (hostInst) {
-          // 优先选取位置
-          if (hostInst.pos.indexOf('argu') >= 0){
-
-          } else if (hostInst.pos.indexOf('children') >= 0){
-
-          } else {
+          if (selectInst.__proto.isEmbedBlock()) {
             hostInst.insert = hostInst.pos[0] // 默认取第一个
+          } else if (selectInst.__proto.isStackBlock()) {
+            // 优先选取位置
+            if (hostInst.pos.indexOf('slot1') >= 0 || hostInst.pos.indexOf('slot2') >= 0) {
+
+            } else {
+              hostInst.insert = hostInst.pos[0] // 默认取第一个
+            }
           }
-          logger.debug('BBBBBBB Selected', hostInst)
         }
-    
+
         // 调整marker状态
         let $marker = $(that.marker.element())
         let prevBlock = that.marker.prevBlock()
@@ -268,10 +262,10 @@ class Panel {
           if (!hostInst) { // 没有新host, 仅更新位置
             $marker.attr('visibility', 'hidden')
             $marker.attr('transform', `translate(${canvasx},${canvasy})`)
-          } else {  // 有新host, 将Marker添加到host中
+          } else { // 有新host, 将Marker添加到host中
             if (hostInst.insert === 'bottom') {
               hostInst.instance.next(that.marker)
-            } else {
+            } else if (hostInst.insert === 'top') {
               // 从上方插入
               let hostPrevBlock = hostInst.instance.prevBlock()
               if (hostPrevBlock) {
@@ -280,12 +274,16 @@ class Panel {
                 that.marker.next(hostInst.instance)
                 // 更新位置
               }
+            } else {
+
             }
             $marker.attr('visibility', 'visible')
             // 更新
-            hostInst.instance.update(null, {force: true})
+            hostInst.instance.update(null, {
+              force: true
+            })
           }
-        } else {  // 如果在oldhost上
+        } else { // 如果在oldhost上
           if (!hostInst) { // 如果没有新host, 从oldhost删除，添加到canvas中
             $marker.attr('visibility', 'hidden')
             prevBlock.removeNext()
@@ -293,18 +291,25 @@ class Panel {
             // 更新transform
             $marker.attr('transform', `translate(${canvasx},${canvasy})`)
             // 更新
-            prevBlock.update(null, {force: true})
+            prevBlock.update(null, {
+              force: true
+            })
           } else if (prevBlock !== hostInst.instance) { // 从oldhost移动到newhost上  
             // 取出Marker
             that.marker.pop()
             if (hostInst.insert === 'bottom') {
               hostInst.next(that.marker)
-            } else {
+            } else if (hostInst.insert === 'top') {
+
             }
             // 更新
-            prevBlock.update(null, {force: true})
+            prevBlock.update(null, {
+              force: true
+            })
             // 更新
-            hostInst.instance.update(null, {force: true})
+            hostInst.instance.update(null, {
+              force: true
+            })
           }
         }
       }
@@ -338,7 +343,7 @@ class Panel {
               let selectInst = that.instances[selectUid]
               prev.next(selectInst)
             }
-           
+
             $selected.removeClass('ycBlockDragging')
             // 更新变换
             let m = $marker.attr('transform').replace(/[^0-9\-.,]/g, '').split(',')

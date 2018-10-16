@@ -65,6 +65,7 @@ class BlockInstance {
     const shape = this.__proto.def.shape
 
     if (this.__proto.canStack()) {
+      this.regions.stacks = {}
       let $path = $(this.element()).children('path.ycBlockBackground')
       let bbox = $path[0].getBBox()
 
@@ -72,7 +73,7 @@ class BlockInstance {
       if (shape === 'slot') {
         if (!this.__proto.isStackBegin()) {
           // top
-          this.regions.top = Utils.boundRect(
+          this.regions.stacks.top = Utils.boundRect(
             Number(m.e),
             Number(m.f),
             bbox.width,
@@ -84,7 +85,7 @@ class BlockInstance {
 
         if (!this.__proto.isStackEnd()) {
           // bottom
-          this.regions.bottom = Utils.boundRect(
+          this.regions.stacks.bottom = Utils.boundRect(
             Number(m.e),
             Number(m.f) + bbox.height / 2,
             bbox.width,
@@ -97,7 +98,7 @@ class BlockInstance {
         const size = this.state.size
         if (!this.__proto.isStackBegin()) {
           // top
-          this.regions.top = Utils.boundRect(
+          this.regions.stacks.top = Utils.boundRect(
             Number(m.e),
             Number(m.f),
             bbox.width,
@@ -109,7 +110,7 @@ class BlockInstance {
 
         if (!this.__proto.isStackEnd()) {
           // bottom
-          this.regions.bottom = Utils.boundRect(
+          this.regions.stacks.bottom = Utils.boundRect(
             Number(m.e),
             Number(m.f) + bbox.height - size.bottomHeight / 2,
             bbox.width,
@@ -125,15 +126,13 @@ class BlockInstance {
 
     // 计算参数投放区域
     if (this.__proto.canEmbed()) {
-      this.regions.argus = []
+      this.regions.arguments = {}
       for (let sec of this.state.data.sections) {
         if (sec.type === 'argument') {
 
         }
       }
     }
-
-    logger.debug('BbBBBBBBBBB', this.__proto.def.id, this.regions)
   }
 
   // 调试使用
