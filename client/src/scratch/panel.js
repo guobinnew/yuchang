@@ -374,7 +374,7 @@ class Panel {
           } else { // 如果在oldhost上
             if (!hostInst) { // 如果没有新host, 从oldhost删除，添加到canvas中
               $marker.attr('visibility', 'hidden')
-              oldhostInst.instance.removeNext()
+              that.marker.pop()
               $(that.dom.canvas).append($marker)
               // 更新transform
               $marker.attr('transform', `translate(${canvasx},${canvasy})`)
