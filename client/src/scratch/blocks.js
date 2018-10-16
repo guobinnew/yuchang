@@ -7,6 +7,7 @@ import ShapeUtils from './shapes'
 import Utils from './utils'
 import Argument from './argus'
 
+const ycDropMargin = 20
 // 块实例
 class BlockInstance {
   constructor(proto, state) {
@@ -75,9 +76,9 @@ class BlockInstance {
           // top
           this.regions.stacks.top = Utils.boundRect(
             Number(m.e),
-            Number(m.f),
+            Number(m.f) - ycDropMargin,
             bbox.width,
-            bbox.height / 2,
+            ycDropMargin,
             Number(m.a),
             Number(m.d)
           )
@@ -87,9 +88,9 @@ class BlockInstance {
           // bottom
           this.regions.stacks.bottom = Utils.boundRect(
             Number(m.e),
-            Number(m.f) + bbox.height / 2,
+            Number(m.f),
             bbox.width,
-            bbox.height / 2,
+            bbox.height + ycDropMargin,
             Number(m.a),
             Number(m.d)
           )
@@ -100,9 +101,9 @@ class BlockInstance {
           // top
           this.regions.stacks.top = Utils.boundRect(
             Number(m.e),
-            Number(m.f),
+            Number(m.f) - ycDropMargin,
             bbox.width,
-            size.height / 2,
+            ycDropMargin,
             Number(m.a),
             Number(m.d)
           )
@@ -166,36 +167,31 @@ class BlockInstance {
     return null
   }
 
-  // 仅用于Marker设置幽灵实例
-  ghost(elem) {
-    if (this.__proto.def.type !== 'marker') {
-      logger.warn('BlockInstance ghost failed: only use for marker --', this.__proto.def.type)
-      return
-    }
-
-    if (!elem) {
-      logger.warn('BlockInstance ghost failed: elem is null')
-      return
-    }
-
-    // 复制path
-    let $elem = $(elem)
-    let $path = $elem.children('path').clone()
-    $path.attr('fill', '#000000')
-    $path.attr('stroke', '#000000')
-    $path.attr('fill-opacity', '0.2')
-
-    let $dom = $(this.element())
-    $dom.children().remove()
-    $dom.append($path)
-  }
-
   pop() {
     let prev = this.prevBlock()
     let next = this.nextBlock()
     let $dom = $(this.element())
-    $dom.detach()
-    prev.next(next)
+    
+    if (prev) {
+      $dom.detach()
+      prev.next(next)
+    }
+    else { // 将子节点加入canvas
+      if (next) {
+        let $canvas = $(this.__proto.def.__panel.dom.canvas)
+        // 变换坐标
+        let $next = $(next.element())
+        let m = next.element().getCTM()
+        next.update({
+          transform: {
+            x: Number(m.e) / Number(m.a),
+            y: Number(m.f) / Number(m.d)
+          }
+        })
+        $canvas.append($next)
+      }
+      $dom.detach()
+    }
   }
 
   clearNext() {
@@ -264,7 +260,7 @@ class BlockInstance {
 
     if (!option) {
       option = {
-        force: false,
+        force: !newState,
         next: false,
         prev: false
       }
@@ -317,16 +313,8 @@ class BlockInstance {
         prev: true
       })
     }
-
     // 更新投放区域
     this.updateDropRegions()
-  }
-
-  // 仅用于marker
-  emptyMarker() {
-    $(this.dom).attr('visibility', 'hidden')
-    $(this.dom).children().remove()
-    $(this.dom).remove()
   }
 
   // 清空
@@ -341,6 +329,77 @@ class BlockInstance {
     this.__proto.instances.delete(this.uid)
     $(this.dom).remove()
     this.dom = null
+  }
+}
+
+// 块实例
+class BlockMarkerInstance extends BlockInstance {
+  constructor(proto, state) {
+    super(proto, state)
+    this.ghostInstance = null
+    this.ghostOffset = {x:0,y:0}
+    this.hostInstance = null
+  }
+
+  // 仅用于marker
+  empty() {
+    let $dom = $(this.element())
+    $dom.attr('visibility', 'hidden')
+    $dom.children('path').remove()
+    $dom.children().detach()
+    $dom.detach()
+    this.ghostInstance = null
+    this.ghostOffset = {x:0,y:0}
+    this.hostInstance = null
+  }
+
+   // 仅用于Marker设置幽灵实例
+   ghost(inst, visible = true) {
+    if (!inst) {
+      this.empty()
+      return
+    }
+
+    let $dom = $(this.element())
+    this.ghostInstance = inst
+    this.hostInstance = null
+    // 复制path
+    let $elem = $(this.ghostInstance.element())
+    let $path = $elem.children('path').clone()
+    $path.attr('fill', '#000000')
+    $path.attr('stroke', '#000000')
+    $path.attr('fill-opacity', '0.2')
+    $dom.children().remove()
+    $dom.append($path)
+    $(this.dom).attr('visibility', visible ? 'visible' : 'hidden')
+
+    this.ghostOffset.x = 0
+    this.ghostOffset.y = inst.state.size.height
+  }
+
+  update(newState, option) {
+    logger.debug('marker update')
+    if (!this.ghostInstance) {
+      return
+    }
+
+    let that = this
+    let $dom = $(this.element())
+    // 更新子元素位置
+    let offsety = this.ghostOffset.y
+    $dom.children('g.ycBlockDraggable').each(function () {
+      let selectUid = $(this).attr('data-uid')
+      let selectInst = that.__proto.def.__panel.instances[selectUid]
+      selectInst.update({
+        transform: {
+          x: 0,
+          y: offsety
+        }
+      })
+      let $path = $(this).children('path')
+      let bbox = $path[0].getBBox()
+      offsety += bbox.height
+    })
   }
 }
 
@@ -606,6 +665,18 @@ class BlockMarker extends Block {
   adjustBackground(option) {}
 
   adjustTransform(option) {}
+
+  /**
+   * 克隆一个对象实例, state为实例的状态变量
+   */
+  instance(state) {
+    var inst = new BlockMarkerInstance(this, state)
+    const dom = inst.element()
+    dom.__instance = inst
+    dom.__panel = inst.__proto.def.__panel
+    this.instances.set(inst.uid, inst)
+    return inst
+  }
 
 }
 

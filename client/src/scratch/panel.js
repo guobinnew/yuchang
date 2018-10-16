@@ -132,7 +132,7 @@ class Panel {
         // 如果Block被选中（点击）并且没有拖动
         if ($selected.hasClass('ycBlockSelected') && !$selected.hasClass('ycBlockDragging')) {
           // 插入占位
-          that.marker.ghost($selected)
+          that.marker.ghost(selectInst)
           let $marker = $(that.marker.element())
           $marker.attr('visibility', 'hidden')
           $marker.insertAfter($selected)
@@ -201,18 +201,20 @@ class Panel {
 
           // 获取可投放区域
           let regions = inst.regions
-          logger.debug('################### judge inst', inst.__proto.def.id, regions)
+          logger.debug('################### judge regions', inst.__proto.def.id, selectBox, regions)
 
           let validPos = []
           if (selectInst.__proto.isEmbedBlock() && regions.arguments) { // 仅判断参数位置
 
           } else if (selectInst.__proto.isStackBlock() && regions.stacks) { // 仅判断stack位置
             for (let [pos, cbox] of Object.entries(regions.stacks)) {
-              if (Utils.isIntersects(selectBox, cbox, 10)) {
+              if (Utils.isIntersects(selectBox, cbox)) {
                 validPos.push(pos)
               }
             }
           }
+
+          logger.debug('################### judge regions pos', validPos)
 
           if (validPos.length > 0) {
             validHostList.push({
@@ -221,6 +223,8 @@ class Panel {
             })
           }
         }
+
+        logger.debug('#################', validHostList)
 
         // 从候选列表中提取最很合适的节点，
         // 如果父子同时满足的话：
@@ -242,6 +246,7 @@ class Panel {
         }
 
         if (hostInst) {
+          logger.debug('################# hostInst', hostInst)
           if (selectInst.__proto.isEmbedBlock()) {
             hostInst.insert = hostInst.pos[0] // 默认取第一个
           } else if (selectInst.__proto.isStackBlock()) {
@@ -256,62 +261,89 @@ class Panel {
 
         // 调整marker状态
         let $marker = $(that.marker.element())
-        let prevBlock = that.marker.prevBlock()
+        let oldhostInst = that.marker.hostInstance
 
-        if (!prevBlock) { // 在canvas上
+        logger.warn('marker oldhost======', oldhostInst ? oldhostInst.instance.__proto.def.id : null)
+        logger.warn('marker newhost======', hostInst ? hostInst.instance.__proto.def.id : null)
+
+        let prevBlock = that.marker.prevBlock()
+        if (prevBlock !== (oldhostInst ? oldhostInst.instance : null)) {
+          logger.warn('marker prev is wrong', prevBlock, oldhostInst ? oldhostInst.instance : null)
+        }
+
+        if (!oldhostInst) { // 在canvas上
           if (!hostInst) { // 没有新host, 仅更新位置
             $marker.attr('visibility', 'hidden')
             $marker.attr('transform', `translate(${canvasx},${canvasy})`)
           } else { // 有新host, 将Marker添加到host中
+            $marker.attr('visibility', 'visible')
+            that.marker.pop()
+
             if (hostInst.insert === 'bottom') {
               hostInst.instance.next(that.marker)
+              // 更新
+              hostInst.instance.update()
             } else if (hostInst.insert === 'top') {
               // 从上方插入
               let hostPrevBlock = hostInst.instance.prevBlock()
               if (hostPrevBlock) {
                 hostPrevBlock.next(that.marker)
+                hostPrevBlock.update()
               } else {
-                that.marker.next(hostInst.instance)
                 // 更新位置
+                let _m = hostInst.instance.element().getCTM()
+                let _x = Number(_m.e) / Number(_m.a) - that.marker.ghostOffset.x
+                let _y = Number(_m.f) / Number(_m.d) - that.marker.ghostOffset.y
+                $marker.attr('transform', `translate(${_x},${_y})`)
+                that.marker.next(hostInst.instance)
+                $(that.dom.canvas).append($marker)
+                that.marker.update()
               }
-            } else {
+            } else { // 
 
             }
-            $marker.attr('visibility', 'visible')
-            // 更新
-            hostInst.instance.update(null, {
-              force: true
-            })
           }
         } else { // 如果在oldhost上
           if (!hostInst) { // 如果没有新host, 从oldhost删除，添加到canvas中
             $marker.attr('visibility', 'hidden')
-            prevBlock.removeNext()
+            oldhostInst.instance.removeNext()
             $(that.dom.canvas).append($marker)
             // 更新transform
             $marker.attr('transform', `translate(${canvasx},${canvasy})`)
             // 更新
-            prevBlock.update(null, {
-              force: true
-            })
-          } else if (prevBlock !== hostInst.instance) { // 从oldhost移动到newhost上  
-            // 取出Marker
-            that.marker.pop()
-            if (hostInst.insert === 'bottom') {
-              hostInst.next(that.marker)
-            } else if (hostInst.insert === 'top') {
-
+            oldhostInst.instance.update()
+          } else { // 从oldhost移动到newhost上  
+            if (oldhostInst.instance !== hostInst.instance || oldhostInst.insert !== hostInst.insert) {
+              // 取出Marker
+              that.marker.pop()
+              if (hostInst.insert === 'bottom') {
+                hostInst.instance.next(that.marker)
+              } else if (hostInst.insert === 'top') {
+                // 从上方插入
+                let hostPrevBlock = hostInst.instance.prevBlock()
+                if (hostPrevBlock) {
+                  hostPrevBlock.next(that.marker)
+                  hostPrevBlock.update()
+                } else {
+                  // 更新位置
+                  let _m = hostInst.instance.element().getCTM()
+                  let _x = Number(_m.e) / Number(_m.a) - that.marker.ghostOffset.x
+                  let _y = Number(_m.f) / Number(_m.d) - that.marker.ghostOffset.y
+                  $marker.attr('transform', `translate(${_x},${_y})`)
+                  that.marker.next(hostInst.instance)
+                  $(that.dom.canvas).append($marker)
+                  logger.debug('PPPPPPPPPPP', that.marker)
+                  that.marker.update()
+                  // 更新
+                  oldhostInst.instance.update()
+                }
+              }
+              // 更新
+              hostInst.instance.update()
             }
-            // 更新
-            prevBlock.update(null, {
-              force: true
-            })
-            // 更新
-            hostInst.instance.update(null, {
-              force: true
-            })
           }
         }
+        that.marker.hostInstance = hostInst
       }
     }).on('mouseup mouseleave', () => {
       that.startDrag = false
@@ -355,7 +387,7 @@ class Panel {
             })
             $selected.removeClass('ycBlockSelected')
           }
-          that.marker.emptyMarker()
+          that.marker.ghost(null)
           $dragsurface.css('display', 'none')
           $dragsurface.attr('style', 'transform: translate3d(0px,0px,0px)')
         }
@@ -426,7 +458,7 @@ class Panel {
         $(that.selected).addClass('ycBlockSelected ycBlockDragging')
 
         // 插入占位(在末尾添加)
-        that.marker.ghost(that.selected)
+        that.marker.ghost(newInst)
         var $marker = $(that.marker.element())
         $marker.attr('visibility', 'hidden')
         $(that.dom.canvas).append($marker)
