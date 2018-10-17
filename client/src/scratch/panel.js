@@ -387,10 +387,12 @@ class Panel {
             } else { // 有新host, 将Marker添加到host中
               
               if (hostInst.insert === 'bottom') {
+                that.marker.childType('')
                 hostInst.instance.next(that.marker)
                 // 更新
                 hostInst.instance.update()
               } else if (hostInst.insert === 'top') {
+                that.marker.childType('')
                 // 从上方插入
                 let hostPrevBlock = hostInst.instance.prevBlock()
                 if (hostPrevBlock) {
@@ -407,10 +409,13 @@ class Panel {
                   $(that.dom.canvas).append($marker)
                 }
               } else if (hostInst.insert === 'resolve') {
-
-              } 
-              else if (hostInst.insert === 'reject') {
-
+                that.marker.childType('resolve')
+                hostInst.instance.resolve(that.marker)
+                hostInst.instance.update()
+              } else if (hostInst.insert === 'reject') {
+                that.marker.childType('reject')
+                hostInst.instance.reject(that.marker)
+                hostInst.instance.update()
               }
               that.marker.update()
               $marker.attr('visibility', 'visible')
@@ -419,14 +424,18 @@ class Panel {
             if (!hostInst) { // 如果没有新host, 从oldhost删除，添加到canvas中
               $marker.attr('visibility', 'hidden')
               that.marker.pop()
+              that.marker.childType('')
               $(that.dom.canvas).append($marker)
               // 更新transform
               $marker.attr('transform', `translate(${canvasx},${canvasy})`)
               // 更新
-              if (oldhostInst.insert === 'top') {
+              if (oldhostInst.insert !== 'bottom') {
                 let oldhostPrevBlock = oldhostInst.instance.prevBlock()
                 if (oldhostPrevBlock) {
-                  oldhostPrevBlock.update()
+                  oldhostPrevBlock.update(null, {
+                    force: true,
+                    prev: true
+                  })
                 }
               }
               oldhostInst.instance.update()
@@ -542,7 +551,6 @@ class Panel {
                 let sec = hostInst.instance.state.data.sections[hostInst.insert]
                 let argu = Argument.argument(sec)
                 argu.highlight(false)
-
                 selectInst.childType('argument')
                 $(hostInst.instance.element()).append($selected)
                 sec.__assign = selectInst
