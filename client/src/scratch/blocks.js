@@ -217,7 +217,7 @@ class BlockInstance {
 
     regions.stacks.resolve = Utils.boundRect(
       Number(m.e) / Number(m.a) - canvasOffset.x,
-      Number(m.f) / Number(m.d) + size.height - canvasOffset.y,
+      Number(m.f) / Number(m.d) - canvasOffset.y,
       bbox.width,
       size.height
     )
@@ -242,7 +242,7 @@ class BlockInstance {
     if (shape === 'cuptwo') {
       regions.stacks.reject = Utils.boundRect(
         Number(m.e) / Number(m.a) - canvasOffset.x,
-        Number(m.f) / Number(m.d) + size.height + size.resolveHeight + size.centerHeight + size.cornerRadius * 2 - canvasOffset.y,
+        Number(m.f) / Number(m.d) + size.height + size.resolveHeight - canvasOffset.y,
         bbox.width,
         size.centerHeight + size.cornerRadius * 2
       )
@@ -1730,6 +1730,7 @@ class BlockControl extends BlockStack {
         translatex: 0,
         translatey: offsety + state.size.centerHeight / 2
       }])
+      offsety += state.size.centerHeight
       offsety += state.size.cornerRadius
 
       // 调整Reject位置

@@ -475,7 +475,7 @@ class Panel {
                   hostInst.instance.resolve(that.marker)
 
                 } else if (hostInst.insert === 'reject') {
-                  hostInst.instance.resolve(that.marker)
+                  hostInst.instance.reject(that.marker)
                 }
                 // 更新
                 that.marker.update()
@@ -507,7 +507,8 @@ class Panel {
             // 如果是Stack类型
             if (selectInst.__proto.isStackBlock()) {
               // 拷贝childtype
-              selectInst.childType(that.marker.childType())
+              let childType = that.marker.childType()
+              selectInst.childType(childType)
 
               let prev = that.marker.prevBlock()
               if (!prev) {
@@ -519,7 +520,13 @@ class Panel {
                 $selected.insertBefore($marker)
               } else {
                 that.marker.pop()
-                prev.next(selectInst)
+                if (childType === 'resolve') {
+                  prev.resolve(selectInst)
+                } else if (childType === 'reject') {
+                  prev.reject(selectInst)
+                } else {
+                  prev.next(selectInst)
+                }
               }
 
               // 更新变换，只需拷贝marker的transform

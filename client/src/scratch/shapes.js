@@ -348,7 +348,7 @@ const ShapeUtils = {
         if (modify) {
           _boundbox.width = _boundbox.contentWidth + _boundbox.cornerRadius * 2
           _boundbox.height = _boundbox.contentHeight + _boundbox.cornerRadius * 2
-          _boundbox.wholeHeight = _boundbox.contentHeight + _boundbox.slotHeight + _boundbox.bottomHeight + ycCornerRadius * 4
+          _boundbox.wholeHeight = _boundbox.height + _boundbox.slotHeight + _boundbox.bottomHeight + ycCornerRadius * 2
         }
 
         return _boundbox
@@ -461,6 +461,7 @@ const ShapeUtils = {
           // 更新宽高
           _boundbox.width = _boundbox.contentWidth + _boundbox.cornerRadius * 2
           _boundbox.height = _boundbox.contentHeight + _boundbox.cornerRadius * 2
+          _boundbox.wholeHeight = _boundbox.height + _boundbox.slotHeight[0] + _boundbox.centerHeight + _boundbox.slotHeight[1] + _boundbox.bottomHeight + ycCornerRadius * 4
         }
 
         return _boundbox
