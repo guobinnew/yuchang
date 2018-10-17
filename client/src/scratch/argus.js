@@ -201,15 +201,15 @@ class Argument {
   /**
    * 包围盒（canvas坐标下）
    */
-  boundRect() {
+  boundRect(offsetx, offsety) {
     let $dom = $(this.section.dom)
     let $path = $dom.children('path.ycBlockBackground')
     let bbox = $path[0].getBBox()
     let m = this.section.dom.getCTM()
-    logger.debug('Argument  boundRect', bbox, m)
+    logger.debug('Argument  boundRect', bbox, m, offsetx, offsety )
     return Utils.boundRect(
-      Number(m.e),
-      Number(m.f),
+      Number(m.e) + offsetx,
+      Number(m.f) + offsety,
       bbox.width,
       bbox.height,
       Number(m.a),

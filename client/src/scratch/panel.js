@@ -67,7 +67,7 @@ class Panel {
 
     this.selected = null
     this.currentZoomFactor = 1.0
-    this.zoomRate = 0.25
+    this.zoomRate = 1.2
     this.startDrag = false
 
     this.flyoutgrapPoint = {
@@ -86,8 +86,6 @@ class Panel {
     this.option = {
       width: 800,
       height: 600,
-      virtualWidth: 1600,
-      virtualHeight: 1200,
       blocks: BlockDefs
     }
 
@@ -124,8 +122,8 @@ class Panel {
       let cm = that.dom.canvas.getCTM()
       // 显示坐标为画布坐标（不是屏幕坐标）
       that.updateInfo({
-        x: event.pageX - X - Number(cm.e),
-        y: event.pageY - Y - Number(cm.f)
+        x: Math.round((event.pageX - X - Number(cm.e)) / Number(cm.a)),
+        y: Math.round((event.pageY - Y - Number(cm.f)) / Number(cm.d))
       })
 
       // 鼠标移动偏移量
@@ -150,8 +148,16 @@ class Panel {
           that.marker.ghost(selectInst)
           let $marker = $(that.marker.element())
           $marker.attr('visibility', 'hidden')
-          $marker.insertAfter($selected)
 
+          // 如果是Stack类型，j
+          if (selectInst.__proto.isStackBlock()) {
+            $marker.insertAfter($selected)
+          } else if (selectInst.__proto.isEmbedBlock()) {
+            $(that.dom.canvas).append($marker)
+          } else {
+            logger.warn('mouse move: unknown block type')
+          }
+  
           // 如果有父节点给selected添加变换
           let prevBlock = selectInst.prevBlock()
           if (prevBlock) {
@@ -160,6 +166,11 @@ class Panel {
             let _x = Number(_m.e) / Number(_m.a) - canvasOffset.x
             let _y = Number(_m.f) / Number(_m.d) - canvasOffset.y
             $selected.attr('transform', `translate(${_x},${_y})`)
+
+            // 如果是嵌入类型，需要将当前位置更新给marker
+            if (selectInst.__proto.isEmbedBlock()) {
+              $marker.attr('transform', `translate(${_x},${_y})`)
+            }
 
             // 如果是embed，则需要恢复父对象
             if (selectInst.__proto.isEmbedBlock()) {
@@ -179,7 +190,14 @@ class Panel {
           $selected.addClass('ycBlockDragging')
 
           if (prevBlock) {
-            prevBlock.update()
+            if (selectInst.__proto.isEmbedBlock()) {
+              prevBlock.update(null, {
+                force: true,
+                prev: true
+              })
+            } else {
+              prevBlock.update()
+            }
           }
         }
         // 根据鼠标位置调整surface
@@ -437,7 +455,6 @@ class Panel {
       that.startDrag = false
       $(this.dom.flyout).css('pointer-events', 'auto')
       let $dragsurface = $(that.dom.dragsurface)
-
       if (that.selected) {
         let $selected = $(that.selected)
         let uid = $selected.attr('data-uid')
@@ -451,7 +468,7 @@ class Panel {
           } else {
             let selectUid = $(that.selected).attr('data-uid')
             let selectInst = that.instances[selectUid]
-
+            // 如果是Stack类型
             if (selectInst.__proto.isStackBlock()) {
               let prev = that.marker.prevBlock()
               if (!prev) {
@@ -466,7 +483,7 @@ class Panel {
                 prev.next(selectInst)
               }
 
-              // 更新变换
+              // 更新变换，只需拷贝marker的transform
               let m = $marker.attr('transform').replace(/[^0-9\-.,]/g, '').split(',')
               that.selected.__instance.update({
                 transform: {
@@ -474,15 +491,14 @@ class Panel {
                   y: Number(m[1])
                 }
               })
-            } else if (selectInst.__proto.isEmbedBlock()) {
+            } else if (selectInst.__proto.isEmbedBlock()) { // 如果是嵌入类型
               let hostInst = that.marker.hostInstance
 
               // 获取参数对象
               if (!hostInst) {
                 $selected.removeClass('ycBlockArgument')
                 $selected.insertBefore($marker)
-
-                // 更新变换
+                // 更新变换，只需拷贝marker的transform
                 let m = $marker.attr('transform').replace(/[^0-9\-.,]/g, '').split(',')
                 that.selected.__instance.update({
                   transform: {
@@ -498,7 +514,11 @@ class Panel {
                 $selected.addClass('ycBlockArgument')
                 $(hostInst.instance.element()).append($selected)
                 sec.__assign = selectInst
-                hostInst.instance.update()
+                // 通知父节点更新布局
+                hostInst.instance.update(null, {
+                  force: true,
+                  prev: true
+                })
               }
             }
 
@@ -751,9 +771,13 @@ class Panel {
     $('.ycBlockZoom image').each(function (index, elem) {
       $(this).mousedown(function () {
         if (index === 0) {
-          that.currentZoomFactor -= that.zoomRate
+          if (that.currentZoomFactor > 0.5) {
+            that.currentZoomFactor /= that.zoomRate
+          }
         } else if (index === 1) {
-          that.currentZoomFactor += that.zoomRate
+          if (that.currentZoomFactor < 2) {
+            that.currentZoomFactor *= that.zoomRate
+          }
         } else if (index === 2) {
           that.currentZoomFactor = 1.0
           that.setCanvasTransfrom(that.dom.canvasList, 'translate(0,0) scale(1.0)')
@@ -1046,21 +1070,23 @@ class Panel {
       event.stopPropagation()
 
       that.selected = this
-      
-      // let __m = that.dom.canvas.getCTM()
-      // logger.debug(`################### canvas ctm --`, __m)
 
-      // let __m = this.getCTM()
-      // logger.debug('$$$$$$$$$$$$$$ selected ctm', __m)
-      // let selectUid = $(this).attr('data-uid')
-      // let selectInst = that.instances[selectUid]
-      // // 查看参数位置
-      // for (let sec of selectInst.state.data.sections) {
-      //   if (sec.type === 'argument' && sec.dom) {
-      //     let __m = sec.dom.getCTM()
-      //     logger.debug('$$$$$$$$$$$$$$ selected argument ', __m)
-      //   }
-      // }
+      let __m = this.getCTM()
+      logger.debug('$$$$$$$$$$$$$$ selected ctm', __m, that.viewPortOffset())
+      let selectUid = $(this).attr('data-uid')
+      let selectInst = that.instances[selectUid]
+      // 查看参数位置
+      if (selectInst.state.data && selectInst.state.data.sections) {
+        let regions = selectInst.getRegions()
+        logger.debug('$$$$$$$$$$$$$$ selected regions', regions)
+        for (let sec of selectInst.state.data.sections) {
+          if (sec.type === 'argument' && sec.dom) {
+            let __m = sec.dom.getCTM()
+            logger.debug('$$$$$$$$$$$$$$ selected argument ', __m)
+          }
+        }
+      }
+
 
       let m = this.getCTM()
       let pm = dom.canvas.getCTM()

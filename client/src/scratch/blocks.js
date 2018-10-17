@@ -83,12 +83,10 @@ class BlockInstance {
       logger.debug('Instance _updateregion_top failed: cap can not stack in top')
     } else if (shape === 'slot') {
       regions.stacks.top = Utils.boundRect(
-        Number(m.e) - canvasOffset.x,
-        Number(m.f) - ycDropMargin - canvasOffset.y,
+        Number(m.e) / Number(m.a) - canvasOffset.x,
+        Number(m.f) / Number(m.d) - ycDropMargin - canvasOffset.y,
         bbox.width,
-        ycDropMargin,
-        Number(m.a),
-        Number(m.d)
+        ycDropMargin
       )
     }
   }
@@ -106,32 +104,26 @@ class BlockInstance {
     if (shape === 'slot') {
       // bottom
       regions.stacks.bottom = Utils.boundRect(
-        Number(m.e) - canvasOffset.x,
-        Number(m.f) - canvasOffset.y,
+        Number(m.e) / Number(m.a) - canvasOffset.x,
+        Number(m.f) / Number(m.d) - canvasOffset.y,
         bbox.width,
-        bbox.height + ycDropMargin,
-        Number(m.a),
-        Number(m.d)
+        bbox.height + ycDropMargin
       )
     } else if (shape === 'cap') {
       // 只有bottom
       regions.stacks.bottom = Utils.boundRect(
-        Number(m.e) - canvasOffset.x,
-        Number(m.f) - canvasOffset.y,
+        Number(m.e) / Number(m.a) - canvasOffset.x,
+        Number(m.f) / Number(m.d) - canvasOffset.y,
         bbox.width,
-        size.height + bbox.y + ycDropMargin,
-        Number(m.a),
-        Number(m.d)
+        size.height + bbox.y + ycDropMargin
       )
     } else if (shape === 'cup' || shape === 'cuptwo') {
       // bottom
       regions.stacks.bottom = Utils.boundRect(
-        Number(m.e) - canvasOffset.y,
-        Number(m.f) + bbox.height - size.bottomHeight / 2 - canvasOffset.y,
+        Number(m.e) / Number(m.a) - canvasOffset.y,
+        Number(m.f) / Number(m.d) + bbox.height - size.bottomHeight / 2 - canvasOffset.y,
         bbox.width,
-        size.bottomHeight / 2,
-        Number(m.a),
-        Number(m.d)
+        size.bottomHeight / 2
       )
     }
   }
@@ -168,7 +160,8 @@ class BlockInstance {
           let argu = Argument.argument(sec)
           if (argu) {
             // 获取参数位置
-            this.regions.arguments[i] = argu.boundRect()
+            let canvasOffset = this.__proto.def.__panel.viewPortOffset()
+            this.regions.arguments[i] = argu.boundRect(-canvasOffset.x, -canvasOffset.y)
           }
         }
       })
@@ -363,11 +356,13 @@ class BlockInstance {
 
     if (option.prev === true) {
       let prev = this.prevBlock()
-      prev.update(null, {
-        force: true,
-        next: false,
-        prev: true
-      })
+      if (prev) {
+        prev.update(null, {
+          force: true,
+          next: false,
+          prev: true
+        })
+      }
     }
   }
 

@@ -62,8 +62,19 @@ const Utils = {
       right: (x / zx + width),
       bottom: (y / zy + height)
     }
-  }
+  },
 
+  /**
+   * 平移
+   */
+  translateRect(rect, offsetx, offsety) {
+    return {
+      left: rect.left + offsetx,
+      top: rect.top + offsety,
+      right: rect.right + offsetx,
+      bottom:  rect.bottom + offsety
+    }
+  }
 }
 
 export default Utils
