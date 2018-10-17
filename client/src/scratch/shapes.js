@@ -235,12 +235,14 @@ const ShapeUtils = {
           return _boundbox
         }
 
-        let modify = !!opt.contentWidth || !!opt.contentHeight
-        if (opt.contentWidth) {
+        let modify = false
+        if (yuchg.isNumber(opt.contentWidth)) {
+          modify = true
           _boundbox.contentWidth = Math.max(opt.contentWidth, minContentWidth)
         }
 
-        if (opt.contentHeight) {
+        if (yuchg.isNumber(opt.contentHeight)) {
+          modify = true
           _boundbox.contentHeight = Math.max(opt.contentHeight, minContentHeight)
         }
 
@@ -326,17 +328,20 @@ const ShapeUtils = {
           return _boundbox
         }
 
-        let modify = !!opt.contentWidth || !!opt.contentHeight || !!opt.slotHeight
+        let modify = false
 
-        if (opt.contentWidth) {
+        if (yuchg.isNumber(opt.contentWidth)) {
+          modify = true
           _boundbox.contentWidth = Math.max(opt.contentWidth, minContentWidth)
         }
 
-        if (opt.contentHeight) {
+        if (yuchg.isNumber(opt.contentHeight)) {
+          modify = true
           _boundbox.contentHeight = Math.max(opt.contentHeight, minContentHeight)
         }
 
-        if (opt.slotHeight) {
+        if (yuchg.isNumber(opt.slotHeight)) {
+          modify = true
           _boundbox.slotHeight = Math.max(opt.slotHeight, emptySlotHeight)
         }
 
@@ -386,6 +391,7 @@ const ShapeUtils = {
         opt.slotHeight = checkParameter(opt.slotHeight, yuchg.isNumber)
 
         boundbox = _size(boundbox, opt)
+
         const $this = $(this)
         $this.attr('d', _dfunc(boundbox))
         this.__boundbox = boundbox
@@ -434,16 +440,19 @@ const ShapeUtils = {
           return _boundbox
         }
 
-        let modify = !!opt.contentWidth || !!opt.contentHeight || !!opt.slotHeight
-        if (opt.contentWidth) {
+        let modify = false
+        if (yuchg.isNumber(opt.contentWidth)) {
+          modify = true
           _boundbox.contentWidth = Math.max(opt.contentWidth, minContentWidth)
         }
 
-        if (opt.contentHeight) {
+        if (yuchg.isNumber(opt.contentHeight)) {
+          modify = true
           _boundbox.contentHeight = Math.max(opt.contentHeight, minContentHeight)
         }
 
         if (opt.slotHeight && yuchg.isArray(opt.slotHeight)) {
+          modify = true
           _boundbox.slotHeight[0] = Math.max(opt.slotHeight[0], emptySlotHeight)
           _boundbox.slotHeight[1] = Math.max(opt.slotHeight[1], emptySlotHeight)
         }
@@ -543,13 +552,15 @@ const ShapeUtils = {
           return _boundbox
         }
 
-        let modify = !!opt.contentWidth || !!opt.contentHeight
+        let modify = false
 
-        if (opt.contentWidth) {
+        if (yuchg.isNumber(opt.contentWidth)) {
+          modify = true
           _boundbox.contentWidth = Math.max(opt.contentWidth, minContentWidth)
         }
 
-        if (opt.contentHeight) {
+        if (yuchg.isNumber(opt.contentHeight)) {
+          modify = true
           _boundbox.contentHeight = Math.max(opt.contentHeight, minContentHeight)
         }
 
@@ -629,12 +640,14 @@ const ShapeUtils = {
           return _boundbox
         }
 
-        let modify = !!opt.width || !!opt.height
-        if (opt.height) {
+        let modify = false
+        if (yuchg.isNumber(opt.height)) {
+          modify = true
           _boundbox.radius = Math.max(opt.height / 2, minRadius)
         }
 
-        if (opt.width) {
+        if (yuchg.isNumber(opt.width)) {
+          modify = true
           _boundbox.width = Math.max(opt.width, minWidth)
         }
 
@@ -712,12 +725,13 @@ const ShapeUtils = {
           return _boundbox
         }
 
-        let modify = !!opt.width || !!opt.height
-        if (opt.height) {
+        let modify = false
+        if (yuchg.isNumber(opt.height)) {
+          modify = true
           _boundbox.side = Math.max(opt.height / 2, minSide)
         }
 
-        if (opt.width) {
+        if (yuchg.isNumber(opt.width)) {
           _boundbox.width = Math.max(opt.width, minWidth)
         }
 

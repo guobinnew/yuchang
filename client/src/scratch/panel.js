@@ -387,12 +387,10 @@ class Panel {
             } else { // 有新host, 将Marker添加到host中
               
               if (hostInst.insert === 'bottom') {
-                that.marker.childType('')
                 hostInst.instance.next(that.marker)
                 // 更新
                 hostInst.instance.update()
               } else if (hostInst.insert === 'top') {
-                that.marker.childType('')
                 // 从上方插入
                 let hostPrevBlock = hostInst.instance.prevBlock()
                 if (hostPrevBlock) {
@@ -405,15 +403,14 @@ class Panel {
                   let _x = Number(_m.e) / Number(_m.a) - that.marker.ghostOffset.x - canvasOffset.x
                   let _y = Number(_m.f) / Number(_m.d) - that.marker.ghostOffset.y - canvasOffset.y
                   $marker.attr('transform', `translate(${_x},${_y})`)
+                  that.marker.childType('')
                   that.marker.next(hostInst.instance)
                   $(that.dom.canvas).append($marker)
                 }
               } else if (hostInst.insert === 'resolve') {
-                that.marker.childType('resolve')
                 hostInst.instance.resolve(that.marker)
                 hostInst.instance.update()
               } else if (hostInst.insert === 'reject') {
-                that.marker.childType('reject')
                 hostInst.instance.reject(that.marker)
                 hostInst.instance.update()
               }
@@ -448,15 +445,15 @@ class Panel {
                   if (oldhostPrevBlock) {
                     oldhostPrevBlock.update()
                   }
-                }
+                } 
 
-                if (oldhostInst.instance !== hostInst.instance) {
+                if (oldhostInst.instance !== hostInst.instance ||
+                  (oldhostInst.insert === 'resolve' || oldhostInst.insert === 'reject')) {
                   oldhostInst.instance.update()
                 }
 
                 if (hostInst.insert === 'bottom') {
                   hostInst.instance.next(that.marker)
-                  //that.marker.update()
                 } else if (hostInst.insert === 'top') {
                   // 从上方插入
                   let hostPrevBlock = hostInst.instance.prevBlock()
@@ -469,14 +466,16 @@ class Panel {
                     let _m = hostInst.instance.element().getCTM()
                     let _x = Number(_m.e) / Number(_m.a) - that.marker.ghostOffset.x - canvasOffset.x
                     let _y = Number(_m.f) / Number(_m.d) - that.marker.ghostOffset.y - canvasOffset.y
+                    that.marker.childType('')
                     $marker.attr('transform', `translate(${_x},${_y})`)
                     that.marker.next(hostInst.instance)
                     $(that.dom.canvas).append($marker)
-                    logger.debug('PPPPPPPPPPP', that.marker)
-                    //that.marker.update()
-                    // 更新
-                    //oldhostInst.instance.update()
                   }
+                } else if (hostInst.insert === 'resolve') {
+                  hostInst.instance.resolve(that.marker)
+
+                } else if (hostInst.insert === 'reject') {
+                  hostInst.instance.resolve(that.marker)
                 }
                 // 更新
                 that.marker.update()
@@ -1111,8 +1110,10 @@ class Panel {
       that.selected = this
 
       // Debug
+      
       let selectUid = $(this).attr('data-uid')
       let selectInst = that.instances[selectUid]
+      selectInst.update()
       selectInst.dump()
 
       let m = this.getCTM()

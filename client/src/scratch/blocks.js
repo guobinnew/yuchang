@@ -374,6 +374,8 @@ class BlockInstance {
       return null
     }
 
+    instance.childType('')
+
     let next = this.nextBlock()
     let $dom = $(this.element())
     let $instElem = $(instance.element())
@@ -443,6 +445,7 @@ class BlockInstance {
       return null
     }
 
+    instance.childType('resolve')
     let next = this.resolveBlock()
     let $dom = $(this.element())
     let $instElem = $(instance.element())
@@ -461,7 +464,7 @@ class BlockInstance {
       logger.warn('BlockInstance append failed: instance is null')
       return null
     }
-
+    instance.childType('reject')
     let next = this.rejectBlock()
     let $dom = $(this.element())
     let $instElem = $(instance.element())
@@ -1623,6 +1626,7 @@ class BlockControl extends BlockStack {
       })
     }
 
+    logger.debug('Block update', resolveHeight, rejectHeight)
     // 调整容器大小
     let $shape = $dom.children('path')
     state.size.contentWidth = contentWidth + padding.right + padding.left
