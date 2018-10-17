@@ -342,8 +342,8 @@ class Panel {
         let $marker = $(that.marker.element())
         let oldhostInst = that.marker.hostInstance
 
-        logger.warn('marker oldhost======', oldhostInst ? oldhostInst : null)
-        logger.warn('marker newhost======', hostInst ? hostInst : null)
+        logger.warn('marker oldhost======', oldhostInst ? oldhostInst.instance.__proto.def.id + '' + oldhostInst.insert : null)
+        logger.warn('marker newhost======', hostInst ? hostInst.instance.__proto.def.id + '' + hostInst.insert : null)
 
         if (selectInst.__proto.isEmbedBlock()) { // 参数变换
           $marker.attr('visibility', 'hidden')
@@ -381,9 +381,7 @@ class Panel {
               $marker.attr('visibility', 'hidden')
               $marker.attr('transform', `translate(${canvasx},${canvasy})`)
             } else { // 有新host, 将Marker添加到host中
-              $marker.attr('visibility', 'visible')
-              that.marker.pop()
-
+              //that.marker.pop()
               if (hostInst.insert === 'bottom') {
                 hostInst.instance.next(that.marker)
                 // 更新
@@ -403,9 +401,10 @@ class Panel {
                   $marker.attr('transform', `translate(${_x},${_y})`)
                   that.marker.next(hostInst.instance)
                   $(that.dom.canvas).append($marker)
-                  that.marker.update()
                 }
               } else if (hostInst.insert === 'resolve') {} else if (hostInst.insert === 'reject') {}
+              that.marker.update()
+              $marker.attr('visibility', 'visible')
             }
           } else { // 如果在oldhost上
             if (!hostInst) { // 如果没有新host, 从oldhost删除，添加到canvas中
@@ -415,13 +414,31 @@ class Panel {
               // 更新transform
               $marker.attr('transform', `translate(${canvasx},${canvasy})`)
               // 更新
+              if (oldhostInst.insert === 'top') {
+                let oldhostPrevBlock = oldhostInst.instance.prevBlock()
+                if (oldhostPrevBlock) {
+                  oldhostPrevBlock.update()
+                }
+              }
               oldhostInst.instance.update()
             } else { // 从oldhost移动到newhost上  
               if (oldhostInst.instance !== hostInst.instance || oldhostInst.insert !== hostInst.insert) {
                 // 取出Marker
                 that.marker.pop()
+                if (oldhostInst.insert === 'top') {
+                  let oldhostPrevBlock = oldhostInst.instance.prevBlock()
+                  if (oldhostPrevBlock) {
+                    oldhostPrevBlock.update()
+                  }
+                }
+
+                if (oldhostInst.instance !== hostInst.instance) {
+                  oldhostInst.instance.update()
+                }
+
                 if (hostInst.insert === 'bottom') {
                   hostInst.instance.next(that.marker)
+                  //that.marker.update()
                 } else if (hostInst.insert === 'top') {
                   // 从上方插入
                   let hostPrevBlock = hostInst.instance.prevBlock()
@@ -438,12 +455,13 @@ class Panel {
                     that.marker.next(hostInst.instance)
                     $(that.dom.canvas).append($marker)
                     logger.debug('PPPPPPPPPPP', that.marker)
-                    that.marker.update()
+                    //that.marker.update()
                     // 更新
-                    oldhostInst.instance.update()
+                    //oldhostInst.instance.update()
                   }
                 }
                 // 更新
+                that.marker.update()
                 hostInst.instance.update()
               }
             }
@@ -1071,22 +1089,10 @@ class Panel {
 
       that.selected = this
 
-      let __m = this.getCTM()
-      logger.debug('$$$$$$$$$$$$$$ selected ctm', __m, that.viewPortOffset())
+      // Debug
       let selectUid = $(this).attr('data-uid')
       let selectInst = that.instances[selectUid]
-      // 查看参数位置
-      if (selectInst.state.data && selectInst.state.data.sections) {
-        let regions = selectInst.getRegions()
-        logger.debug('$$$$$$$$$$$$$$ selected regions', regions)
-        for (let sec of selectInst.state.data.sections) {
-          if (sec.type === 'argument' && sec.dom) {
-            let __m = sec.dom.getCTM()
-            logger.debug('$$$$$$$$$$$$$$ selected argument ', __m)
-          }
-        }
-      }
-
+      selectInst.dump()
 
       let m = this.getCTM()
       let pm = dom.canvas.getCTM()

@@ -24,6 +24,28 @@ class BlockInstance {
     })
   }
 
+  /**
+   * 调试输出
+   */
+  dump() {
+    let $elem = $(this.element())
+    let $path = $elem.children('path.ycBlockBackground')
+    let bbox = $path[0].getBBox()
+
+    let output = {
+      uid: this.uid,
+      protoId: this.__proto.def.id,
+      CTM: this.element().getCTM(),
+      Boundbox: bbox,
+      Transform: $elem.attr('transform'),
+      Region: this.getRegions(),
+      State: {
+        Size: this.state.size
+      }
+    }
+    logger.debug('****** Instance Dump ******', output)
+  }
+
   // 获取实例类型
   type() {
     return this.__proto ? this.__proto.def.type : 'unknown'
@@ -57,6 +79,20 @@ class BlockInstance {
     })
 
     return found
+  }
+
+  /**
+   * 
+   */
+  setTranslate(x, y) {
+    if(!yuchg.isNumber(x) || !yuchg.isNumber(y)) {
+      logger.warn('BlockInstance setTranslate failed: x or y is not a number')
+      return
+    }
+    this.state.transform.x = x
+    this.state.transform.y = y
+    let $dom = $(this.element())
+    $dom.attr('transform', `translate(${x},${y})`)
   }
   
   /**
@@ -410,6 +446,7 @@ class BlockMarkerInstance extends BlockInstance {
 
   // 仅用于Marker设置幽灵实例
   ghost(inst, visible = true) {
+    logger.debug('marker ghost', this.ghostOffset)
     if (!inst) {
       this.empty()
       return
@@ -430,10 +467,11 @@ class BlockMarkerInstance extends BlockInstance {
 
     this.ghostOffset.x = 0
     this.ghostOffset.y = inst.state.size.height
+    logger.debug('marker ghost', this.ghostOffset)
   }
 
   update(newState, option) {
-    logger.debug('marker update')
+    logger.debug('marker update', this.ghostOffset)
     if (!this.ghostInstance) {
       return
     }
@@ -1187,13 +1225,21 @@ class BlockStack extends Block {
     offsety = state.size.height
     $dom.children('g.ycBlockDraggable').each(function () {
       let $this = $(this)
-      if ($this.hasClass('ycBlockArgument')) {
+      if ($this.hasClass('ycBlockArgument') ||
+        $this.hasClass('ycBlockResolve') ||
+        $this.hasClass('ycBlockReject')) {
         return true
       }
-      $(this).attr('transform', `translate(0, ${offsety})`)
-      let $path = $(this).children('path')
-      let bbox = $path[0].getBBox()
-      offsety += bbox.height
+      
+      let selectInst = null
+      if ($this.attr('data-id') === 'insertmarker') {
+        selectInst = def.__panel.marker
+      } else {
+        selectInst = def.__panel.instances[$this.attr('data-uid')]
+      }
+      
+      selectInst.setTranslate(0, offsety)
+      offsety += selectInst.state.size.height
     })
   }
 
