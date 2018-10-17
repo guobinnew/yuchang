@@ -157,9 +157,11 @@ class BlockInstance {
       return
     }
 
+    logger.debug('updateRegion_top', canvasOffset)
+
     regions.stacks.top = Utils.boundRect(
-      Number(m.e) / Number(m.a) - canvasOffset.x,
-      Number(m.f) / Number(m.d) - ycDropMargin - canvasOffset.y,
+      (Number(m.e) - canvasOffset.x) / Number(m.a),
+      (Number(m.f) - canvasOffset.y) / Number(m.d) - ycDropMargin,
       bbox.width,
       ycDropMargin
     )
@@ -177,22 +179,22 @@ class BlockInstance {
 
     if (shape === 'slot') {
       regions.stacks.bottom = Utils.boundRect(
-        Number(m.e) / Number(m.a) - canvasOffset.x,
-        Number(m.f) / Number(m.d) - canvasOffset.y,
+        (Number(m.e) - canvasOffset.x) / Number(m.a),
+        (Number(m.f) - canvasOffset.y) / Number(m.d),
         bbox.width,
         bbox.height + ycDropMargin
       )
     } else if (shape === 'cap') {
       regions.stacks.bottom = Utils.boundRect(
-        Number(m.e) / Number(m.a) - canvasOffset.x,
-        Number(m.f) / Number(m.d) - canvasOffset.y,
+        (Number(m.e) - canvasOffset.x) / Number(m.a),
+        (Number(m.f) - canvasOffset.y) / Number(m.d),
         bbox.width,
         size.height + bbox.y + ycDropMargin
       )
     } else if (shape === 'cup' || shape === 'cuptwo') {
       regions.stacks.bottom = Utils.boundRect(
-        Number(m.e) / Number(m.a) - canvasOffset.y,
-        Number(m.f) / Number(m.d) + bbox.height - size.bottomHeight - canvasOffset.y,
+        (Number(m.e) - canvasOffset.y) / Number(m.a),
+        (Number(m.f) - canvasOffset.y) / Number(m.d) + bbox.height - size.bottomHeight,
         bbox.width,
         size.bottomHeight + ycDropMargin
       )
@@ -216,8 +218,8 @@ class BlockInstance {
     }
 
     regions.stacks.resolve = Utils.boundRect(
-      Number(m.e) / Number(m.a) - canvasOffset.x,
-      Number(m.f) / Number(m.d) - canvasOffset.y,
+      (Number(m.e) - canvasOffset.x) / Number(m.a),
+      (Number(m.f) - canvasOffset.y) / Number(m.d),
       bbox.width,
       size.height
     )
@@ -241,8 +243,8 @@ class BlockInstance {
 
     if (shape === 'cuptwo') {
       regions.stacks.reject = Utils.boundRect(
-        Number(m.e) / Number(m.a) - canvasOffset.x,
-        Number(m.f) / Number(m.d) + size.height + size.resolveHeight - canvasOffset.y,
+        (Number(m.e) - canvasOffset.x) / Number(m.a),
+        (Number(m.f) - canvasOffset.y) / Number(m.d) + size.height + size.resolveHeight,
         bbox.width,
         size.centerHeight + size.cornerRadius * 2
       )
@@ -352,8 +354,8 @@ class BlockInstance {
         let m = next.element().getCTM()
         next.update({
           transform: {
-            x: Number(m.e) / Number(m.a) - canvasOffset.x,
-            y: Number(m.f) / Number(m.d) - canvasOffset.y
+            x: (Number(m.e) - canvasOffset.x) / Number(m.a),
+            y: (Number(m.f) - canvasOffset.y) / Number(m.d)
           }
         })
         $canvas.append($next)

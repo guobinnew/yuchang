@@ -206,7 +206,7 @@ class Argument {
     let $path = $dom.children('path.ycBlockBackground')
     let bbox = $path[0].getBBox()
     let m = this.section.dom.getCTM()
-    logger.debug('Argument  boundRect', bbox, m, offsetx, offsety )
+    logger.debug('Argument  boundRect', bbox, m, offsetx, offsety)
     return Utils.boundRect(
       Number(m.e) + offsetx,
       Number(m.f) + offsety,

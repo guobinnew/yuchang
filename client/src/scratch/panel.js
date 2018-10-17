@@ -166,8 +166,8 @@ class Panel {
           if (prevBlock) {
             let canvasOffset = that.viewPortOffset()
             let _m = $selected[0].getCTM()
-            let _x = Number(_m.e) / Number(_m.a) - canvasOffset.x
-            let _y = Number(_m.f) / Number(_m.d) - canvasOffset.y
+            let _x = (Number(_m.e) - canvasOffset.x) / Number(_m.a)
+            let _y = (Number(_m.f) - canvasOffset.y) / Number(_m.d) 
             $selected.attr('transform', `translate(${_x},${_y})`)
 
             // 如果是嵌入类型，需要将当前位置更新给marker
@@ -400,8 +400,9 @@ class Panel {
                   let canvasOffset = that.viewPortOffset()
                   // 更新位置
                   let _m = hostInst.instance.element().getCTM()
-                  let _x = Number(_m.e) / Number(_m.a) - that.marker.ghostOffset.x - canvasOffset.x
-                  let _y = Number(_m.f) / Number(_m.d) - that.marker.ghostOffset.y - canvasOffset.y
+                  let _x = (Number(_m.e) - canvasOffset.x) / Number(_m.a) - that.marker.ghostOffset.x
+                  let _y = (Number(_m.f) - canvasOffset.y) / Number(_m.d) - that.marker.ghostOffset.y
+                  logger.debug('00000000000000', _m, canvasOffset, that.marker.ghostOffset, _x, _y)
                   $marker.attr('transform', `translate(${_x},${_y})`)
                   that.marker.childType('')
                   that.marker.next(hostInst.instance)
@@ -464,8 +465,8 @@ class Panel {
                     let canvasOffset = that.viewPortOffset()
                     // 更新位置
                     let _m = hostInst.instance.element().getCTM()
-                    let _x = Number(_m.e) / Number(_m.a) - that.marker.ghostOffset.x - canvasOffset.x
-                    let _y = Number(_m.f) / Number(_m.d) - that.marker.ghostOffset.y - canvasOffset.y
+                    let _x = (Number(_m.e) - canvasOffset.x) / Number(_m.a) - that.marker.ghostOffset.x 
+                    let _y = (Number(_m.f) - canvasOffset.y) / Number(_m.d) - that.marker.ghostOffset.y 
                     that.marker.childType('')
                     $marker.attr('transform', `translate(${_x},${_y})`)
                     that.marker.next(hostInst.instance)
