@@ -103,7 +103,7 @@ class Panel {
     //
     this.bindCanvasEvent()
   }
-
+  
   /**
    * 绑定事件
    */
@@ -149,16 +149,19 @@ class Panel {
           let $marker = $(that.marker.element())
           $marker.attr('visibility', 'hidden')
 
-          // 如果是Stack类型，j
+          // 如果是Stack类型
           if (selectInst.__proto.isStackBlock()) {
+            // 复制childType
+            that.marker.childType(selectInst.childType())
             $marker.insertAfter($selected)
           } else if (selectInst.__proto.isEmbedBlock()) {
+            that.marker.childType('')
             $(that.dom.canvas).append($marker)
           } else {
             logger.warn('mouse move: unknown block type')
           }
   
-          // 如果有父节点给selected添加变换
+          // 如果有父节点, 给selected添加变换
           let prevBlock = selectInst.prevBlock()
           if (prevBlock) {
             let canvasOffset = that.viewPortOffset()
@@ -170,10 +173,7 @@ class Panel {
             // 如果是嵌入类型，需要将当前位置更新给marker
             if (selectInst.__proto.isEmbedBlock()) {
               $marker.attr('transform', `translate(${_x},${_y})`)
-            }
-
-            // 如果是embed，则需要恢复父对象
-            if (selectInst.__proto.isEmbedBlock()) {
+              // 需要恢复父对象
               const sections = prevBlock.state.data.sections
               for (let sec of sections) {
                 if (sec.__assign === selectInst) {
@@ -186,18 +186,15 @@ class Panel {
 
           $(that.dom.dragsurface).css('display', 'block')
           $(that.dom.dragcanvas).append($selected)
-          $selected.removeClass('ycBlockArgument')
+          selectInst.childType('')
           $selected.addClass('ycBlockDragging')
 
+          // 如果选中的Block有父节点，需要向上通知所有父节点更新
           if (prevBlock) {
-            if (selectInst.__proto.isEmbedBlock()) {
-              prevBlock.update(null, {
-                force: true,
-                prev: true
-              })
-            } else {
-              prevBlock.update()
-            }
+            prevBlock.update(null, {
+              force: true,
+              prev: true
+            })
           }
         }
         // 根据鼠标位置调整surface
@@ -213,16 +210,16 @@ class Panel {
         let canvasx = (deltaX + that.grapPoint.x) / Number(sm.a)
         let canvasy = (deltaY + that.grapPoint.y) / Number(sm.d)
 
-        // 计算AABB
-        const canvasBoundbox = function (x, y, bbox) {
+        // 计算头部投放区域(取包围盒前半部分)
+        const dropBoundbox = function (x, y, bbox) {
           return {
             left: x + bbox.x,
             top: y + bbox.y,
-            right: x + bbox.x + bbox.width,
+            right: x + bbox.x + bbox.width / 2,
             bottom: y + bbox.y + bbox.height
           }
         }
-        let selectBox = canvasBoundbox(canvasx, canvasy, sbbox)
+        let selectBox = dropBoundbox(canvasx, canvasy, sbbox)
         logger.debug(`################### selection [${selectInst.__proto.def.id}] stackpos --`, selectBox, selectInst.__proto.stackPosition())
 
         // 遍历实例列表
@@ -382,12 +379,13 @@ class Panel {
             }
           }
         } else if (selectInst.__proto.isStackBlock()) { // Stack
+
           if (!oldhostInst) { // 在canvas上
             if (!hostInst) { // 没有新host, 仅更新位置
               $marker.attr('visibility', 'hidden')
               $marker.attr('transform', `translate(${canvasx},${canvasy})`)
             } else { // 有新host, 将Marker添加到host中
-              //that.marker.pop()
+              
               if (hostInst.insert === 'bottom') {
                 hostInst.instance.next(that.marker)
                 // 更新
@@ -408,7 +406,12 @@ class Panel {
                   that.marker.next(hostInst.instance)
                   $(that.dom.canvas).append($marker)
                 }
-              } else if (hostInst.insert === 'resolve') {} else if (hostInst.insert === 'reject') {}
+              } else if (hostInst.insert === 'resolve') {
+
+              } 
+              else if (hostInst.insert === 'reject') {
+
+              }
               that.marker.update()
               $marker.attr('visibility', 'visible')
             }
@@ -492,8 +495,12 @@ class Panel {
           } else {
             let selectUid = $(that.selected).attr('data-uid')
             let selectInst = that.instances[selectUid]
+          
             // 如果是Stack类型
             if (selectInst.__proto.isStackBlock()) {
+              // 拷贝childtype
+              selectInst.childType(that.marker.childType())
+
               let prev = that.marker.prevBlock()
               if (!prev) {
                 // 如果有next,将next添加到selected上
@@ -520,10 +527,11 @@ class Panel {
 
               // 获取参数对象
               if (!hostInst) {
-                $selected.removeClass('ycBlockArgument')
+                selectInst.childType('')
                 $selected.insertBefore($marker)
                 // 更新变换，只需拷贝marker的transform
                 let m = $marker.attr('transform').replace(/[^0-9\-.,]/g, '').split(',')
+
                 that.selected.__instance.update({
                   transform: {
                     x: Number(m[0]),
@@ -535,7 +543,7 @@ class Panel {
                 let argu = Argument.argument(sec)
                 argu.highlight(false)
 
-                $selected.addClass('ycBlockArgument')
+                selectInst.childType('argument')
                 $(hostInst.instance.element()).append($selected)
                 sec.__assign = selectInst
                 // 通知父节点更新布局
@@ -642,7 +650,6 @@ class Panel {
       this.flyoutstartDrag = false
       this.flyoutselected = null
     })
-
   }
 
   /**

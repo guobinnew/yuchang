@@ -303,7 +303,7 @@ const ShapeUtils = {
       const minContentWidth = ycCaveRight + 104
       const minContentHeight = 40
       const bottomHeight = 24
-      const emptySlotHeight = 16
+      const emptySlotHeight = 24
 
       // 内部
       let boundbox = {
@@ -314,8 +314,9 @@ const ShapeUtils = {
         height: minContentHeight + ycCornerRadius * 2,
         contentWidth: minContentWidth,
         contentHeight: minContentHeight,
-        slotHeight: emptySlotHeight,
-        bottomHeight: bottomHeight
+        slotHeight: emptySlotHeight, // 含ycCornerRadius * 2
+        bottomHeight: bottomHeight,
+        wholeHeight: minContentHeight + emptySlotHeight + bottomHeight + ycCornerRadius * 4
       }
 
       // 计算内容大小
@@ -342,6 +343,7 @@ const ShapeUtils = {
         if (modify) {
           _boundbox.width = _boundbox.contentWidth + _boundbox.cornerRadius * 2
           _boundbox.height = _boundbox.contentHeight + _boundbox.cornerRadius * 2
+          _boundbox.wholeHeight = _boundbox.contentHeight + _boundbox.slotHeight + _boundbox.bottomHeight + ycCornerRadius * 4
         }
 
         return _boundbox
@@ -349,7 +351,7 @@ const ShapeUtils = {
 
       // 更新尺寸大小
       boundbox = _size(boundbox, option)
-      const d = '`m 0,4 A 4,4 0 0,1 4,0 H 12 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H ${ size.width - size.cornerRadius } a 4,4 0 0,1 4,4 v ${ size.contentHeight}  a 4,4 0 0,1 -4,4 H ${ size.caveSecondRight } c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 h -8  a 4,4 0 0,0 -4,4 v ${ size.slotHeight } a 4,4 0 0,0 4,4 h  8 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H ${ size.width - size.cornerRadius } a 4,4 0 0,1 4,4 v ${ size.bottomHeight }  a 4,4 0 0,1 -4,4 '
+      const d = '`m 0,4 A 4,4 0 0,1 4,0 H 12 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H ${ size.width - size.cornerRadius } a 4,4 0 0,1 4,4 v ${ size.contentHeight}  a 4,4 0 0,1 -4,4 H ${ size.caveSecondRight } c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 h -8  a 4,4 0 0,0 -4,4 v ${ size.slotHeight - size.cornerRadius * 2 } a 4,4 0 0,0 4,4 h  8 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H ${ size.width - size.cornerRadius } a 4,4 0 0,1 4,4 v ${ size.bottomHeight }  a 4,4 0 0,1 -4,4 '
       const end = [
         ' H ${ size.caveRight } c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 H 4 a 4,4 0 0,1 -4,-4 z`',
         ' H 4 a 4,4 0 0,1 -4,-4 z`'
@@ -407,7 +409,7 @@ const ShapeUtils = {
       const minContentWidth = ycCaveRight + 104
       const minContentHeight = 40
       const bottomHeight = 24
-      const emptySlotHeight = 16
+      const emptySlotHeight = 24
       const centerHeight = 24
 
       // 内部
@@ -419,9 +421,10 @@ const ShapeUtils = {
         height: minContentHeight + ycCornerRadius * 2,
         contentWidth: minContentWidth,
         contentHeight: minContentHeight,
-        slotHeight: [emptySlotHeight, emptySlotHeight],
+        slotHeight: [emptySlotHeight, emptySlotHeight],  // 含 ycCornerRadius * 2
         centerHeight: centerHeight,
-        bottomHeight: bottomHeight
+        bottomHeight: bottomHeight,
+        wholeHeight: minContentHeight + emptySlotHeight * 2 + centerHeight + bottomHeight + ycCornerRadius * 6
       }
 
       // 计算内容大小
@@ -457,7 +460,7 @@ const ShapeUtils = {
       // 更新尺寸大小
       boundbox = _size(boundbox, option)
 
-      const d = '`m 0,4 A 4,4 0 0,1 4,0 H 12 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H ${ size.width - size.cornerRadius } a 4,4 0 0,1 4,4 v ${ size.contentHeight}  a 4,4 0 0,1 -4,4 H ${ size.caveSecondRight } c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 h -8  a 4,4 0 0,0 -4,4 v ${ size.slotHeight[0] } a 4,4 0 0,0 4,4 h  8 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H ${ size.width - size.cornerRadius } a 4,4 0 0,1 4,4 v ${ size.centerHeight }  a 4,4 0 0,1 -4,4 H ${ size.caveSecondRight } c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 h -8  a 4,4 0 0,0 -4,4 v ${ size.slotHeight[1] } a 4,4 0 0,0 4,4 h  8 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H ${ size.width - size.cornerRadius } a 4,4 0 0,1 4,4 v ${ size.bottomHeight }  a 4,4 0 0,1 -4,4 '
+      const d = '`m 0,4 A 4,4 0 0,1 4,0 H 12 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H ${ size.width - size.cornerRadius } a 4,4 0 0,1 4,4 v ${size.contentHeight}  a 4,4 0 0,1 -4,4 H ${size.caveSecondRight} c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 h -8  a 4,4 0 0,0 -4,4 v ${size.slotHeight[0] - size.cornerRadius * 2} a 4,4 0 0,0 4,4 h  8 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H ${size.width - size.cornerRadius} a 4,4 0 0,1 4,4 v ${size.centerHeight}  a 4,4 0 0,1 -4,4 H ${size.caveSecondRight} c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 h -8  a 4,4 0 0,0 -4,4 v ${size.slotHeight[1] - size.cornerRadius * 2} a 4,4 0 0,0 4,4 h  8 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H ${ size.width - size.cornerRadius } a 4,4 0 0,1 4,4 v ${ size.bottomHeight }  a 4,4 0 0,1 -4,4 '
       const end = [
         ' H ${ size.caveRight } c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 H 4 a 4,4 0 0,1 -4,-4 z`',
         ' H 4 a 4,4 0 0,1 -4,-4 z`'

@@ -38,6 +38,23 @@ const Utils = {
     return true
   },
 
+  isContains: function(box, point, vdist = 0, hdist = 0) {
+    let nbox = Utils.normalizeBoundbox(box)
+    let v = yuchg.isNumber(vdist) ? Math.max(vdist, 0) : 0
+    let h = yuchg.isNumber(hdist) ? Math.max(hdist, 0) : 0
+     
+    // AABB相交检测
+    if (
+      point.x > (nbox.right + h) ||
+      point.x < (nbox.left - h) ||
+      point.y > (nbox.bottom + v) ||
+      point.y < (nbox.top - v)) {
+      return false
+    }
+
+    return true
+  },
+
   //
   normalizeBoundbox(box) {
     let newbox = Object.assign({}, box)

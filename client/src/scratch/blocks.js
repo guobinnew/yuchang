@@ -25,6 +25,40 @@ class BlockInstance {
   }
 
   /**
+   * 获取布局宽度
+   */
+  layoutWidth() {
+    return this.state.size.width
+  }
+
+  /**
+   * 获取布局高度
+   */
+  layoutHeight() {
+    if (this.__proto.def.shape === 'cup' || this.__proto.def.shape === 'cuptwo') {
+      return this.state.size.wholeHeight
+    }
+    return this.state.size.height
+  }
+
+  /**
+   * child类型
+   */
+  childType(newType) {
+    let $elem = $(this.element())
+    if (newType == null) {
+      return $elem.attr('data-child')
+    }
+
+    const validType = ['', 'argument', 'resolve', 'reject']
+    if (validType.indexOf(newType) < 0) {
+      logger.warn('BlockInstance childType failed: invalid type --', newType)
+      return
+    }
+
+    $elem.attr('data-child', newType)
+  }
+  /**
    * 调试输出
    */
   dump() {
@@ -43,7 +77,8 @@ class BlockInstance {
         Size: this.state.size
       },
       stackPosition: this.__proto.stackPosition(),
-      canstackPosition: this.__proto.canStackPosition()
+      canstackPosition: this.__proto.canStackPosition(),
+      childType: this.childType()
     }
     logger.debug('****** Instance Dump ******', output)
   }
@@ -108,7 +143,7 @@ class BlockInstance {
    /**
     * 
     */
-  _updateregion_top(regions) {
+  updateRegion_top(regions) {
     let m = this.element().getCTM()
     const shape = this.__proto.def.shape
     let $path = $(this.element()).children('path.ycBlockBackground')
@@ -119,17 +154,18 @@ class BlockInstance {
 
     if (shape === 'cap') {
       logger.debug('Instance _updateregion_top failed: cap can not stack in top')
-    } else if (shape === 'slot') {
-      regions.stacks.top = Utils.boundRect(
-        Number(m.e) / Number(m.a) - canvasOffset.x,
-        Number(m.f) / Number(m.d) - ycDropMargin - canvasOffset.y,
-        bbox.width,
-        ycDropMargin
-      )
+      return
     }
+
+    regions.stacks.top = Utils.boundRect(
+      Number(m.e) / Number(m.a) - canvasOffset.x,
+      Number(m.f) / Number(m.d) - ycDropMargin - canvasOffset.y,
+      bbox.width,
+      ycDropMargin
+    )
   }
 
-  _updateregion_bottom(regions) {
+  updateRegion_bottom(regions) {
     let m = this.element().getCTM()
     const shape = this.__proto.def.shape
     let $path = $(this.element()).children('path.ycBlockBackground')
@@ -140,7 +176,6 @@ class BlockInstance {
     let canvasOffset = this.__proto.def.__panel.viewPortOffset()
 
     if (shape === 'slot') {
-      // bottom
       regions.stacks.bottom = Utils.boundRect(
         Number(m.e) / Number(m.a) - canvasOffset.x,
         Number(m.f) / Number(m.d) - canvasOffset.y,
@@ -148,7 +183,6 @@ class BlockInstance {
         bbox.height + ycDropMargin
       )
     } else if (shape === 'cap') {
-      // 只有bottom
       regions.stacks.bottom = Utils.boundRect(
         Number(m.e) / Number(m.a) - canvasOffset.x,
         Number(m.f) / Number(m.d) - canvasOffset.y,
@@ -156,22 +190,63 @@ class BlockInstance {
         size.height + bbox.y + ycDropMargin
       )
     } else if (shape === 'cup' || shape === 'cuptwo') {
-      // bottom
       regions.stacks.bottom = Utils.boundRect(
         Number(m.e) / Number(m.a) - canvasOffset.y,
-        Number(m.f) / Number(m.d) + bbox.height - size.bottomHeight / 2 - canvasOffset.y,
+        Number(m.f) / Number(m.d) + bbox.height - size.bottomHeight - canvasOffset.y,
         bbox.width,
-        size.bottomHeight / 2
+        size.bottomHeight + ycDropMargin
       )
     }
   }
 
-  _updateregion_resolve(regions) {
+  updateRegion_resolve(regions) {
+    let m = this.element().getCTM()
+    const shape = this.__proto.def.shape
+    let $path = $(this.element()).children('path.ycBlockBackground')
+    let bbox = $path[0].getBBox()
+    const size = this.state.size
 
+    // 获取panel的偏移
+    let canvasOffset = this.__proto.def.__panel.viewPortOffset()
+
+    let validshapes = ['cup', 'cuptwo']
+    if (validshapes.indexOf(shape) < 0) {
+      logger.debug('Instance _updateregion_resolve failed: invalid shape -- ', shape)
+      return
+    }
+
+    regions.stacks.resolve = Utils.boundRect(
+      Number(m.e) / Number(m.a) - canvasOffset.x,
+      Number(m.f) / Number(m.d) + size.height - canvasOffset.y,
+      bbox.width,
+      size.resolveHeight
+    )
   }
 
-  _updateregion_reject(regions) {
+  updateRegion_reject(regions) {
+    let m = this.element().getCTM()
+    const shape = this.__proto.def.shape
+    let $path = $(this.element()).children('path.ycBlockBackground')
+    let bbox = $path[0].getBBox()
+    const size = this.state.size
 
+    let validshapes = ['cup', 'cuptwo']
+    if (validshapes.indexOf(shape) < 0) {
+      logger.debug('Instance _updateregion_reject failed: invalid shape -- ', shape)
+      return
+    }
+
+    // 获取panel的偏移
+    let canvasOffset = this.__proto.def.__panel.viewPortOffset()
+
+    if (shape === 'cuptwo') {
+       regions.stacks.reject = Utils.boundRect(
+        Number(m.e) / Number(m.a) - canvasOffset.x,
+        Number(m.f) / Number(m.d) + size.height + size.resolveHeight + size.centerHeight + size.cornerRadius * 2 - canvasOffset.y,
+        bbox.width,
+        size.rejectHeight
+      )
+    }
   }
 
   // 获取实例的投放区域
@@ -184,11 +259,9 @@ class BlockInstance {
       // 根据Shape类型
       const pos = this.__proto.canStackPosition()
       for (let p of pos) {
-        this[`_updateregion_${p}`](this.regions)
+        this[`updateRegion_${p}`](this.regions)
       }
     }
-
-    logger.debug('updateDropRegions ===== argu', this.__proto)
 
     // 计算参数投放区域
     if (this.__proto.canEmbed()) {
@@ -203,7 +276,6 @@ class BlockInstance {
           }
         }
       })
-      logger.debug('updateDropRegions ===== argu', this.regions.arguments)
     }
   }
 
@@ -223,9 +295,7 @@ class BlockInstance {
     let next = null
     $dom.children('g.ycBlockDraggable').each(function() {
       let $this = $(this)
-      if ($this.hasClass('ycBlockArgument') ||
-      $this.hasClass('ycBlockResolve') ||
-      $this.hasClass('ycBlockReject')) {
+      if ($this.attr('data-child') !== '') {
         return true
       }
       let uid = $this.attr('data-uid')
@@ -248,16 +318,30 @@ class BlockInstance {
 
   pop() {
     let prev = this.prevBlock()
-    let next = this.nextBlock()
+    let next = null
     let $dom = $(this.element())
+
+    let childType = this.childType()
+    if (childType === 'resolve') {
+      next = this.resolveBlock()
+    } else if (childType === 'reject') {
+      next = this.rejectBlock()
+    } else if (childType === 'argument') { // 参数不用pop自身的子节点
+    } else { // 其余默认
+      next = this.nextBlock()
+    }
 
     if (prev) {
       $dom.detach()
       if (next) {
+        // 将类型传递给新子节点
+        next.childType(childType)
         $(prev.element()).append(next.element())
       }
     } else { // 将子节点加入canvas
       if (next) {
+        // 清空childType
+        next.childType('')
         let $canvas = $(this.__proto.def.__panel.dom.canvas)
         let canvasOffset = this.__proto.def.__panel.viewPortOffset()
         // 变换坐标
@@ -291,11 +375,8 @@ class BlockInstance {
     let $dom = $(this.element())
     let $instElem = $(instance.element())
 
-    logger.debug('last last', next)
-
     $instElem.appendTo($dom)
     if (next) {
-      logger.debug('last last')
       instance.last(next)
     }
   }
@@ -315,6 +396,76 @@ class BlockInstance {
       next.last(instance)
     } else {
       $dom.append(instance.element())
+    }
+  }
+
+  /**
+   * 
+   */
+  resolveBlock() {
+    const $dom = $(this.element())
+    const instances = this.__proto.def.__panel.instances
+    let next = null
+    $dom.children('g.ycBlockResolve').each(function() {
+      let $this = $(this)
+      let uid = $this.attr('data-uid')
+      next = instances[uid]
+      return false
+    })
+    return next
+  }
+
+  /**
+   * 
+   */
+  rejectBlock() {
+    const $dom = $(this.element())
+    const instances = this.__proto.def.__panel.instances
+    let next = null
+    $dom.children('g.ycBlockReject').each(function() {
+      let $this = $(this)
+      let uid = $this.attr('data-uid')
+      next = instances[uid]
+      return false
+    })
+    return next
+  }
+
+  /**
+   * 
+   */
+  resolve(instance) {
+    if (!instance) {
+      logger.warn('BlockInstance append failed: instance is null')
+      return null
+    }
+
+    let next = this.resolveBlock()
+    let $dom = $(this.element())
+    let $instElem = $(instance.element())
+
+    $instElem.appendTo($dom)
+    if (next) {
+      instance.last(next)
+    }
+  }
+
+  /**
+   * 
+   */
+  reject(instance) {
+    if (!instance) {
+      logger.warn('BlockInstance append failed: instance is null')
+      return null
+    }
+
+    let next = this.rejectBlock()
+    let $dom = $(this.element())
+    let $instElem = $(instance.element())
+
+    $instElem.appendTo($dom)
+    if (next) {
+      instance.last(next)
     }
   }
 
@@ -431,7 +582,16 @@ class BlockMarkerInstance extends BlockInstance {
     this.hostInstance = null
   }
 
-  // 仅用于marker
+  /**
+   * 获取布局高度
+   */
+  layoutHeight() {
+    if (this.ghostInstance) {
+      return this.ghostInstance.layoutHeight()
+    }
+    return 0
+  }
+
   empty() {
     let $dom = $(this.element())
     $dom.attr('visibility', 'hidden')
@@ -444,11 +604,10 @@ class BlockMarkerInstance extends BlockInstance {
       y: 0
     }
     this.hostInstance = null
+    this.childType('')
   }
 
-  // 仅用于Marker设置幽灵实例
   ghost(inst, visible = true) {
-    logger.debug('marker ghost', this.ghostOffset)
     if (!inst) {
       this.empty()
       return
@@ -468,12 +627,10 @@ class BlockMarkerInstance extends BlockInstance {
     $(this.dom).attr('visibility', visible ? 'visible' : 'hidden')
 
     this.ghostOffset.x = 0
-    this.ghostOffset.y = inst.state.size.height
-    logger.debug('marker ghost', this.ghostOffset)
+    this.ghostOffset.y = inst.layoutHeight()
   }
 
   update(newState, option) {
-    logger.debug('marker update', this.ghostOffset)
     if (!this.ghostInstance) {
       return
     }
@@ -482,7 +639,7 @@ class BlockMarkerInstance extends BlockInstance {
     let $dom = $(this.element())
     // 更新子元素位置
     let offsety = this.ghostOffset.y
-    $dom.children('g.ycBlockDraggable').each(function () {
+    $dom.children('g.ycBlockDraggable[data-child=""]').each(function () {
       let selectUid = $(this).attr('data-uid')
       let selectInst = that.__proto.def.__panel.instances[selectUid]
       selectInst.update({
@@ -491,9 +648,7 @@ class BlockMarkerInstance extends BlockInstance {
           y: offsety
         }
       })
-      let $path = $(this).children('path')
-      let bbox = $path[0].getBBox()
-      offsety += bbox.height
+      offsety += selectInst.layoutHeight()
     })
   }
 }
@@ -649,14 +804,14 @@ class Block {
     elem.__proto = this
 
     const $elem = $(elem)
-    const props = ['id', 'shape', 'type', 'category']
+    const props = ['id', 'shape', 'type', 'category', 'child']
     for (let i of props) {
       let v = this.def[i]
       if (!yuchg.isString(v)) {
         logger.warn(`create Block: ${i} is not string --`, v)
-      } else {
-        $elem.attr('data-' + i, v)
+        v = ''
       }
+      $elem.attr('data-' + i, v)
     }
 
     if (this.def.draggable === true) {
@@ -850,7 +1005,7 @@ class BlockVariant extends Block {
     const def = option.def
     const state = option.state
     const padding = this.padding(option)
-    let length = this.textWidth(state.data.text) //Utils.computeTextLength(state.data.text)
+    let length = this.textWidth(state.data.text)
     state.size.contentWidth = Math.max(length, state.size.minContentWidth)
 
     if (def.shape === 'dropdown') {
@@ -1144,8 +1299,8 @@ class BlockStack extends Block {
     for (let sec of sections.values()) {
       if (sec.type === 'argument' && sec.dom) {
         if (sec.__assign) { // 计算Assgin Block的大小
-          sec.__width = sec.__assign.state.size.width
-          contentHeight = Math.max(contentHeight, sec.__assign.state.size.height)
+          sec.__width = sec.__assign.layoutWidth()
+          contentHeight = Math.max(contentHeight, sec.__assign.layoutHeight())
         } else {
           sec.__width = sec.data.size.width
           contentHeight = Math.max(contentHeight, sec.data.size.height)
@@ -1194,7 +1349,7 @@ class BlockStack extends Block {
           sec.__assign.update({
             transform: {
               x: offsetx,
-              y: (contentHeight - sec.__assign.state.size.height) / 2 + padding.top
+              y: (contentHeight - sec.__assign.layoutHeight()) / 2 + padding.top
             }
           })
         } else {
@@ -1225,14 +1380,8 @@ class BlockStack extends Block {
 
     // 更新子元素位置
     offsety = state.size.height
-    $dom.children('g.ycBlockDraggable').each(function () {
+    $dom.children('g.ycBlockDraggable[data-child=""]').each(function () {
       let $this = $(this)
-      if ($this.hasClass('ycBlockArgument') ||
-        $this.hasClass('ycBlockResolve') ||
-        $this.hasClass('ycBlockReject')) {
-        return true
-      }
-      
       let selectInst = null
       if ($this.attr('data-id') === 'insertmarker') {
         selectInst = def.__panel.marker
@@ -1241,7 +1390,7 @@ class BlockStack extends Block {
       }
 
       selectInst.setTranslate(0, offsety)
-      offsety += selectInst.state.size.height
+      offsety += selectInst.layoutHeight()
     })
   }
 
@@ -1341,6 +1490,18 @@ class BlockControl extends BlockStack {
     super(option)
   }
 
+  // 可以Stack其他Block的位置
+  canStackPosition() {
+    let pos = super.canStackPosition()
+    
+    pos.push('resolve')
+    // 根据形状来确定
+    if (this.def.shape === 'cuptwo') {
+      pos.push('reject')
+    }
+    return pos
+  }
+
   createElement() {
     const elem = super.createElement()
     const $elem = $(elem)
@@ -1403,8 +1564,13 @@ class BlockControl extends BlockStack {
     // 先计算宽度和最大高度
     for (let sec of sections.values()) {
       if (sec.type === 'argument' && sec.dom) {
-        sec.__width = sec.data.size.width
-        contentHeight = Math.max(contentHeight, sec.data.size.height)
+        if (sec.__assign) { // 计算Assgin Block的大小
+          sec.__width = sec.__assign.layoutWidth()
+          contentHeight = Math.max(contentHeight, sec.__assign.layoutHeight())
+        } else {
+          sec.__width = sec.data.size.width
+          contentHeight = Math.max(contentHeight, sec.data.size.height)
+        }
       } else if (sec.type === 'text' && sec.dom) {
         sec.__width = this.textWidth(sec.text)
       } else if (sec.type === 'image' && sec.dom) {
@@ -1415,6 +1581,7 @@ class BlockControl extends BlockStack {
     }
     contentWidth -= space
 
+    // 计算other文字宽度
     if (def.shape === 'cuptwo' && state.data.other) {
       const other = state.data.other
       other.__width = 0
@@ -1425,15 +1592,53 @@ class BlockControl extends BlockStack {
       contentWidth = Math.max(contentWidth, other.__width)
     }
 
+    // 计算resolve高度
+    let resolveHeight = 0
+    $dom.children('g.ycBlockResolve').each(function () {
+      let $this = $(this)
+      let selectInst = null
+      if ($this.attr('data-id') === 'insertmarker') {
+        selectInst = def.__panel.marker
+      } else {
+        selectInst = def.__panel.instances[$this.attr('data-uid')]
+      }
+      resolveHeight += selectInst.layoutHeight()
+    })
+
+    // 计算reject高度 
+    let rejectHeight = 0
+    if (def.shape === 'cuptwo') {
+      $dom.children('g.ycBlockReject').each(function () {
+        let $this = $(this)
+        let selectInst = null
+        if ($this.attr('data-id') === 'insertmarker') {
+          selectInst = def.__panel.marker
+        } else {
+          selectInst = def.__panel.instances[$this.attr('data-uid')]
+        }
+        rejectHeight += selectInst.layoutHeight()
+      })
+    }
+
     // 调整容器大小
     let $shape = $dom.children('path')
     state.size.contentWidth = contentWidth + padding.right + padding.left
     state.size.contentHeight = contentHeight + padding.top + padding.bottom
-    $shape.trigger(ShapeUtils.events.resize, [{
-      contentWidth: state.size.contentWidth,
-      contentHeight: state.size.contentHeight
-    }])
 
+    if (def.shape === 'cup') {
+      $shape.trigger(ShapeUtils.events.resize, [{
+        contentWidth: state.size.contentWidth,
+        contentHeight: state.size.contentHeight,
+        slotHeight: resolveHeight
+      }])
+    } else if (def.shape === 'cuptwo') {
+      $shape.trigger(ShapeUtils.events.resize, [{
+        contentWidth: state.size.contentWidth,
+        contentHeight: state.size.contentHeight,
+        slotHeight: [resolveHeight, rejectHeight]
+      }])
+    }
+   
     // 更新容器大小
     state.size.width = $shape[0].__boundbox.width
     state.size.height = $shape[0].__boundbox.height
@@ -1442,7 +1647,14 @@ class BlockControl extends BlockStack {
 
     state.size.cornerRadius = $shape[0].__boundbox.cornerRadius
     state.size.bottomHeight = $shape[0].__boundbox.bottomHeight
-    state.size.slotHeight = $shape[0].__boundbox.slotHeight
+    
+    if (def.shape === 'cup') {
+      state.size.resolveHeight = $shape[0].__boundbox.slotHeight
+    } else if (def.shape === 'cuptwo') {
+      state.size.resolveHeight = $shape[0].__boundbox.slotHeight[0]
+      state.size.rejectHeight = $shape[0].__boundbox.slotHeight[1]
+    }
+    state.size.wholeHeight = $shape[0].__boundbox.wholeHeight
 
     contentHeight = state.size.height - padding.top - padding.bottom
     let offsety = padding.top
@@ -1451,9 +1663,18 @@ class BlockControl extends BlockStack {
     for (let sec of sections) {
       let $child = null
       if (sec.type === 'argument' && sec.dom) {
-        // 根据高度调整文本位置
-        let argu = Argument.argument(sec)
-        argu.translate(offsetx, (contentHeight - sec.data.size.height) / 2 + padding.top)
+        if (sec.__assign) {
+          sec.__assign.update({
+            transform: {
+              x: offsetx,
+              y: (contentHeight - sec.__assign.layoutHeight()) / 2 + padding.top
+            }
+          })
+        } else {
+          // 根据高度调整文本位置
+          let argu = Argument.argument(sec)
+          argu.translate(offsetx, (contentHeight - sec.data.size.height) / 2 + padding.top)
+        }
       } else if (sec.type === 'text' && sec.dom) {
         $child = $(sec.dom)
         // 根据高度调整文本位置
@@ -1476,14 +1697,26 @@ class BlockControl extends BlockStack {
     }
     offsety = state.size.height
 
+    // 调整Resolve位置
+    $dom.children('g.ycBlockResolve').each(function () {
+      let $this = $(this)
+      let selectInst = null
+      if ($this.attr('data-id') === 'insertmarker') {
+        selectInst = def.__panel.marker
+      } else {
+        selectInst = def.__panel.instances[$this.attr('data-uid')]
+      }
+      selectInst.setTranslate(0, offsety)
+      offsety += selectInst.layoutHeight()
+    })
+    offsety += state.size.resolveHeight
+
     // 调整位置
     if (def.shape === 'cuptwo' && state.data.other) {
+      offsety += state.size.cornerRadius
       state.size.centerHeight = $shape[0].__boundbox.centerHeight
       // 更新other文字位置
-      offsety += state.size.slotHeight[0]
-      offsety += state.size.cornerRadius * 3
       let $other = $dom.children('.ycBlockOther')
-
       $other.trigger(ShapeUtils.events.positionText, [{
         x: padding.left + state.data.other.__width / 2,
         y: 0,
@@ -1491,10 +1724,21 @@ class BlockControl extends BlockStack {
         translatey: offsety + state.size.centerHeight / 2
       }])
       offsety += state.size.cornerRadius
-    } else {
-      offsety += state.size.slotHeight
-      offsety += state.size.cornerRadius * 2
-    }
+
+      // 调整Reject位置
+      $dom.children('g.ycBlockReject').each(function () {
+        let $this = $(this)
+        let selectInst = null
+        if ($this.attr('data-id') === 'insertmarker') {
+          selectInst = def.__panel.marker
+        } else {
+          selectInst = def.__panel.instances[$this.attr('data-uid')]
+        }
+        selectInst.setTranslate(0, offsety)
+        offsety += selectInst.layoutHeight()
+      })
+      offsety += state.size.rejectHeight
+    } 
 
     // 调整下标位置
     if (state.data.subscript) {
@@ -1505,6 +1749,21 @@ class BlockControl extends BlockStack {
         translatey: offsety + (state.size.bottomHeight - state.data.subscript.height) / 2
       }])
     }
+
+    // 更新next节点
+    offsety = state.size.wholeHeight
+    $dom.children('g.ycBlockDraggable[data-child=""]').each(function () {
+      let $this = $(this)
+      let selectInst = null
+      if ($this.attr('data-id') === 'insertmarker') {
+        selectInst = def.__panel.marker
+      } else {
+        selectInst = def.__panel.instances[$this.attr('data-uid')]
+      }
+
+      selectInst.setTranslate(0, offsety)
+      offsety += selectInst.layoutHeight()
+    })
   }
 }
 
