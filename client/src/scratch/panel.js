@@ -91,12 +91,26 @@ class Panel {
       blocks: BlockDefs
     }
 
-    let that = this
     // 鼠标事件
     $(this.dom.root).on('mousedown', () => {
       this.hideDropdownWidget()
     })
 
+    $(this.dom.dropdown).on('mousedown', () => {
+      event.stopPropagation()
+    }).on('mouseup', () => {
+      event.stopPropagation()
+    })
+
+    //
+    this.bindCanvasEvent()
+  }
+
+  /**
+   * 绑定事件
+   */
+  bindCanvasEvent() {
+    let that = this
     $(this.dom.svg).on('mousedown', () => {
       this.lastPoint.x = event.pageX
       this.lastPoint.y = event.pageY
@@ -141,9 +155,10 @@ class Panel {
           // 如果有父节点给selected添加变换
           let prevBlock = selectInst.prevBlock()
           if (prevBlock) {
+            let canvasOffset = that.viewPortOffset()
             let _m = $selected[0].getCTM()
-            let _x = Number(_m.e) / Number(_m.a)
-            let _y = Number(_m.f) / Number(_m.d)
+            let _x = Number(_m.e) / Number(_m.a) - canvasOffset.x
+            let _y = Number(_m.f) / Number(_m.d) - canvasOffset.y
             $selected.attr('transform', `translate(${_x},${_y})`)
 
             // 如果是embed，则需要恢复父对象
@@ -190,6 +205,7 @@ class Panel {
           }
         }
         let selectBox = canvasBoundbox(canvasx, canvasy, sbbox)
+        logger.debug(`################### selection [${selectInst.__proto.def.id}] stackpos --`, selectBox, selectInst.__proto.stackPosition())
 
         // 遍历实例列表
         let validHostList = []
@@ -218,8 +234,8 @@ class Panel {
           }
 
           // 获取可投放区域
-          let regions = inst.regions
-          logger.debug('################### judge regions', inst.__proto.def.id, selectBox, regions)
+          let regions = inst.getRegions()
+          logger.debug(`################### find instance [${inst.__proto.def.id}] regiond --`, regions)
 
           let validPos = []
           if (selectInst.__proto.isEmbedBlock() && regions.arguments) { // 仅判断参数位置
@@ -253,7 +269,7 @@ class Panel {
           }
         }
 
-        logger.debug('#################', validHostList)
+        logger.debug('################# validHostList ', validHostList)
 
         // 从候选列表中提取最很合适的节点，
         // 如果父子同时满足的话：
@@ -288,7 +304,6 @@ class Panel {
         }
 
         if (hostInst) {
-          logger.debug('################# hostInst', hostInst)
           if (selectInst.__proto.isEmbedBlock()) {
             hostInst.insert = Number(hostInst.pos[0]) // 默认取第一个
           } else if (selectInst.__proto.isStackBlock()) {
@@ -302,6 +317,8 @@ class Panel {
             }
           }
         }
+
+        logger.debug(`################### end #######################`, hostInst)
 
         // 调整marker状态
         let $marker = $(that.marker.element())
@@ -360,10 +377,11 @@ class Panel {
                   hostPrevBlock.next(that.marker)
                   hostPrevBlock.update()
                 } else {
+                  let canvasOffset = that.viewPortOffset()
                   // 更新位置
                   let _m = hostInst.instance.element().getCTM()
-                  let _x = Number(_m.e) / Number(_m.a) - that.marker.ghostOffset.x
-                  let _y = Number(_m.f) / Number(_m.d) - that.marker.ghostOffset.y
+                  let _x = Number(_m.e) / Number(_m.a) - that.marker.ghostOffset.x - canvasOffset.x
+                  let _y = Number(_m.f) / Number(_m.d) - that.marker.ghostOffset.y - canvasOffset.y
                   $marker.attr('transform', `translate(${_x},${_y})`)
                   that.marker.next(hostInst.instance)
                   $(that.dom.canvas).append($marker)
@@ -393,10 +411,11 @@ class Panel {
                     hostPrevBlock.next(that.marker)
                     hostPrevBlock.update()
                   } else {
+                    let canvasOffset = that.viewPortOffset()
                     // 更新位置
                     let _m = hostInst.instance.element().getCTM()
-                    let _x = Number(_m.e) / Number(_m.a) - that.marker.ghostOffset.x
-                    let _y = Number(_m.f) / Number(_m.d) - that.marker.ghostOffset.y
+                    let _x = Number(_m.e) / Number(_m.a) - that.marker.ghostOffset.x - canvasOffset.x
+                    let _y = Number(_m.f) / Number(_m.d) - that.marker.ghostOffset.y - canvasOffset.y
                     $marker.attr('transform', `translate(${_x},${_y})`)
                     that.marker.next(hostInst.instance)
                     $(that.dom.canvas).append($marker)
@@ -439,7 +458,7 @@ class Panel {
                 // 如果有next,将next添加到selected上
                 let next = that.marker.nextBlock()
                 if (next) {
-                  $(next.element()).appendTo($selected)
+                  selectInst.last(next)
                 }
                 $selected.insertBefore($marker)
               } else {
@@ -455,7 +474,6 @@ class Panel {
                   y: Number(m[1])
                 }
               })
-
             } else if (selectInst.__proto.isEmbedBlock()) {
               let hostInst = that.marker.hostInstance
 
@@ -581,18 +599,24 @@ class Panel {
       this.flyoutselected = null
     })
 
-    $(this.dom.dropdown).on('mousedown', () => {
-      event.stopPropagation()
-    }).on('mouseup', () => {
-      event.stopPropagation()
-    })
+  }
+
+  /**
+   * 获取Viewport偏移量(Canvas坐标)
+   */
+  viewPortOffset() {
+    let m = this.dom.canvas.getCTM()
+    return {
+      x: Number(m.e),
+      y: Number(m.f)
+    }
   }
 
   /**
    * 获取编辑面板的视口(SVG坐标)
    */
   viewPortBoundbox() {
-    let m = $(this.dom.canvas).getCTM()
+    let m = this.dom.canvas.getCTM()
     return {
       left: Number(m.e) * Number(m.a),
       top: Number(m.f) * Number(m.d),
@@ -1022,6 +1046,22 @@ class Panel {
       event.stopPropagation()
 
       that.selected = this
+      
+      // let __m = that.dom.canvas.getCTM()
+      // logger.debug(`################### canvas ctm --`, __m)
+
+      // let __m = this.getCTM()
+      // logger.debug('$$$$$$$$$$$$$$ selected ctm', __m)
+      // let selectUid = $(this).attr('data-uid')
+      // let selectInst = that.instances[selectUid]
+      // // 查看参数位置
+      // for (let sec of selectInst.state.data.sections) {
+      //   if (sec.type === 'argument' && sec.dom) {
+      //     let __m = sec.dom.getCTM()
+      //     logger.debug('$$$$$$$$$$$$$$ selected argument ', __m)
+      //   }
+      // }
+
       let m = this.getCTM()
       let pm = dom.canvas.getCTM()
       that.grapPoint.x = (Number(m.e) - Number(pm.e))

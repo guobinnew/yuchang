@@ -58,19 +58,33 @@ class BlockInstance {
 
     return found
   }
+  
+  /**
+   * 获取投放区域
+   */
+  getRegions() {
+    this.updateDropRegions()
+    return this.regions
+  }
 
+   /**
+    * 
+    */
   _updateregion_top(regions) {
     let m = this.element().getCTM()
     const shape = this.__proto.def.shape
     let $path = $(this.element()).children('path.ycBlockBackground')
     let bbox = $path[0].getBBox()
 
+    // 获取panel的偏移
+    let canvasOffset = this.__proto.def.__panel.viewPortOffset()
+
     if (shape === 'cap') {
       logger.debug('Instance _updateregion_top failed: cap can not stack in top')
     } else if (shape === 'slot') {
       regions.stacks.top = Utils.boundRect(
-        Number(m.e),
-        Number(m.f) - ycDropMargin,
+        Number(m.e) - canvasOffset.x,
+        Number(m.f) - ycDropMargin - canvasOffset.y,
         bbox.width,
         ycDropMargin,
         Number(m.a),
@@ -86,11 +100,14 @@ class BlockInstance {
     let bbox = $path[0].getBBox()
     const size = this.state.size
 
+    // 获取panel的偏移
+    let canvasOffset = this.__proto.def.__panel.viewPortOffset()
+
     if (shape === 'slot') {
       // bottom
       regions.stacks.bottom = Utils.boundRect(
-        Number(m.e),
-        Number(m.f),
+        Number(m.e) - canvasOffset.x,
+        Number(m.f) - canvasOffset.y,
         bbox.width,
         bbox.height + ycDropMargin,
         Number(m.a),
@@ -99,8 +116,8 @@ class BlockInstance {
     } else if (shape === 'cap') {
       // 只有bottom
       regions.stacks.bottom = Utils.boundRect(
-        Number(m.e),
-        Number(m.f),
+        Number(m.e) - canvasOffset.x,
+        Number(m.f) - canvasOffset.y,
         bbox.width,
         size.height + bbox.y + ycDropMargin,
         Number(m.a),
@@ -109,8 +126,8 @@ class BlockInstance {
     } else if (shape === 'cup' || shape === 'cuptwo') {
       // bottom
       regions.stacks.bottom = Utils.boundRect(
-        Number(m.e),
-        Number(m.f) + bbox.height - size.bottomHeight / 2,
+        Number(m.e) - canvasOffset.y,
+        Number(m.f) + bbox.height - size.bottomHeight / 2 - canvasOffset.y,
         bbox.width,
         size.bottomHeight / 2,
         Number(m.a),
@@ -211,13 +228,14 @@ class BlockInstance {
     } else { // 将子节点加入canvas
       if (next) {
         let $canvas = $(this.__proto.def.__panel.dom.canvas)
+        let canvasOffset = this.__proto.def.__panel.viewPortOffset()
         // 变换坐标
         let $next = $(next.element())
         let m = next.element().getCTM()
         next.update({
           transform: {
-            x: Number(m.e) / Number(m.a),
-            y: Number(m.f) / Number(m.d)
+            x: Number(m.e) / Number(m.a) - canvasOffset.x,
+            y: Number(m.f) / Number(m.d) - canvasOffset.y
           }
         })
         $canvas.append($next)
@@ -248,7 +266,6 @@ class BlockInstance {
     if (next) {
       logger.debug('last last')
       instance.last(next)
-      //$(next.element()).appendTo($instElem)
     }
   }
 
@@ -262,6 +279,7 @@ class BlockInstance {
 
     let $dom = $(this.element())
     let next = this.nextBlock()
+
     if (next) {
       next.last(instance)
     } else {
@@ -351,8 +369,6 @@ class BlockInstance {
         prev: true
       })
     }
-    // 更新投放区域
-    this.updateDropRegions()
   }
 
   // 清空
