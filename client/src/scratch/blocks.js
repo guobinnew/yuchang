@@ -41,7 +41,9 @@ class BlockInstance {
       Region: this.getRegions(),
       State: {
         Size: this.state.size
-      }
+      },
+      stackPosition: this.__proto.stackPosition(),
+      canstackPosition: this.__proto.canStackPosition()
     }
     logger.debug('****** Instance Dump ******', output)
   }
@@ -545,12 +547,12 @@ class Block {
     return false
   }
 
-  // 可以Stack其他Block的位置
+  // 其他Block可以Stack到自己上面的位置
   canStackPosition() {
     return []
   }
 
-  // 自身可以Stack的位置
+  // 自身可以Stack到其他Block上面的位置
   stackPosition() {
     return []
   }
@@ -1237,7 +1239,7 @@ class BlockStack extends Block {
       } else {
         selectInst = def.__panel.instances[$this.attr('data-uid')]
       }
-      
+
       selectInst.setTranslate(0, offsety)
       offsety += selectInst.state.size.height
     })
@@ -1538,6 +1540,11 @@ class BlockAction extends BlockStack {
 class BlockEvent extends BlockAction {
   constructor(def) {
     super(def)
+  }
+
+   // 自身可以Stack的位置
+   stackPosition() {
+    return ['top']
   }
 
   /**

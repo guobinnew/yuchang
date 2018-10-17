@@ -263,9 +263,15 @@ class Panel {
               }
             }
           } else if (selectInst.__proto.isStackBlock() && regions.stacks) { // 仅判断stack位置
-            let stackpos = selectInst.__proto.stackPosition()
 
+            let stackpos = selectInst.__proto.stackPosition()
             for (let [pos, cbox] of Object.entries(regions.stacks)) {
+
+              // 如果Stack有Prev节点，则top区域无效
+              if (pos === 'top' && inst.prevBlock()) {
+                continue
+              }
+
               if (stackpos.indexOf(pos) < 0) {
                 continue
               }
