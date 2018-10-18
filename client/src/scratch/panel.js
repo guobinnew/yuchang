@@ -390,20 +390,25 @@ class Panel {
               if (hostInst.insert === 'bottom') {
                 hostInst.instance.next(that.marker)
                 // 更新
-                hostInst.instance.update()
+                hostInst.instance.update(null, {
+                  force: true,
+                  prev: true
+                })
               } else if (hostInst.insert === 'top') {
                 // 从上方插入
                 let hostPrevBlock = hostInst.instance.prevBlock()
                 if (hostPrevBlock) {
                   hostPrevBlock.next(that.marker)
-                  hostPrevBlock.update()
+                  hostPrevBlock.update(null, {
+                    force: true,
+                    prev: true
+                  })
                 } else {
                   let canvasOffset = that.viewPortOffset()
                   // 更新位置
                   let _m = hostInst.instance.element().getCTM()
                   let _x = (Number(_m.e) - canvasOffset.x) / Number(_m.a) - that.marker.ghostOffset.x
                   let _y = (Number(_m.f) - canvasOffset.y) / Number(_m.d) - that.marker.ghostOffset.y
-                  logger.debug('00000000000000', _m, canvasOffset, that.marker.ghostOffset, _x, _y)
                   $marker.attr('transform', `translate(${_x},${_y})`)
                   that.marker.childType('')
                   that.marker.next(hostInst.instance)
@@ -411,10 +416,16 @@ class Panel {
                 }
               } else if (hostInst.insert === 'resolve') {
                 hostInst.instance.resolve(that.marker)
-                hostInst.instance.update()
+                hostInst.instance.update(null, {
+                  force: true,
+                  prev: true
+                })
               } else if (hostInst.insert === 'reject') {
                 hostInst.instance.reject(that.marker)
-                hostInst.instance.update()
+                hostInst.instance.update(null, {
+                  force: true,
+                  prev: true
+                })
               }
               that.marker.update()
               $marker.attr('visibility', 'visible')
@@ -445,13 +456,19 @@ class Panel {
                 if (oldhostInst.insert === 'top') {
                   let oldhostPrevBlock = oldhostInst.instance.prevBlock()
                   if (oldhostPrevBlock) {
-                    oldhostPrevBlock.update()
+                    oldhostPrevBlock.update(null, {
+                      force: true,
+                      prev: true
+                    })
                   }
                 } 
 
                 if (oldhostInst.instance !== hostInst.instance ||
                   (oldhostInst.insert === 'resolve' || oldhostInst.insert === 'reject')) {
-                  oldhostInst.instance.update()
+                  oldhostInst.instance.update(null, {
+                    force: true,
+                    prev: true
+                  })
                 }
 
                 if (hostInst.insert === 'bottom') {
@@ -461,7 +478,10 @@ class Panel {
                   let hostPrevBlock = hostInst.instance.prevBlock()
                   if (hostPrevBlock) {
                     hostPrevBlock.next(that.marker)
-                    hostPrevBlock.update()
+                    hostPrevBlock.update(null, {
+                      force: true,
+                      prev: true
+                    })
                   } else {
                     let canvasOffset = that.viewPortOffset()
                     // 更新位置
@@ -481,7 +501,10 @@ class Panel {
                 }
                 // 更新
                 that.marker.update()
-                hostInst.instance.update()
+                hostInst.instance.update(null, {
+                  force: true,
+                  prev: true
+                })
               }
             }
           }

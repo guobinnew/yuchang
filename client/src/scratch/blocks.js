@@ -6,6 +6,7 @@ import logger from '../logger'
 import ShapeUtils from './shapes'
 import Utils from './utils'
 import Argument from './argus'
+import { thresholdScott } from 'd3-array';
 
 const ycDropMargin = 20
 // 块实例
@@ -25,6 +26,20 @@ class BlockInstance {
   }
 
   /**
+   * 原型Id
+   */
+  protoId() {
+    return this.__proto ? this.__proto.def.id : 'unknown'
+  }
+
+  /**
+   * 获取Panel对象
+   */
+  panel() {
+    return this.__proto ? this.__proto.def.__panel : null
+  }
+
+  /**
    * 获取布局宽度
    */
   layoutWidth() {
@@ -39,6 +54,20 @@ class BlockInstance {
       return this.state.size.wholeHeight
     }
     return this.state.size.height
+  }
+
+  /**
+   * 获取后面整序列高度
+   */
+  sequenceHeight() {
+    let height = this.layoutHeight()
+
+    let next = this.nextBlock()
+    if (next) {
+      height += next.sequenceHeight()
+    }
+    logger.debug(' @@@ sequenceHeight', this.protoId(), height, next)
+    return height
   }
 
   /**
@@ -66,9 +95,14 @@ class BlockInstance {
     let $path = $elem.children('path.ycBlockBackground')
     let bbox = $path[0].getBBox()
 
+    let next = this.nextBlock()
+    let prev = this.prevBlock()
+    let resolve = this.rejectBlock()
+    let reject = this.rejectBlock()
+
     let output = {
       uid: this.uid,
-      protoId: this.__proto.def.id,
+      protoId: this.protoId(),
       CTM: this.element().getCTM(),
       Boundbox: bbox,
       Transform: $elem.attr('transform'),
@@ -78,15 +112,31 @@ class BlockInstance {
       },
       stackPosition: this.__proto.stackPosition(),
       canstackPosition: this.__proto.canStackPosition(),
-      childType: this.childType()
+      childType: this.childType(),
+      layoutHeight: this.layoutHeight(),
+      sequenceHeight: this.sequenceHeight(),
+      child: {
+        next: next ? next.protoId() : null,
+        prev: prev ? prev.protoId() : null,
+        resolve: resolve ? resolve.protoId() : null,
+        reject: reject ? reject.protoId() : null
+      }
     }
     logger.debug('****** Instance Dump ******', output)
   }
 
   // 获取实例类型
-  type() {
+  protoType() {
     return this.__proto ? this.__proto.def.type : 'unknown'
   }
+
+  /**
+   * 
+   */
+  protoShape() {
+    return this.__proto ? this.__proto.def.shape : 'unknown'
+  }
+
 
   // 获取对应的DOM根元素
   element() {
@@ -145,12 +195,12 @@ class BlockInstance {
     */
   updateRegion_top(regions) {
     let m = this.element().getCTM()
-    const shape = this.__proto.def.shape
+    const shape = this.protoShape()
     let $path = $(this.element()).children('path.ycBlockBackground')
     let bbox = $path[0].getBBox()
 
     // 获取panel的偏移
-    let canvasOffset = this.__proto.def.__panel.viewPortOffset()
+    let canvasOffset = this.panel().viewPortOffset()
 
     if (shape === 'cap') {
       logger.debug('Instance _updateregion_top failed: cap can not stack in top')
@@ -169,7 +219,7 @@ class BlockInstance {
 
   updateRegion_bottom(regions) {
     let m = this.element().getCTM()
-    const shape = this.__proto.def.shape
+    const shape = this.protoShape()
     let $path = $(this.element()).children('path.ycBlockBackground')
     let bbox = $path[0].getBBox()
     const size = this.state.size
@@ -203,7 +253,7 @@ class BlockInstance {
 
   updateRegion_resolve(regions) {
     let m = this.element().getCTM()
-    const shape = this.__proto.def.shape
+    const shape = this.protoShape()
     let $path = $(this.element()).children('path.ycBlockBackground')
     let bbox = $path[0].getBBox()
     const size = this.state.size
@@ -227,7 +277,7 @@ class BlockInstance {
 
   updateRegion_reject(regions) {
     let m = this.element().getCTM()
-    const shape = this.__proto.def.shape
+    const shape = this.protoShape()
     let $path = $(this.element()).children('path.ycBlockBackground')
     let bbox = $path[0].getBBox()
     const size = this.state.size
@@ -239,7 +289,7 @@ class BlockInstance {
     }
 
     // 获取panel的偏移
-    let canvasOffset = this.__proto.def.__panel.viewPortOffset()
+    let canvasOffset = this.panel().viewPortOffset()
 
     if (shape === 'cuptwo') {
       regions.stacks.reject = Utils.boundRect(
@@ -270,13 +320,17 @@ class BlockInstance {
       this.regions.arguments = {}
       this.state.data.sections.forEach((sec, i) => {
         if (sec.type === 'argument') {
-          let argu = Argument.argument(sec)
-          if (argu) {
-            // 获取参数位置
-            let canvasOffset = this.__proto.def.__panel.viewPortOffset()
-            this.regions.arguments[i] = {
-              shape: argu.data('shape'),
-              rect: argu.boundRect(-canvasOffset.x, -canvasOffset.y)
+          if (sec.__assign) {
+            // 获取已赋值参数实例尺寸
+          } else {
+            let argu = Argument.argument(sec)
+            if (argu) {
+              // 获取参数位置
+              let canvasOffset = this.panel().viewPortOffset()
+              this.regions.arguments[i] = {
+                shape: argu.data('shape'),
+                rect: argu.boundRect(-canvasOffset.x, -canvasOffset.y)
+              }
             }
           }
         }
@@ -284,25 +338,20 @@ class BlockInstance {
     }
   }
 
-  // 调试使用
-  nextString() {
-    let str = this.__proto.def.id
-    $(this.element()).find('g .ycBlockDraggable').each(function () {
-      str += $(this).attr('data-id')
-    })
-    return str
-  }
-
   // 下一个Block
   nextBlock() {
     const $dom = $(this.element())
-    const instances = this.__proto.def.__panel.instances
+    const panel = this.panel()
+    const instances = panel.instances
     let next = null
-    $dom.children('g.ycBlockDraggable').each(function() {
+    $dom.children('g.ycBlockDraggable[data-child=""]').each(function() {
       let $this = $(this)
-      if ($this.attr('data-child') !== '') {
-        return true
+
+      if ($this.attr('data-id') === 'insertmarker') {
+        next = panel.marker
+        return false
       }
+
       let uid = $this.attr('data-uid')
       next = instances[uid]
       return false
@@ -312,11 +361,11 @@ class BlockInstance {
 
   // 上一个Block
   prevBlock() {
-    let $dom = $(this.element())
-    let $prev = $dom.parent('g.ycBlockDraggable')
+    const instances = this.panel().instances
+    let $prev = $(this.element()).parent('g.ycBlockDraggable')
     if ($prev.length > 0) {
       let uid = $prev.attr('data-uid')
-      return this.__proto.def.__panel.instances[uid]
+      return instances[uid]
     }
     return null
   }
@@ -329,12 +378,8 @@ class BlockInstance {
     let next = null
     let $dom = $(this.element())
 
-    let childType = this.childType()
-    if (childType === 'resolve') {
-      next = this.resolveBlock()
-    } else if (childType === 'reject') {
-      next = this.rejectBlock()
-    } else if (childType === 'argument') { // 参数不用pop自身的子节点
+    const childType = this.childType()
+    if (childType === 'argument') { // 参数不用pop自身的子节点
     } else { // 其余默认
       next = this.nextBlock()
     }
@@ -350,8 +395,8 @@ class BlockInstance {
       if (next) {
         // 清空childType
         next.childType('')
-        let $canvas = $(this.__proto.def.__panel.dom.canvas)
-        let canvasOffset = this.__proto.def.__panel.viewPortOffset()
+        const $canvas = $(this.panel().dom.canvas)
+        const canvasOffset = this.panel().viewPortOffset()
         // 变换坐标
         let $next = $(next.element())
         let m = next.element().getCTM()
@@ -413,10 +458,9 @@ class BlockInstance {
    * 
    */
   resolveBlock() {
-    const $dom = $(this.element())
-    const instances = this.__proto.def.__panel.instances
+    const instances = this.panel().instances
     let next = null
-    $dom.children('g.ycBlockResolve').each(function() {
+    $(this.element()).children('g.ycBlockDraggable[data-child="resolve"]').each(function() {
       let $this = $(this)
       let uid = $this.attr('data-uid')
       next = instances[uid]
@@ -429,10 +473,9 @@ class BlockInstance {
    * 
    */
   rejectBlock() {
-    const $dom = $(this.element())
-    const instances = this.__proto.def.__panel.instances
+    const instances = this.panel().instances
     let next = null
-    $dom.children('g.ycBlockReject').each(function() {
+    $(this.element()).children('g.ycBlockDraggable[data-child="reject"]').each(function() {
       let $this = $(this)
       let uid = $this.attr('data-uid')
       next = instances[uid]
@@ -457,6 +500,7 @@ class BlockInstance {
 
     $instElem.appendTo($dom)
     if (next) {
+      next.childType('')
       instance.last(next)
     }
   }
@@ -476,6 +520,7 @@ class BlockInstance {
 
     $instElem.appendTo($dom)
     if (next) {
+      next.childType('')
       instance.last(next)
     }
   }
@@ -535,6 +580,7 @@ class BlockInstance {
       }
     }
 
+    logger.debug('@@@@@@@@@@@@@@@@ BlockInstance Update Begin@@@@@@@@@@@@@@@@', this.protoId(), option)
     // 根据新状态重新渲染
     this.__proto.adjust({
       dom: this.element(),
@@ -564,6 +610,8 @@ class BlockInstance {
         })
       }
     }
+
+    logger.debug('@@@@@@@@@@@@@@@@ BlockInstance Update End @@@@@@@@@@@@@@@@', this.protoId())
   }
 
   // 清空
@@ -1613,7 +1661,7 @@ class BlockControl extends BlockStack {
       } else {
         selectInst = def.__panel.instances[$this.attr('data-uid')]
       }
-      resolveHeight += selectInst.layoutHeight()
+      resolveHeight += selectInst.sequenceHeight()
     })
 
     // 计算reject高度 
@@ -1627,7 +1675,7 @@ class BlockControl extends BlockStack {
         } else {
           selectInst = def.__panel.instances[$this.attr('data-uid')]
         }
-        rejectHeight += selectInst.layoutHeight()
+        rejectHeight += selectInst.sequenceHeight()
       })
     }
 
@@ -1719,7 +1767,7 @@ class BlockControl extends BlockStack {
         selectInst = def.__panel.instances[$this.attr('data-uid')]
       }
       selectInst.setTranslate(16, offsety)
-      offsety += selectInst.layoutHeight()
+      offsety += selectInst.sequenceHeight()
     })
     offsety += state.size.resolveHeight
 
@@ -1748,7 +1796,7 @@ class BlockControl extends BlockStack {
           selectInst = def.__panel.instances[$this.attr('data-uid')]
         }
         selectInst.setTranslate(16, offsety)
-        offsety += selectInst.layoutHeight()
+        offsety += selectInst.sequenceHeight()
       })
       offsety += state.size.rejectHeight
     } 
