@@ -1711,6 +1711,7 @@ class BlockControl extends BlockStack {
     if (def.shape === 'cup') {
       state.size.resolveHeight = $shape[0].__boundbox.slotHeight
     } else if (def.shape === 'cuptwo') {
+      state.size.centerHeight = $shape[0].__boundbox.centerHeight
       state.size.resolveHeight = $shape[0].__boundbox.slotHeight[0]
       state.size.rejectHeight = $shape[0].__boundbox.slotHeight[1]
     }
@@ -1758,6 +1759,7 @@ class BlockControl extends BlockStack {
     offsety = state.size.height
 
     // 调整Resolve位置
+    let resolveOffsety = offsety
     $dom.children('g.ycBlockDraggable[data-child="resolve"]').each(function () {
       let $this = $(this)
       let selectInst = null
@@ -1766,15 +1768,14 @@ class BlockControl extends BlockStack {
       } else {
         selectInst = def.__panel.instances[$this.attr('data-uid')]
       }
-      selectInst.setTranslate(16, offsety)
-      offsety += selectInst.sequenceHeight()
+      selectInst.setTranslate(16, resolveOffsety)
+      resolveOffsety += selectInst.sequenceHeight()
     })
     offsety += state.size.resolveHeight
 
     // 调整位置
     if (def.shape === 'cuptwo' && state.data.other) {
       offsety += state.size.cornerRadius
-      state.size.centerHeight = $shape[0].__boundbox.centerHeight
       // 更新other文字位置
       let $other = $dom.children('.ycBlockOther')
       $other.trigger(ShapeUtils.events.positionText, [{
@@ -1787,6 +1788,7 @@ class BlockControl extends BlockStack {
       offsety += state.size.cornerRadius
 
       // 调整Reject位置
+      let rejectOffsety = offsety
       $dom.children('g.ycBlockDraggable[data-child="reject"]').each(function () {
         let $this = $(this)
         let selectInst = null
@@ -1795,11 +1797,11 @@ class BlockControl extends BlockStack {
         } else {
           selectInst = def.__panel.instances[$this.attr('data-uid')]
         }
-        selectInst.setTranslate(16, offsety)
-        offsety += selectInst.sequenceHeight()
+        selectInst.setTranslate(16, rejectOffsety)
+        rejectOffsety += selectInst.sequenceHeight()
       })
       offsety += state.size.rejectHeight
-    } 
+    }
 
     // 调整下标位置
     if (state.data.subscript) {

@@ -252,20 +252,33 @@ class Panel {
           let regions = inst.getRegions()
           logger.debug(`################### find instance [${inst.__proto.def.id}] regiond --`, regions)
 
-          let validPos = []
+          // 检查符合的唯一投放区域
+          let validRegion = {}
           if (selectInst.__proto.isEmbedBlock() && regions.arguments) { // 仅判断参数位置
+            validRegion.index = -1
             for (let [index, argu] of Object.entries(regions.arguments)) {
-
               // 检查形状是否匹配
               if (selectInst.__proto.def.shape !== argu.shape) {
                 continue
               }
 
+              // 取x坐标最小的
               if (Utils.isIntersects(selectBox, argu.rect)) {
-                validPos.push(index)
+                if (validRegion.index < 0 || argu.rect.left < validRegion.rect.left) {
+                  validRegion.index = index
+                  validRegion.rect = argu.rect
+                }
               }
             }
+
+            if (validRegion.index >= 0) {
+              validHostList.push({
+                instance: inst,
+                region: validRegion // 投放位置
+              })
+            }
           } else if (selectInst.__proto.isStackBlock() && regions.stacks) { // 仅判断stack位置
+            validRegion.position = ''
 
             let stackpos = selectInst.__proto.stackPosition()
             for (let [pos, cbox] of Object.entries(regions.stacks)) {
@@ -279,25 +292,26 @@ class Panel {
                 continue
               }
 
+              // 取y坐标最小的
               if (Utils.isIntersects(selectBox, cbox)) {
-                validPos.push(pos)
+                if (validRegion.position === '' || cbox.top < validRegion.rect.top) {
+                  validRegion.position = pos
+                  validRegion.rect = cbox
+                }
               }
             }
-           }
 
-          if (validPos.length > 0) {
-            validHostList.push({
-              instance: inst,
-              pos: validPos // 投放位置
-            })
+            if (validRegion.position !== '') {
+              validHostList.push({
+                instance: inst,
+                region: validRegion // 投放位置
+              })
+            }
           }
         }
 
         // 从候选列表中提取最很合适的节点，
-        // 如果父子同时满足的话：
-        // 1: slot类型，优先父节点
-        // 2: cup/cuptwo类型，优先子节点
-        // 3: argu类型，优先子节点
+        // 优先取  x | y 坐标 最小的
         let hostInst = null
         if (validHostList.length > 0) {
           if (selectInst.__proto.isEmbedBlock()) {
@@ -305,8 +319,7 @@ class Panel {
               if (!hostInst) {
                 hostInst = h
               } else {
-                // 检查是否为h的父
-                if (hostInst.instance.hasNext(h.instance)) {
+                if (h.region.rect.left < hostInst.region.rect.left) {
                   hostInst = h
                 }
               }
@@ -316,8 +329,7 @@ class Panel {
               if (!hostInst) {
                 hostInst = h
               } else {
-                // 检查是否为hostInst的父
-                if (h.instance.hasNext(hostInst.instance)) {
+                if (h.region.rect.top < hostInst.region.rect.top) {
                   hostInst = h
                 }
               }
@@ -327,16 +339,9 @@ class Panel {
 
         if (hostInst) {
           if (selectInst.__proto.isEmbedBlock()) {
-            hostInst.insert = Number(hostInst.pos[0]) // 默认取第一个
+            hostInst.insert = Number(hostInst.region.index)
           } else if (selectInst.__proto.isStackBlock()) {
-            // 优先选取位置
-            if (hostInst.pos.indexOf('resolve') >= 0) {
-              hostInst.insert = 'resolve'
-            } else if (hostInst.pos.indexOf('reject') >= 0) {
-              hostInst.insert = 'reject'
-            } else {
-              hostInst.insert = hostInst.pos[0] // 默认取第一个
-            }
+            hostInst.insert = hostInst.region.position
           }
         }
 
@@ -592,9 +597,14 @@ class Panel {
                 })
               }
             }
-
             $selected.removeClass('ycBlockDragging')
             $selected.removeClass('ycBlockSelected')
+
+            // 更新
+            selectInst.update(null, {
+              force: true,
+              prev: true
+            })
           }
           that.marker.ghost(null)
           $dragsurface.css('display', 'none')
