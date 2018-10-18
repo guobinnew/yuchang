@@ -254,8 +254,14 @@ class Panel {
 
           let validPos = []
           if (selectInst.__proto.isEmbedBlock() && regions.arguments) { // 仅判断参数位置
-            for (let [index, cbox] of Object.entries(regions.arguments)) {
-              if (Utils.isIntersects(selectBox, cbox)) {
+            for (let [index, argu] of Object.entries(regions.arguments)) {
+
+              // 检查形状是否匹配
+              if (selectInst.__proto.def.shape !== argu.shape) {
+                continue
+              }
+
+              if (Utils.isIntersects(selectBox, argu.rect)) {
                 validPos.push(index)
               }
             }
@@ -277,10 +283,7 @@ class Panel {
                 validPos.push(pos)
               }
             }
-            logger.debug('################### judge regions possssss', inst.__proto.def.id, stackpos, validPos)
-          }
-
-          logger.debug('################### judge regions pos', validPos)
+           }
 
           if (validPos.length > 0) {
             validHostList.push({
@@ -289,8 +292,6 @@ class Panel {
             })
           }
         }
-
-        logger.debug('################# validHostList ', validHostList)
 
         // 从候选列表中提取最很合适的节点，
         // 如果父子同时满足的话：

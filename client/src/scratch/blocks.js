@@ -274,7 +274,10 @@ class BlockInstance {
           if (argu) {
             // 获取参数位置
             let canvasOffset = this.__proto.def.__panel.viewPortOffset()
-            this.regions.arguments[i] = argu.boundRect(-canvasOffset.x, -canvasOffset.y)
+            this.regions.arguments[i] = {
+              shape: argu.data('shape'),
+              rect: argu.boundRect(-canvasOffset.x, -canvasOffset.y)
+            }
           }
         }
       })

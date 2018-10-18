@@ -84,6 +84,23 @@ class Argument {
     return w
   }
 
+  /**
+   * 获取data-属性
+   * @param {*} key 
+   */
+
+  data(key) {
+    if(!key) {
+      return null
+    }
+    return $(this.section.dom).attr('data-' + key)
+  } 
+
+  /**
+   * 将Section封装为一个Argument对象
+   * @param {*} section 
+   */
+
   static argument(section) {
     if (section.type !== 'argument') {
       logger.warn(`Argument wrapper failed: invalid param --`, section)
