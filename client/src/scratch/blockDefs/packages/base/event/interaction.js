@@ -30,5 +30,35 @@ export default [
         return {}
       }
     }
+  },
+  {
+    id: 'detect',
+    shape: 'cap',
+    category: 'event',
+    draggable: true,
+    begin: true,
+    state: {
+      data: {
+        sections: [
+          {
+            type: 'text',
+            text: '当探测到'
+          },
+          {
+            type: 'argument',
+            datatype: 'string'
+          },
+          {
+            type: 'text',
+            text: '时'
+          }
+        ]
+      }
+    },
+    exports: {
+      json: function (elem) {
+        return {}
+      }
+    }
   }
 ]
