@@ -38,6 +38,9 @@ const Utils = {
     return true
   },
 
+  /**
+   * 
+   */
   isContains: function(box, point, vdist = 0, hdist = 0) {
     let nbox = Utils.normalizeBoundbox(box)
     let v = yuchg.isNumber(vdist) ? Math.max(vdist, 0) : 0
@@ -89,9 +92,10 @@ const Utils = {
       left: rect.left + offsetx,
       top: rect.top + offsety,
       right: rect.right + offsetx,
-      bottom:  rect.bottom + offsety
+      bottom: rect.bottom + offsety
     }
   }
+
 }
 
 export default Utils

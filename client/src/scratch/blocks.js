@@ -722,6 +722,7 @@ class Block {
   constructor(option) {
     this.instances = new Map() // 实例Map列表
     this.def = {
+      child: '',
       state: { // 允许实例调整的数据
         size: { // 尺寸设置
           minWidth: minWidth, // 内容显示区域宽度，最小宽度

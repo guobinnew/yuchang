@@ -218,4 +218,11 @@ yuchg.strByteLength = function (str) {
   return str.length + (arr == null ? 0 : arr.length)
 }
 
+/**
+ * 字符串trim
+ */
+yuchg.trimString = function(str) {
+  return str.replace(/^\s+|\s+$/g, '');
+}
+
 export default yuchg

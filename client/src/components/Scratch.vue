@@ -37,10 +37,7 @@
                 <g class="ycBlockCanvas">
                 </g>
             </g>
-             <g class="ycBlockZoom" transform="translate(20,20)">
-                <image width="36" height="36" y="44" xlink:href="../assets/zoom-out.svg"></image>
-                <image width="36" height="36" y="0" xlink:href="../assets/zoom-in.svg"></image>
-                <image width="36" height="36" y="88" xlink:href="../assets/zoom-reset.svg"></image>
+             <g class="ycBlockButtons" transform="translate(20,20)">
             </g>
         </svg>
         <svg class="ycBlockDragSurface"
@@ -220,7 +217,7 @@
   cursor: text;
 }
 
-.ycBlockZoom image {
+.ycBlockButtions image {
   cursor: pointer;
 }
 
@@ -352,11 +349,15 @@
 </style>
 
 <script>
-import Scratch from "../scratch/index";
+import Scratch from "../scratch/index"
+import yuchg from '../base'
+import logger from '../logger'
+logger.setLevel('debug')
+
 
 export default {
   name: "Scratch",
-  props: ["width", "height", "flex"],
+  props: ["width", "height", "flex", "loadbtn", "savebtn"],
   data: function() {
     return {
       id: "scratch",
@@ -404,7 +405,41 @@ export default {
 
       resizeEditor();
     }
-    that.editor.setOption({});
+
+    let buttons = []
+    if (yuchg.isObject(this.loadbtn)) {
+      buttons.push({
+        id: 'load',
+        img: this.loadbtn.img,
+        action: this.loadbtn.action
+      })
+    } else if (yuchg.isFunction(this.loadbtn)) {  // 返回格式为 { img: '', action: func()}
+      let btn = this.loadbtn()
+      buttons.push({
+        id: 'load',
+        img: btn.img,
+        action: btn.action
+      })
+    }
+
+    if (yuchg.isObject(this.savebtn)) {
+      buttons.push({
+        id: 'save',
+        img: this.savebtn.img,
+        action: this.savebtn.action
+      })
+    } else if (yuchg.isFunction(this.savebtn)) {
+       let btn = this.savebtn()
+      buttons.push({
+        id: 'save',
+        img: btn.img,
+        action: btn.action
+      })
+    }
+
+    that.editor.setOption({
+      buttons: buttons
+    });
   },
   methods: {}
 };

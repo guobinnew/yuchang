@@ -8,8 +8,6 @@ import Utils from './utils'
 import Blocks from './blocks'
 import Argument from './argus'
 
-logger.setLevel('debug')
-
 /**
  * 查找类目上下文
  * category: string 类目名称
@@ -21,6 +19,8 @@ function acquireCategoryContext(category) {
   return null
 }
 
+const ycMinZoom = 0.5
+const ycMaxZoom = 2
 /**
  * 编辑面板，提供可视化编辑UI
  */
@@ -50,6 +50,7 @@ class Panel {
     this.dom.widget = $node.find('.ycBlockWidgetDiv')[0]
     this.dom.dropdown = $node.find('.ycBlockDropDownDiv')[0]
     this.dom.tooltip = $node.find('.ycBlockTooltipDiv')[0]
+    this.dom.buttons = $node.find('.ycBlockButtons')[0]
 
     this.marker = null // 辅助插入标志占位
 
@@ -86,7 +87,30 @@ class Panel {
     this.option = {
       width: 800,
       height: 600,
-      blocks: BlockDefs
+      blocks: BlockDefs,
+      buttons: [
+        {
+          id: 'zoomout',
+          img: '/img/zoom-out.svg',
+          action: () => {
+            this.zoomCanvas(this.currentZoomFactor / this.zoomRate)
+          }
+        },
+        {
+          id: 'zoomin',
+          img: '/img/zoom-in.svg',
+          action: () => {
+            this.zoomCanvas(this.currentZoomFactor * this.zoomRate)
+          }
+        },
+        {
+          id: 'reset',
+          img: '/img/zoom-reset.svg',
+          action: () => {
+            this.resetCanvas()
+          }
+        }
+      ]
     }
 
     // 鼠标事件
@@ -102,6 +126,33 @@ class Panel {
 
     //
     this.bindCanvasEvent()
+  }
+
+  /**
+   * 缩放画布
+   */
+  zoomCanvas(zoom) {
+    if (!zoom) {
+      logger.warn('Panel zoomCanvas failed: zoom is null')
+      return
+    }
+
+    if (zoom < ycMinZoom || zoom > ycMaxZoom) {
+      return
+    }
+
+    this.currentZoomFactor = zoom
+    let m = this.dom.canvas.getCTM()
+    let trans = 'translate(' + (Number(m.e)) + ',' + (Number(m.f)) + ') ' + 'scale(' + this.currentZoomFactor + ')'
+    this.setCanvasTransfrom(this.dom.canvasList, trans)
+  }
+
+  /**
+   * 重置画布
+   */
+  resetCanvas() {
+    this.currentZoomFactor = 1.0
+    this.setCanvasTransfrom(this.dom.canvasList, 'translate(0,0) scale(1.0)')
   }
   
   /**
@@ -812,8 +863,14 @@ class Panel {
   setOption(option) {
     // 清空之前的定义
     this.option.blocks.defs = null
+    // 合并Buttons
+    let buttons = [].concat(this.option.buttons, option.buttons)
+    delete option['buttons']
     // 合并
     $.extend(true, this.option, option)
+    this.option.buttons = buttons
+
+    logger.debug('DDD', this.option.buttons)
 
     // 提取Block包定义
     for (let p of this.option.blocks.packages.values()) {
@@ -842,33 +899,35 @@ class Panel {
     this.marker = this.createBlockInstance('insertmarker')
     // 初始化toolbox
     this.initCategoryToolbox()
-    this.initZoomPanel()
+    // 初始化按钮面板
+    this.initButtons()
   }
 
-  initZoomPanel() {
-    let that = this
-    // 设置缩放按钮
-    $('.ycBlockZoom image').each(function (index, elem) {
-      $(this).mousedown(function () {
-        if (index === 0) {
-          if (that.currentZoomFactor > 0.5) {
-            that.currentZoomFactor /= that.zoomRate
-          }
-        } else if (index === 1) {
-          if (that.currentZoomFactor < 2) {
-            that.currentZoomFactor *= that.zoomRate
-          }
-        } else if (index === 2) {
-          that.currentZoomFactor = 1.0
-          that.setCanvasTransfrom(that.dom.canvasList, 'translate(0,0) scale(1.0)')
-          return
-        }
+  /**
+   * 
+   */
+  initButtons() {
+    const $group = $(this.dom.buttons)
+    $group.children().remove()
 
-        let m = that.dom.canvas.getCTM()
-        let trans = 'translate(' + (Number(m.e)) + ',' + (Number(m.f)) + ') ' + 'scale(' + that.currentZoomFactor + ')'
-        that.setCanvasTransfrom(that.dom.canvasList, trans)
+    let offsety = 0
+    for (let btn of this.option.buttons) {
+      let img = ShapeUtils.base.image({
+        width: 36,
+        height: 36,
+        y: offsety,
+        url: btn.img
       })
-    })
+
+      $(img).attr('data-id', btn.id)
+      let panel = this
+      $(img).mousedown(function() {
+        yuchg.isFunction(btn.action) && btn.action(panel)
+      })
+
+      $group.append(img)
+      offsety += 44
+    }
   }
 
   initCategoryToolbox() {
@@ -1254,6 +1313,54 @@ class Panel {
       return true
     }
     return false
+  }
+
+  /**
+   * 脚步格式化导出
+   * @param {*} type  json | js | html
+   */
+
+  export(type) {
+
+  }
+
+  /**
+   * 保存为内部格式
+   */
+  save() {
+    const test = {
+      author: 'Unique',
+      blocks: [
+        {
+          uid: '1111'
+        }
+      ]
+    }
+    return JSON.stringify(test)
+  }
+
+  /**
+   * 从内部格式加载
+   */
+  load(data) {
+    if (!data) {
+      // 清空内容
+      return
+    }
+
+    if (yuchg.isString(data)) {
+      let trimData = yuchg.trimString(data)
+      logger.debug('Panel load: ', trimData)
+      if (trimData === '') {
+        // 清空内容
+      } else {
+        let data = JSON.parse(trimData)
+        if (!data) {
+          logger.warn('Panel load failed: data corrupted -- ', trimData)
+        }
+        logger.debug('Panel load success: ', data)
+      }
+    }
   }
 }
 

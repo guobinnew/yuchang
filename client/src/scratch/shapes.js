@@ -1049,7 +1049,9 @@ const ShapeUtils = {
 
       return rect
     },
-    /*
+
+    /**
+     * option: height | width | url | x | y
      */
     image: function (option) {
       let img = document.createElementNS(ycSvgNS, 'image')
@@ -1059,6 +1061,14 @@ const ShapeUtils = {
       $img.attr('width', option.height ? option.height : 0)
       $img.attr('transform', 'translate(0,0)')
       img.href.baseVal = option.url
+
+      if (yuchg.isNumber(option.x)) {
+        $img.attr('x', option.x)
+      }
+
+      if (yuchg.isNumber(option.y)) {
+        $img.attr('y', option.y)
+      }
 
       // 绑定事件
       const bindEvents = [ycEvents.resize, ycEvents.position, ycEvents.changeImage]
