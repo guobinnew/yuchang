@@ -64,10 +64,14 @@
         }).click()
       },
       saveFile(panel) {
+        // 弹出输入名称对话框
+        
         const $dom = $(this.$el)
         let data = panel.save()
+        logger.debug('encode data stringify: ', data)
+        
         let file = new File([data], "test.yu", {type: "text/plain;charset=utf-8"})
-        saveAs(Blob)
+        saveAs(file)
       }
     },
     mounted: function() {

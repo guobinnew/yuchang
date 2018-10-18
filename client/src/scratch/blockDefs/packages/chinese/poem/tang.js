@@ -105,6 +105,7 @@ export default [
     shape: 'slot',
     category: 'data',
     draggable: true,
+    end: true,
     state: {
       data: {
         sections: [

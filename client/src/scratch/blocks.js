@@ -104,11 +104,11 @@ class BlockInstance {
       uid: this.uid,
       protoId: this.protoId(),
       CTM: this.element().getCTM(),
-      Boundbox: bbox,
-      Transform: $elem.attr('transform'),
-      Region: this.getRegions(),
-      State: {
-        Size: this.state.size
+      boundbox: bbox,
+      transform: $elem.attr('transform'),
+      regions: this.getRegions(),
+      state: {
+        size: this.state.size
       },
       stackPosition: this.__proto.stackPosition(),
       canstackPosition: this.__proto.canStackPosition(),
@@ -120,7 +120,8 @@ class BlockInstance {
         prev: prev ? prev.protoId() : null,
         resolve: resolve ? resolve.protoId() : null,
         reject: reject ? reject.protoId() : null
-      }
+      },
+      encode: this.encode()
     }
     logger.debug('****** Instance Dump ******', output)
   }
@@ -626,6 +627,52 @@ class BlockInstance {
     this.__proto.instances.delete(this.uid)
     $(this.dom).remove()
     this.dom = null
+  }
+
+  /**
+   * 
+   */
+  cloneData() {
+    let clone = $.extend(true, {}, this.state.data)
+    // 过滤sections
+    if (clone.sections) {
+      for (let sec of clone.sections) {
+        // 替换assign
+        sec.dom = null
+        // if (sec.__assign) {
+        //   sec.__assign = sec.__assign.encode()
+        // }
+      }
+    }
+    return clone
+  }
+
+  // 编码
+  encode() {
+    let next = this.nextBlock()
+    let prev = this.prevBlock()
+    let resolve = this.rejectBlock()
+    let reject = this.rejectBlock()
+
+    let data = {
+      protoId: this.protoId(),
+      state: {
+        data: this.cloneData(),
+        transform: this.state.transform
+      },
+      child: {
+        next: next ? next.encode() : null,
+        prev: prev ? prev.encode() : null,
+        resolve: resolve ? resolve.encode() : null,
+        reject: reject ? reject.encode() : null
+      }
+    }
+    return data
+  }
+
+  // 解码
+  decode(data) {
+    // 更新状态
   }
 }
 
@@ -1854,6 +1901,8 @@ class BlockAction extends BlockStack {
    */
   createShape() {
     let opt = Object.assign({}, this.def.state.background)
+    // 默认为非中止block
+    opt.end = !!this.def.end
     // 缺省外形
     let shape = ShapeUtils.path.slot(opt)
     return shape

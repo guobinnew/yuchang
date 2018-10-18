@@ -577,8 +577,12 @@ const ShapeUtils = {
       // 更新尺寸大小
       boundbox = _size(boundbox, option)
 
-      const d = '`m 0,4 A 4,4 0 0,1 4,0 H 12 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H ${ size.width - size.cornerRadius } a 4,4 0 0,1 4,4 v ${ size.contentHeight } a 4,4 0 0,1 -4,4 H ${ size.caveRight } c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 H 4 a 4,4 0 0,1 -4,-4 z`'
-      const _dfunc = new Function('size', 'return ' + d)
+      const d = '`m 0,4 A 4,4 0 0,1 4,0 H 12 c 2,0 3,1 4,2 l 4,4 c 1,1 2,2 4,2 h 12 c 2,0 3,-1 4,-2 l 4,-4 c 1,-1 2,-2 4,-2 H ${ size.width - size.cornerRadius } a 4,4 0 0,1 4,4 v ${ size.contentHeight } a 4,4 0 0,1 -4,4 '
+      const end = [
+        ' H ${ size.caveRight } c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 H 4 a 4,4 0 0,1 -4,-4 z`',
+        ' H 4 a 4,4 0 0,1 -4,-4 z`'
+      ]
+      const _dfunc = new Function('size', 'return ' + d + (option.end ? end[1] : end[0]))
       $elem.attr('d', _dfunc(boundbox))
 
       option.stroke && $elem.attr('stroke', option.stroke)

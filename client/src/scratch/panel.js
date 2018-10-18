@@ -1211,7 +1211,6 @@ class Panel {
       that.selected = this
 
       // Debug
-      
       let selectUid = $(this).attr('data-uid')
       let selectInst = that.instances[selectUid]
       selectInst.update()
@@ -1253,8 +1252,13 @@ class Panel {
     }
   }
 
-  findBlock(id) {
+  /**
+   * 根据UID
+   * @param {*} uid 
+   */
 
+  findBlock(uid) {
+    return this.instances[uid]
   }
 
   findBlocksByType(type) {
@@ -1301,10 +1305,6 @@ class Panel {
     }
   }
 
-  unregisterBlock(types) {
-
-  }
-
   /**
    * 检查Block是否注册
    */
@@ -1313,6 +1313,33 @@ class Panel {
       return true
     }
     return false
+  }
+
+  /**
+   * 克隆Block
+   */
+
+  cloneBlock(instance) {
+
+  }
+
+  /**
+   * 清空所有Blocks
+   */
+  clearBlocks() {
+    const panel = this
+    $(this.dom.canvas).children('g.ycBlockDraggable').each(function() {
+      let $this = $(this)
+      if ($this.attr('data-id') === 'insertmarker') {
+        return false
+      }
+      let uid = $this.attr('data-uid')
+      panel.removeBlock(uid)
+    })
+    
+    for (let uid of Object.keys(this.instances)) {
+      logger.warn(`Panel ClearBlocks: Instance [${uid}] still existed`)
+    }
   }
 
   /**
@@ -1328,37 +1355,66 @@ class Panel {
    * 保存为内部格式
    */
   save() {
-    const test = {
+    // 
+    let $canvas = $(this.dom.canvas)
+    const panel = this
+    let data = {
       author: 'Unique',
-      blocks: [
-        {
-          uid: '1111'
-        }
-      ]
+      blocks: []
     }
-    return JSON.stringify(test)
+    $canvas.children('g.ycBlockDraggable').each(function() {
+      let $this = $(this)
+
+      if ($this.attr('data-id') === 'insertmarker') {
+        return true
+      }
+      let uid = $this.attr('data-uid')
+      let instance = panel.instances[uid]
+      data.blocks.push(instance.encode())
+    })
+    return JSON.stringify(data)
   }
 
   /**
    * 从内部格式加载
    */
   load(data) {
+     // 清空内容
+    this.clearBlocks()
+
     if (!data) {
-      // 清空内容
       return
     }
 
     if (yuchg.isString(data)) {
       let trimData = yuchg.trimString(data)
       logger.debug('Panel load: ', trimData)
-      if (trimData === '') {
-        // 清空内容
-      } else {
+      if (trimData !== '') {
         let data = JSON.parse(trimData)
         if (!data) {
           logger.warn('Panel load failed: data corrupted -- ', trimData)
+          return
         }
+
         logger.debug('Panel load success: ', data)
+
+        if (!yuchg.isArray(data.blocks) || data.blocks.length === 0) {
+          return
+        }
+
+        // 加载数据
+        for (let block of data.blocks) {
+          // 根据protoId创建实例
+          let instance = this.addBlock({
+            type: block.protoId,
+            state: {
+              transform: block.state.transform
+            }
+          })
+
+          // 
+          instance.decode(block)
+        }
       }
     }
   }
