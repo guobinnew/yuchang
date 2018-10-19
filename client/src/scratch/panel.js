@@ -342,13 +342,24 @@ class Panel {
             let stackpos = selectInst.stackPosition(true)
             for (let [pos, cbox] of Object.entries(regions.stacks)) {
 
+              if (stackpos.indexOf(pos) < 0) {
+                continue
+              }
+
               // 如果Stack有Prev节点，则top区域无效
               if (pos === 'top' && inst.prevBlock()) {
                 continue
               }
 
-              if (stackpos.indexOf(pos) < 0) {
-                continue
+              // 如果Stack有Next节点，检查Next节点是否能够连接到Select序列的尾部
+              if (pos === 'bottom') {
+                const next = inst.nextBlock()
+                if (next && next.protoId() !== 'insertmarker') {
+                  let canstack = selectInst.lastBlock().__proto.canStackPosition()
+                  if (canstack.indexOf('bottom') < 0) {
+                    continue
+                  }
+                }
               }
 
               // 取y坐标最小的
