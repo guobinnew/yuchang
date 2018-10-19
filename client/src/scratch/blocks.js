@@ -184,9 +184,6 @@ class BlockInstance {
     $(this.element()).attr('transform', `translate(${x},${y})`)
   }
   
-  /**
-   * 获取投放区域
-   */
   getRegions() {
     this.updateDropRegions()
     return this.regions
@@ -302,6 +299,25 @@ class BlockInstance {
     }
   }
 
+  /**
+   * 可以stack到其他Block上的位置
+   * seq: 是否考虑序列
+   */
+  stackPosition(seq = false) {
+    let pos = this.__proto.stackPosition()
+    if (seq) {
+      // 考虑last的元素
+      const last = this.lastBlock()
+      if (last !== this) {
+        const lastpos = last.__proto.stackPosition()
+        if (lastpos.indexOf('top') < 0) {
+          pos.splice(pos.findIndex(v => v === 'top'), 1)
+        }
+      }
+    }
+    return pos
+  }
+
   // 获取实例的投放区域
   updateDropRegions() {
 
@@ -369,6 +385,28 @@ class BlockInstance {
       return instances[uid]
     }
     return null
+  }
+
+  // 末尾Block
+  lastBlock() {
+    let last = this
+    let temp = this.nextBlock()
+    while (temp) {
+      last = temp
+      temp = temp.nextBlock()
+    }
+    return last
+  }
+
+  // 头部Block
+  firstBlock() {
+    let first = this
+    let temp = this.prevBlock()
+    while (temp) {
+      first = temp
+      temp = temp.prevBlock()
+    }
+    return first
   }
 
   /**

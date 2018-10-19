@@ -338,7 +338,8 @@ class Panel {
           } else if (selectInst.__proto.isStackBlock() && regions.stacks) { // 仅判断stack位置
             validRegion.position = ''
 
-            let stackpos = selectInst.__proto.stackPosition()
+            // 获取序列可投放区域
+            let stackpos = selectInst.stackPosition(true)
             for (let [pos, cbox] of Object.entries(regions.stacks)) {
 
               // 如果Stack有Prev节点，则top区域无效

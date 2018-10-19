@@ -222,7 +222,15 @@ yuchg.strByteLength = function (str) {
  * 字符串trim
  */
 yuchg.trimString = function(str) {
-  return str.replace(/^\s+|\s+$/g, '');
+  return str.replace(/^\s+|\s+$/g, '')
+}
+
+/**
+ * 合并数组并去重, 返回新数组
+ */
+yuchg.concatArray = function(arr1, arr2) {
+  var arr = arr1.concat(arr2)
+  return Array.from(new Set(arr))
 }
 
 export default yuchg
