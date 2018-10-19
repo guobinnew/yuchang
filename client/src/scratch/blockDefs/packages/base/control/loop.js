@@ -27,6 +27,36 @@ export default [
     }
   },
   {
+    id: 'while',
+    shape: 'cup',
+    category: 'control',
+    draggable: true,
+    state: {
+      data: {
+        sections: [
+          {
+            type: 'text',
+            text: '重复执行直到'
+          },
+          {
+            type: 'argument',
+            datatype: 'boolean'
+          }
+        ],
+        subscript: {
+          url: '/img/repeat.svg',
+          width: 24,
+          height: 24
+        }
+      }
+    },
+    exports: {
+      json: function (elem) {
+        return {}
+      }
+    }
+  },
+  {
     id: 'for',
     shape: 'cup',
     category: 'control',

@@ -97,5 +97,37 @@ export default [
         return {}
       }
     }
+  },
+  {
+    id: 'sleep',
+    shape: 'slot',
+    category: 'control',
+    draggable: true,
+    state: {
+      data: {
+        sections: [
+          {
+            type: 'text',
+            text: '等待'
+          },
+          {
+            type: 'argument',
+            datatype: 'number',
+            data: {
+              value: 1
+            }
+          },
+          {
+            type: 'text',
+            text: '秒'
+          }
+        ]
+      }
+    },
+    exports: {
+      json: function (elem) {
+        return {}
+      }
+    }
   }
 ]

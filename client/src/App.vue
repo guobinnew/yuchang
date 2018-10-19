@@ -156,6 +156,10 @@
         line-height: 320px;
     }
 
+    .el-dialog {
+      line-height: 40px;
+    }
+
     .el-footer{
         text-align: right;
         padding-right: 20px;

@@ -184,7 +184,7 @@ const ycCaveSecondRight = 64 // 子凹槽起右边位置
 const ycCapBulgeWidth = 96 // 帽子凸起宽度
 const ycCapBulgeHeight = 22 // 帽子凸起高度
 const ycCornerRadius = 4 // 圆角半径
-
+const ycHatBulgeRadius = 20 // 帽子凸起半径
 /**
  * 参数合法检验
  * param：Any
@@ -258,6 +258,95 @@ const ShapeUtils = {
       boundbox = _size(boundbox, option)
 
       const d = '`m 0,0 c 25, ${ -size.bulgeHeight } 71,${ -size.bulgeHeight } ${ size.bulgeWidth },0 H ${ size.width - size.cornerRadius } a 4,4 0 0,1 4,4 v ${size.contentHeight}  a 4,4 0 0,1 -4,4 H ${ size.caveRight }   c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 H 4 a 4,4 0 0,1 -4,-4 z`'
+      const _dfunc = new Function('size', 'return ' + d)
+      $elem.attr('d', _dfunc(boundbox))
+
+      option.stroke && $elem.attr('stroke', option.stroke)
+      option.fill && $elem.attr('fill', option.fill)
+      option.opacity && $elem.attr('fill-opacity', option.opacity)
+
+      $elem.addClass('ycBlockPath ycBlockBackground' + (option.classes ? (' ' + option.classes) : ''))
+
+      // 自定义事件
+      $elem.on(ycEvents.resize, function (event, opt) {
+        event.stopPropagation()
+
+        let log = logPrefix(this, ycEvents.resize)
+        if (!opt) {
+          logger.warn(log + `opt is null`)
+          return
+        }
+
+        opt.contentWidth = checkParameter(opt.contentWidth, yuchg.isNumber)
+        opt.contentHeight = checkParameter(opt.contentHeight, yuchg.isNumber)
+
+        boundbox = _size(boundbox, opt)
+        const $this = $(this)
+        $this.attr('d', _dfunc(boundbox))
+        this.__boundbox = boundbox
+      })
+
+      // 计算大小
+      path.__boundbox = boundbox
+      return path
+    },
+
+    /**
+     * 帽子
+     */
+    hat: function (option) {
+      const path = document.createElementNS(ycSvgNS, 'path')
+      const $elem = $(path)
+
+      if (!option) {
+        option = {}
+      }
+
+      const minContentWidth = ycCapBulgeWidth + 16 // 包含左右padding
+      const minContentHeight = 40 // 包含上下padding
+
+      // 最小尺寸
+      let boundbox = {
+        caveRight: ycCaveRight,
+        bulgeRadius: ycHatBulgeRadius,
+        cornerRadius: ycCornerRadius,
+        width: minContentWidth + ycCornerRadius * 2,
+        height: minContentHeight + ycCornerRadius * 2, // 仅仅是头部显示区域，不是完整高度，完整高度使用BBox()获取
+        contentWidth: minContentWidth,
+        contentHeight: minContentHeight
+      }
+
+      /**
+       * 根据content大小计算外形大小
+       */
+      const _size = (box, opt) => {
+        let _boundbox = Object.assign({}, box)
+        if (!opt) {
+          return _boundbox
+        }
+
+        let modify = false
+        if (yuchg.isNumber(opt.contentWidth)) {
+          modify = true
+          _boundbox.contentWidth = Math.max(opt.contentWidth, minContentWidth)
+        }
+
+        if (yuchg.isNumber(opt.contentHeight)) {
+          modify = true
+          _boundbox.contentHeight = Math.max(opt.contentHeight, minContentHeight)
+        }
+
+        if (modify) {
+          // 更新宽高
+          _boundbox.width = _boundbox.contentWidth + _boundbox.cornerRadius * 2
+          _boundbox.height = _boundbox.contentHeight + _boundbox.cornerRadius
+        }
+        return _boundbox
+      }
+
+      // 更新尺寸大小
+      boundbox = _size(boundbox, option)
+      const d = '`m 0, 0 a 20,20 0 0,1 20,-20 H ${ size.width - size.cornerRadius } a 20,20 0 0,1 20,20 v ${ size.contentHeight } a 4,4 0 0,1 -4,4 H ${ size.caveRight } c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 H 4 a 4,4 0 0,1 -4,-4 z`'
       const _dfunc = new Function('size', 'return ' + d)
       $elem.attr('d', _dfunc(boundbox))
 

@@ -207,8 +207,8 @@ class BlockInstance {
   * 计算top投放区域
   */
   updateRegion_top(regions) {
-    if (this.protoShape() === 'cap') {
-      logger.warn('Instance _updateregion_top failed: cap can not stack in top')
+    if (this.protoShape() === 'cap' || this.protoShape() === 'hat') {
+      logger.warn('Instance _updateregion_top failed: cap or hat can not stack in top')
       return
     }
 
@@ -238,7 +238,7 @@ class BlockInstance {
         bbox.width,
         bbox.height + ycDropMargin
       )
-    } else if (shape === 'cap') {
+    } else if (shape === 'cap' || shape === 'hat') {
       regions.stacks.bottom = Utils.boundRect(
         canvasPos.x,
         canvasPos.y + bbox.y,
@@ -1956,7 +1956,12 @@ class BlockEvent extends BlockAction {
   createShape() {
     let opt = Object.assign({}, this.def.state.background)
     // 缺省外形
-    let shape = ShapeUtils.path.cap(opt)
+    let shape = null
+    if (this.def.shape === 'hat') {
+      shape = ShapeUtils.path.hat(opt)
+    } else {
+      shape = ShapeUtils.path.cap(opt)
+    }
     return shape
   }
 }
