@@ -7,6 +7,7 @@ export default [
     draggable: true,
     state: {
       data: {
+        datatype: 'number',
         text: 'X坐标'
       }
     },
@@ -24,6 +25,7 @@ export default [
     draggable: true,
     state: {
       data: {
+        datatype: 'number',
         text: 'Y坐标'
       }
     },
@@ -36,11 +38,12 @@ export default [
   {
     id: 'origin',
     name: '是否在原点',
-    shape: 'boolean',
+    shape: 'diamond',
     category: 'sensing',
     draggable: true,
     state: {
       data: {
+        datatype: 'boolean',
         text: '是否在原点'
       }
     },

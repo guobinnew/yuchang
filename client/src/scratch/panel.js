@@ -320,6 +320,11 @@ class Panel {
                 continue
               }
 
+              // 检查数据类型是否匹配
+              if (selectInst.stateData().datatype !== argu.datatype) {
+                continue
+              }
+
               // 取x坐标最小的
               if (Utils.isIntersects(selectBox, argu.rect)) {
                 if (validRegion.index < 0 || argu.rect.left < validRegion.rect.left) {
@@ -1272,6 +1277,13 @@ class Panel {
                 id: 'copy',
                 name: '复制',
                 action: () => {
+                  panel.cloneBlock(selectUid, true)
+                }
+              },
+              {
+                id: 'copyself',
+                name: '复制自己',
+                action: () => {
                   panel.cloneBlock(selectUid)
                 }
               },
@@ -1419,16 +1431,17 @@ class Panel {
 
   /**
    * 克隆Block
+   * seq = true 时，复制整个序列
    */
 
-  cloneBlock(uid) {
+  cloneBlock(uid, seq = false) {
     let instance = this.instances[uid]
     if (!instance) {
       logger.warn(`Panel CloneBlock failed: can not find Instance [${uid}]`)
       return
     }
 
-    const clone = instance.cloneSelf()
+    const clone = instance.cloneSelf(seq)
     // 调整位置
     const oldPos = instance.canvasPosition()
     clone.setTranslate(oldPos.x + 64, oldPos.y + 64)

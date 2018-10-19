@@ -7,6 +7,7 @@ export default [
     draggable: true,
     state: {
       data: {
+        datatype: 'string',
         text: '潜艇'
       }
     },
@@ -24,6 +25,7 @@ export default [
     draggable: true,
     state: {
       data: {
+        datatype: 'string',
         text: '水面船只'
       }
     },

@@ -346,6 +346,7 @@ class BlockInstance {
               const canvasOffset = this.panel().viewPortOffset()
               this.regions.arguments[i] = {
                 shape: argu.data('shape'),
+                datatype: sec.datatype,
                 rect: argu.boundRect(-canvasOffset.x, -canvasOffset.y)
               }
             }
@@ -1220,7 +1221,7 @@ class BlockVariant extends Block {
     }
     $.extend(opt, state.background)
     let shape = null
-    if (this.def.shape === 'boolean') { // 布尔类型
+    if (this.def.shape === 'diamond') { // 布尔类型
       shape = ShapeUtils.path.diamondRect(opt)
     } else {
       // 缺省外形

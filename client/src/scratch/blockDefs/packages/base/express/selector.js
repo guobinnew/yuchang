@@ -10,6 +10,7 @@ export default [
         padding: 4
       },
       data: {
+        datatype: 'object',
         sections: [
           {
             type: 'argument',
@@ -17,9 +18,9 @@ export default [
             data: {
               currentIndex: 0,
               values: [
-                {name: '白方', value: 0},
-                {name: '红方', value: 1},
-                {name: '蓝方', value: 2}
+                { name: '白方', value: 0 },
+                { name: '红方', value: 1 },
+                { name: '蓝方', value: 2 }
               ]
             }
           },

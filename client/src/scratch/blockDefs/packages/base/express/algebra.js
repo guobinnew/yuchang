@@ -10,6 +10,7 @@ export default [
         padding: 4
       },
       data: {
+        datatype: 'number',
         sections: [
           {
             type: 'argument',
@@ -43,6 +44,7 @@ export default [
         padding: 4
       },
       data: {
+        datatype: 'number',
         sections: [
           {
             type: 'argument',
@@ -76,6 +78,7 @@ export default [
         padding: 4
       },
       data: {
+        datatype: 'number',
         sections: [
           {
             type: 'argument',
@@ -109,6 +112,7 @@ export default [
         padding: 4
       },
       data: {
+        datatype: 'number',
         sections: [
           {
             type: 'argument',
@@ -147,6 +151,7 @@ export default [
         }
       },
       data: {
+        datatype: 'boolean',
         sections: [
           {
             type: 'argument',
@@ -185,6 +190,7 @@ export default [
         }
       },
       data: {
+        datatype: 'boolean',
         sections: [
           {
             type: 'argument',
@@ -223,6 +229,7 @@ export default [
         }
       },
       data: {
+        datatype: 'boolean',
         sections: [
           {
             type: 'argument',
@@ -261,6 +268,7 @@ export default [
         }
       },
       data: {
+        datatype: 'boolean',
         sections: [
           {
             type: 'argument',
@@ -299,6 +307,7 @@ export default [
         }
       },
       data: {
+        datatype: 'boolean',
         sections: [
           {
             type: 'argument',
