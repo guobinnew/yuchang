@@ -202,7 +202,7 @@ class BlockInstance {
     const canvasOffset = this.panel().viewPortOffset()
     return {
       x: (Number(m.e) - canvasOffset.x) / Number(m.a),
-      y: (Number(m.f) - canvasOffset.y) / Number(m.d) - ycDropMargin
+      y: (Number(m.f) - canvasOffset.y) / Number(m.d)
     }
   }
 
@@ -244,9 +244,9 @@ class BlockInstance {
     } else if (shape === 'cap') {
       regions.stacks.bottom = Utils.boundRect(
         canvasPos.x,
-        canvasPos.y,
+        canvasPos.y + bbox.y,
         bbox.width,
-        size.height + bbox.y + ycDropMargin
+        size.height + ycDropMargin
       )
     } else if (shape === 'cup' || shape === 'cuptwo') {
       regions.stacks.bottom = Utils.boundRect(
@@ -568,6 +568,17 @@ class BlockInstance {
       modify: option.force ? null : modify
     })
 
+    if (option.prev === true) {
+      let prev = this.prevBlock()
+      if (prev) {
+        prev.update(null, {
+          force: true,
+          next: false,
+          prev: true
+        })
+      }
+    }
+
     if (option.next === true) {
       let next = this.nextBlock()
       if (next) {
@@ -579,16 +590,6 @@ class BlockInstance {
       }
     }
 
-    if (option.prev === true) {
-      let prev = this.prevBlock()
-      if (prev) {
-        prev.update(null, {
-          force: true,
-          next: false,
-          prev: true
-        })
-      }
-    }
   }
 
   // 清空
@@ -670,11 +671,11 @@ class BlockMarkerInstance extends BlockInstance {
   constructor(proto, state) {
     super(proto, state)
     this.ghostInstance = null
+    this.hostInstance = null
     this.ghostOffset = {
       x: 0,
       y: 0
     }
-    this.hostInstance = null
   }
 
   /**

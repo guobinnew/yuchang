@@ -595,11 +595,14 @@ class Panel {
               // 拷贝childtype
               let childType = that.marker.childType()
               selectInst.childType(childType)
+              const oldLayoutHeight = selectInst.layoutHeight()
+              const oldSeqHeight = selectInst.sequenceHeight()
 
               let prev = that.marker.prevBlock()
+              let next = that.marker.nextBlock()
+
               if (!prev) {
                 // 如果有next,将next添加到selected上
-                let next = that.marker.nextBlock()
                 if (next) {
                   selectInst.last(next)
                 }
@@ -617,12 +620,22 @@ class Panel {
 
               // 更新变换，只需拷贝marker的transform
               let m = $marker.attr('transform').replace(/[^0-9\-.,]/g, '').split(',')
-              that.selected.__instance.update({
-                transform: {
-                  x: Number(m[0]),
-                  y: Number(m[1])
-                }
-              })
+
+              if (next) {
+                selectInst.update({
+                  transform: {
+                    x: Number(m[0]),
+                    y: Number(m[1]) + oldLayoutHeight - oldSeqHeight
+                  }
+                })
+              } else {
+                selectInst.update({
+                  transform: {
+                    x: Number(m[0]),
+                    y: Number(m[1])
+                  }
+                })
+              }
             } else if (selectInst.__proto.isEmbedBlock()) { // 如果是嵌入类型
               let hostInst = that.marker.hostInstance
 
@@ -659,7 +672,8 @@ class Panel {
             // 更新
             selectInst.update(null, {
               force: true,
-              prev: true
+              prev: true,
+              next: true
             })
           }
           that.marker.ghost(null)
