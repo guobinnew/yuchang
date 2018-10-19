@@ -90,7 +90,7 @@ class Argument {
    */
 
   data(key) {
-    if(!key) {
+    if (!key) {
       return null
     }
     return $(this.section.dom).attr('data-' + key)
@@ -165,7 +165,7 @@ class Argument {
     }
 
     // 获取参数定义
-    let _def = ArgumentDefs[def.datatype]
+    const _def = ArgumentDefs[def.datatype]
     if (!_def) {
       logger.warn('Argument createElement failed: id is invalid --', def)
       return
@@ -208,8 +208,7 @@ class Argument {
    * 位移
    */
   translate(x, y) {
-    let $dom = $(this.section.dom)
-    $dom.trigger(ShapeUtils.events.position, [{
+    $(this.section.dom).trigger(ShapeUtils.events.position, [{
       translatex: x,
       translatey: y
     }])
@@ -219,11 +218,10 @@ class Argument {
    * 包围盒（canvas坐标下）
    */
   boundRect(offsetx, offsety) {
-    let $dom = $(this.section.dom)
-    let $path = $dom.children('path.ycBlockBackground')
-    let bbox = $path[0].getBBox()
-    let m = this.section.dom.getCTM()
-    logger.debug('Argument  boundRect', bbox, m, offsetx, offsety)
+    const $path = $(this.section.dom).children('path.ycBlockBackground')
+    const bbox = $path[0].getBBox()
+    const m = this.section.dom.getCTM()
+
     return Utils.boundRect(
       Number(m.e) + offsetx,
       Number(m.f) + offsety,
@@ -239,8 +237,7 @@ class Argument {
    * @param {*} enable 
    */
   highlight(enable = true) {
-    let $dom = $(this.section.dom)
-    let $path = $dom.children('path.ycBlockBackground')
+    const $path = $(this.section.dom).children('path.ycBlockBackground')
     $path.attr('filter', enable ? 'url(#ycBlockReplacementGlowFilter)' : '')
   }
 
@@ -320,8 +317,8 @@ class ArgumentNumber extends Argument {
   }
 
   static createElement(def) {
-    let elem = Argument.createContainer(def)
-    let $elem = $(elem)
+    const elem = Argument.createContainer(def)
+    const $elem = $(elem)
 
     if (!yuchg.isNumber(def.data.value)) {
       def.data.value = 0

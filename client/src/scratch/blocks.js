@@ -6,7 +6,6 @@ import logger from '../logger'
 import ShapeUtils from './shapes'
 import Utils from './utils'
 import Argument from './argus'
-import { thresholdScott } from 'd3-array';
 
 // 投放区域外边框
 const ycDropMargin = 20
@@ -68,7 +67,6 @@ class BlockInstance {
     if (next) {
       height += next.sequenceHeight()
     }
-    logger.debug(' @@@ sequenceHeight', this.protoId(), height, next)
     return height
   }
 
@@ -94,16 +92,16 @@ class BlockInstance {
    * 调试输出
    */
   dump() {
-    let $elem = $(this.element())
-    let $path = $elem.children('path.ycBlockBackground')
-    let bbox = $path[0].getBBox()
+    const $elem = $(this.element())
+    const $path = $elem.children('path.ycBlockBackground')
+    const bbox = $path[0].getBBox()
 
-    let next = this.nextBlock()
-    let prev = this.prevBlock()
-    let resolve = this.rejectBlock()
-    let reject = this.rejectBlock()
+    const next = this.nextBlock()
+    const prev = this.prevBlock()
+    const resolve = this.rejectBlock()
+    const reject = this.rejectBlock()
 
-    let output = {
+    const output = {
       uid: this.uid,
       protoId: this.protoId(),
       CTM: this.element().getCTM(),
@@ -152,9 +150,14 @@ class BlockInstance {
   }
 
   // 是否包含子节点
-  hasNext(instance) {
+  hasInclude(instance) {
     if (!instance) {
       return false
+    }
+
+    // 是否为自己
+    if (this.uid === instance.uid) {
+      return true
     }
 
     let found = false
@@ -208,7 +211,7 @@ class BlockInstance {
   */
   updateRegion_top(regions) {
     if (this.protoShape() === 'cap') {
-      logger.debug('Instance _updateregion_top failed: cap can not stack in top')
+      logger.warn('Instance _updateregion_top failed: cap can not stack in top')
       return
     }
 
@@ -264,7 +267,7 @@ class BlockInstance {
 
     let validshapes = ['cup', 'cuptwo']
     if (validshapes.indexOf(shape) < 0) {
-      logger.debug('Instance _updateregion_resolve failed: invalid shape -- ', shape)
+      logger.warn('Instance _updateregion_resolve failed: invalid shape -- ', shape)
       return
     }
 
@@ -285,7 +288,7 @@ class BlockInstance {
 
     let validshapes = ['cup', 'cuptwo']
     if (validshapes.indexOf(shape) < 0) {
-      logger.debug('Instance _updateregion_reject failed: invalid shape -- ', shape)
+      logger.warn('Instance _updateregion_reject failed: invalid shape -- ', shape)
       return
     }
 
@@ -301,7 +304,7 @@ class BlockInstance {
 
   // 获取实例的投放区域
   updateDropRegions() {
-    logger.debug('updateDropRegions =====')
+
     this.regions = {}
 
     if (this.__proto.canStack()) {
@@ -557,7 +560,6 @@ class BlockInstance {
       }
     }
 
-    logger.debug('@@@@@@@@@@@@@@@@ BlockInstance Update Begin@@@@@@@@@@@@@@@@', this.protoId(), option)
     // 根据新状态重新渲染
     this.__proto.adjust({
       dom: this.element(),
@@ -587,8 +589,6 @@ class BlockInstance {
         })
       }
     }
-
-    logger.debug('@@@@@@@@@@@@@@@@ BlockInstance Update End @@@@@@@@@@@@@@@@', this.protoId())
   }
 
   // 清空
@@ -607,6 +607,15 @@ class BlockInstance {
     this.__proto.instances.delete(this.uid)
     $(this.dom).remove()
     this.dom = null
+  }
+
+  /**
+   * 克隆自己
+   */
+  cloneSelf() {
+    // 根据类型复制自己
+
+
   }
 
   /**
@@ -1711,7 +1720,6 @@ class BlockControl extends BlockStack {
       })
     }
 
-    logger.debug('Block update', resolveHeight, rejectHeight)
     // 调整容器大小
     let $shape = $dom.children('path')
     state.size.contentWidth = contentWidth + padding.right + padding.left

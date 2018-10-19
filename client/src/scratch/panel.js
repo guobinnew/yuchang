@@ -280,7 +280,6 @@ class Panel {
           }
         }
         let selectBox = dropBoundbox(canvasx, canvasy, sbbox)
-        logger.debug(`################### selection [${selectInst.__proto.def.id}] stackpos --`, selectBox, selectInst.__proto.stackPosition())
 
         // 遍历实例列表
         let validHostList = []
@@ -288,13 +287,13 @@ class Panel {
           if (inst.__proto.id === 'insertmarker') {
             continue
           }
-          // 排除自己
-          if (inst.__proto.isInternal() || selectUid === inst.uid) {
+          // 排除内部Block
+          if (inst.__proto.isInternal()) {
             continue
           }
 
           // 排除选中序列中其他Block
-          if (selectInst.hasNext(inst)) {
+          if (selectInst.hasInclude(inst)) {
             continue
           }
 
@@ -310,7 +309,6 @@ class Panel {
 
           // 获取可投放区域
           let regions = inst.getRegions()
-          logger.debug(`################### find instance [${inst.__proto.def.id}] regiond --`, regions)
 
           // 检查符合的唯一投放区域
           let validRegion = {}
@@ -405,14 +403,12 @@ class Panel {
           }
         }
 
-        logger.debug(`################### end #######################`, hostInst)
-
         // 调整marker状态
         let $marker = $(that.marker.element())
         let oldhostInst = that.marker.hostInstance
 
-        logger.warn('marker oldhost======', oldhostInst ? oldhostInst.instance.__proto.def.id + '' + oldhostInst.insert : null)
-        logger.warn('marker newhost======', hostInst ? hostInst.instance.__proto.def.id + '' + hostInst.insert : null)
+        logger.debug('marker oldhost======', oldhostInst ? oldhostInst.instance.__proto.def.id + '' + oldhostInst.insert : null)
+        logger.debug('marker newhost======', hostInst ? hostInst.instance.__proto.def.id + '' + hostInst.insert : null)
 
         if (selectInst.__proto.isEmbedBlock()) { // 参数变换
           $marker.attr('visibility', 'hidden')
@@ -881,8 +877,6 @@ class Panel {
     $.extend(true, this.option, option)
     this.option.buttons = buttons
 
-    logger.debug('DDD', this.option.buttons)
-
     // 提取Block包定义
     for (let p of this.option.blocks.packages.values()) {
       this.processPackage(p)
@@ -1216,7 +1210,6 @@ class Panel {
     $elem.on('mousedown', function () {
       event.stopPropagation()
 
-      logger.debug('click Block', event.button)
       if (event.button === 0) {
         panel.hideWidget()
 
@@ -1244,7 +1237,7 @@ class Panel {
 
         // 弹出上下文菜单
         if (!selectInst.__proto.isInternal()) {
-          logger.debug('context menu', event.pageX, X, event.pageY, Y)
+
           panel.showContextMenu({
             x: event.pageX - X,
             y: event.pageY - Y,
@@ -1402,9 +1395,17 @@ class Panel {
    * 克隆Block
    */
 
-  cloneBlock(instance) {
+  cloneBlock(uid) {
+    let instance = this.instances[uid]
+    if (!instance) {
+      logger.warn(`Panel CloneBlock failed: can not find Instance [${uid}]`)
+      return
+    }
 
-
+    const clone = instance.cloneSelf()
+    // 调整位置
+    const oldPos = instance.canvasPosition()
+    clone.setTranslate(oldPos.x + 64, oldPos.y + 64)
   }
 
   /**
@@ -1472,15 +1473,13 @@ class Panel {
 
     if (yuchg.isString(data)) {
       let trimData = yuchg.trimString(data)
-      logger.debug('Panel load: ', trimData)
+
       if (trimData !== '') {
         let data = JSON.parse(trimData)
         if (!data) {
           logger.warn('Panel load failed: data corrupted -- ', trimData)
           return
         }
-
-        logger.debug('Panel load success: ', data)
 
         if (!yuchg.isArray(data.blocks) || data.blocks.length === 0) {
           return
