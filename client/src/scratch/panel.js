@@ -116,9 +116,16 @@ class Panel {
     // 鼠标事件
     $(this.dom.root).on('mousedown', () => {
       this.hideDropdownWidget()
+      this.hideWidget()
     })
 
     $(this.dom.dropdown).on('mousedown', () => {
+      event.stopPropagation()
+    }).on('mouseup', () => {
+      event.stopPropagation()
+    })
+
+    $(this.dom.widget).on('mousedown', () => {
       event.stopPropagation()
     }).on('mouseup', () => {
       event.stopPropagation()
@@ -161,10 +168,12 @@ class Panel {
   bindCanvasEvent() {
     let that = this
     $(this.dom.svg).on('mousedown', () => {
-      this.lastPoint.x = event.pageX
-      this.lastPoint.y = event.pageY
-      this.startDrag = true
-      $(this.dom.flyout).css('pointer-events', 'none')
+      if (event.button === 0) {
+        this.lastPoint.x = event.pageX
+        this.lastPoint.y = event.pageY
+        this.startDrag = true
+        $(this.dom.flyout).css('pointer-events', 'none')
+      }
     }).on('mousemove', function () {
       // 获取SVG的位置
       let X = $(this).offset().left
@@ -666,9 +675,11 @@ class Panel {
     })
 
     $(this.dom.flyout).on('mousedown', () => {
-      this.flyoutlastPoint.x = event.pageX
-      this.flyoutlastPoint.y = event.pageY
-      this.flyoutstartDrag = true
+      if (event.button === 0) {
+        this.flyoutlastPoint.x = event.pageX
+        this.flyoutlastPoint.y = event.pageY
+        this.flyoutstartDrag = true
+      }
     }).on('mousemove', function () {
       let $this = $(this)
       let deltaY = event.pageY - that.flyoutlastPoint.y
@@ -1063,14 +1074,14 @@ class Panel {
   showInputWidget(option) {
 
     if (!option) {
-      this.hideInputWidget()
+      this.hideWidget()
       return
     }
 
     let $parent = $(this.dom.widget)
     $parent.children().remove()
 
-    let that = this
+    let panel = this
     let $input = null
     let dom = option.dom
 
@@ -1079,7 +1090,7 @@ class Panel {
     // 根据option设置边框颜色
     $parent.css('border-color', option.background.stroke)
     // 设置缩放比例
-    $parent.css('transform', `scale(${that.currentZoomFactor})`)
+    $parent.css('transform', `scale(${panel.currentZoomFactor})`)
     $parent.css('top', option.y)
     $parent.css('left', option.x)
     $parent.css('width', option.width)
@@ -1104,16 +1115,14 @@ class Panel {
     $input.on('blur', function () {
       let newValue = $(this).val()
       callback && callback(newValue)
-      that.hideInputWidget()
+      panel.hideWidget()
     })
     $parent.append($input)
-    $input.focus()
-
     $parent.css('display', 'block')
     $input.focus()
   }
 
-  hideInputWidget() {
+  hideWidget() {
     let $parent = $(this.dom.widget)
     $parent.attr('class', 'ycBlockWidgetDiv')
     $parent.attr('style', '')
@@ -1130,9 +1139,7 @@ class Panel {
     let $content = $parent.children('.ycBlockDropDownContent')
     $content.children().remove()
 
-    let that = this
-    let dom = option.dom
-
+    let panel = this
     $parent.attr('style', ' transition: transform 0.25s ease 0s, opacity 0.25s ease 0s; transform: translate(0px, 20px);')
     // 根据option设置边框颜色
     $parent.css('border-color', option.background.stroke)
@@ -1148,7 +1155,7 @@ class Panel {
           $menucontent.addClass('ycBlockSelected')
         }
         let callback = option.callback
-        // 
+
         $menuitem.on('mouseover', function () {
           $(this).addClass('ycBlockDropDownMenuItemHover')
         }).on('mouseout', function () {
@@ -1158,7 +1165,7 @@ class Panel {
           // 更新索引
           let i = $(this).attr('data-value')
           callback && callback(Number(i))
-          that.hideDropdownWidget()
+          panel.hideDropdownWidget()
         })
         $menuitem.append($menucontent)
         $menu.append($menuitem)
@@ -1201,33 +1208,70 @@ class Panel {
       return
     }
 
-    let that = this
-    let dom = that.dom
+    let panel = this
+    let dom = panel.dom
+    let $svg = $(dom.svg)
     let $elem = $(inst.element())
     $elem.attr('data-uid', inst.uid)
     $elem.on('mousedown', function () {
       event.stopPropagation()
 
-      that.selected = this
+      logger.debug('click Block', event.button)
+      if (event.button === 0) {
+        panel.hideWidget()
 
-      // Debug
-      let selectUid = $(this).attr('data-uid')
-      let selectInst = that.instances[selectUid]
-      selectInst.update()
-      selectInst.dump()
+        panel.selected = this
+        let m = this.getCTM()
+        let pm = dom.canvas.getCTM()
+        panel.grapPoint.x = (Number(m.e) - Number(pm.e))
+        panel.grapPoint.y = (Number(m.f) - Number(pm.f))
+        $(panel.selected).addClass('ycBlockSelected')
 
-      let m = this.getCTM()
-      let pm = dom.canvas.getCTM()
-      that.grapPoint.x = (Number(m.e) - Number(pm.e))
-      that.grapPoint.y = (Number(m.f) - Number(pm.f))
-      $(that.selected).addClass('ycBlockSelected')
+        // 父类
+        panel.lastPoint.x = event.pageX
+        panel.lastPoint.y = event.pageY
+        panel.startDrag = true
+        $(panel.dom.flyout).css('pointer-events', 'none')
+      } else if (event.button === 2) {
 
-      // 父类
-      that.lastPoint.x = event.pageX
-      that.lastPoint.y = event.pageY
-      that.startDrag = true
-      $(that.dom.flyout).css('pointer-events', 'none')
-      that.hideDropdownWidget()
+        let X = $svg.offset().left
+        let Y = $svg.offset().top
+        let selectUid = $(this).attr('data-uid')
+        let selectInst = panel.instances[selectUid]
+
+        // Debug
+        selectInst.dump()
+
+        // 弹出上下文菜单
+        if (!selectInst.__proto.isInternal()) {
+          logger.debug('context menu', event.pageX, X, event.pageY, Y)
+          panel.showContextMenu({
+            x: event.pageX - X,
+            y: event.pageY - Y,
+            items: [
+              {
+                id: 'copy',
+                name: '复制',
+                action: () => {
+                  panel.cloneBlock(selectUid)
+                }
+              },
+              {
+                id: 'delete',
+                name: '删除',
+                action: () => {
+                  panel.removeBlock(selectUid)
+                }
+              }
+            ]
+          })
+        }
+      }
+      panel.hideDropdownWidget()
+    }).on('mouseup', function () {
+      if (event.button === 2) {
+        event.stopPropagation()
+      }
     })
 
     if (parent) {
@@ -1235,9 +1279,49 @@ class Panel {
     } else {
       $(this.dom.canvas).append($elem)
     }
-
     return inst
   }
+
+
+  showContextMenu(option) {
+    if (!option || !yuchg.isArray(option.items) || option.items.length === 0) {
+      this.hideWidget()
+      return
+    }
+
+    let $parent = $(this.dom.widget)
+    $parent.children().remove()
+
+    let panel = this
+    let $menu = null
+ 
+    $parent.attr('style', 'direction: ltr;')
+    $parent.css('top', option.y)
+    $parent.css('left', option.x)
+   
+    $menu = $(`<div class="ycBlockContextMenu" role="menu" aria-haspopup="true" tabindex="0" style="user-select: none;"></div>`)
+    
+    for (let item of option.items) {
+      let $item = $(`<div class="ycBlockContextMenuItem" role="menuitem" id="cm-${item.id}" style="user-select: none;"><div class="ycBlockContextMenuItemContent" style="user-select: none;">${item.name}</div></div>`)
+      $item.on('mouseover', function () {
+        $(this).addClass('ycBlockContextMenuItemHover')
+      }).on('mouseout', function () {
+        $(this).removeClass('ycBlockContextMenuItemHover')
+      }).on('mousedown', function(){
+        event.stopPropagation()
+
+        if(event.button === 0) {
+          // 响应
+        }
+        panel.hideWidget()
+      })
+      $menu.append($item)
+    }
+  
+    $parent.append($menu)
+    $parent.css('display', 'block')
+  }
+
 
   addBlocks(blocks) {
     if (yuchg.isArray(blocks)) {
@@ -1320,6 +1404,7 @@ class Panel {
    */
 
   cloneBlock(instance) {
+
 
   }
 

@@ -639,9 +639,9 @@ class BlockInstance {
       for (let sec of clone.sections) {
         // 替换assign
         sec.dom = null
-        // if (sec.__assign) {
-        //   sec.__assign = sec.__assign.encode()
-        // }
+        if (sec.__assign) {
+           sec.__assign = sec.__assign.encode()
+        }
       }
     }
     return clone
@@ -1254,39 +1254,41 @@ class BlockStack extends Block {
             }
             event.stopPropagation()
 
-            let $path = $this.children('path')
-            let m = $path[0].getCTM()
-            let bbox = $path[0].getBBox()
-
-            let background = {
-              fill: $path.attr('fill'),
-              stroke: $path.attr('stroke')
-            }
-            // 获取父背景颜色
-            let $parentpath = $this.parent().children('path')
-            if ($parentpath.length > 0) {
-              background.fill = $parentpath.attr('fill')
-              background.stroke = $parentpath.attr('stroke')
-            }
-
-            // 显示输入框
-            this.__panel.showInputWidget({
-              dom: this,
-              type: this.__section.datatype,
-              x: Number(m.e),
-              y: Number(m.f),
-              width: bbox.width + 1,
-              height: bbox.height + 1,
-              background: background,
-              value: this.__section.data.value,
-              callback: (v) => {
-                this.__section.data.value = v
-                // 更新整个Block
-                this.__instance.update(null, {
-                  force: true
-                })
+            if (event.button === 0) {
+              let $path = $this.children('path')
+              let m = $path[0].getCTM()
+              let bbox = $path[0].getBBox()
+  
+              let background = {
+                fill: $path.attr('fill'),
+                stroke: $path.attr('stroke')
               }
-            })
+              // 获取父背景颜色
+              let $parentpath = $this.parent().children('path')
+              if ($parentpath.length > 0) {
+                background.fill = $parentpath.attr('fill')
+                background.stroke = $parentpath.attr('stroke')
+              }
+  
+              // 显示输入框
+              this.__panel.showInputWidget({
+                dom: this,
+                type: this.__section.datatype,
+                x: Number(m.e),
+                y: Number(m.f),
+                width: bbox.width + 1,
+                height: bbox.height + 1,
+                background: background,
+                value: this.__section.data.value,
+                callback: (v) => {
+                  this.__section.data.value = v
+                  // 更新整个Block
+                  this.__instance.update(null, {
+                    force: true
+                  })
+                }
+              })
+            }
           })
         } else if (sec.datatype === 'enum') {
           $elem.on('mouseup', function () {
@@ -1301,37 +1303,39 @@ class BlockStack extends Block {
             }
             event.stopPropagation()
 
-            let $path = $this.children('path')
-            let m = $path[0].getCTM()
-            let bbox = $path[0].getBBox()
-            let background = {
-              fill: $path.attr('fill'),
-              stroke: $path.attr('stroke')
-            }
-            // 获取父背景颜色
-            let $parentpath = $this.parent().children('path')
-            if ($parentpath.length > 0) {
-              background.fill = $parentpath.attr('fill')
-              background.stroke = $parentpath.attr('stroke')
-            }
-
-            // 显示输入框
-            this.__panel.showDropdownWidget({
-              dom: this,
-              type: this.__section.datatype,
-              x: Number(m.e) + bbox.width / 2 * Number(m.a),
-              y: Number(m.f) + bbox.height * Number(m.d),
-              background: background,
-              select: this.__section.data.currentIndex,
-              values: this.__section.data.values,
-              callback: (i) => {
-                this.__section.data.currentIndex = i
-                // 更新整个Block
-                this.__instance.update(null, {
-                  force: true
-                })
+            if (event.button === 0) {
+              let $path = $this.children('path')
+              let m = $path[0].getCTM()
+              let bbox = $path[0].getBBox()
+              let background = {
+                fill: $path.attr('fill'),
+                stroke: $path.attr('stroke')
               }
-            })
+              // 获取父背景颜色
+              let $parentpath = $this.parent().children('path')
+              if ($parentpath.length > 0) {
+                background.fill = $parentpath.attr('fill')
+                background.stroke = $parentpath.attr('stroke')
+              }
+  
+              // 显示输入框
+              this.__panel.showDropdownWidget({
+                dom: this,
+                type: this.__section.datatype,
+                x: Number(m.e) + bbox.width / 2 * Number(m.a),
+                y: Number(m.f) + bbox.height * Number(m.d),
+                background: background,
+                select: this.__section.data.currentIndex,
+                values: this.__section.data.values,
+                callback: (i) => {
+                  this.__section.data.currentIndex = i
+                  // 更新整个Block
+                  this.__instance.update(null, {
+                    force: true
+                  })
+                }
+              })
+            }
           })
         }
       }

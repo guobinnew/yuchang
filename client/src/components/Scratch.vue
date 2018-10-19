@@ -1,5 +1,5 @@
 <template>
-    <div :id="id" class="scratch" style="position: relative" onselectstart="return false">
+    <div :id="id" class="scratch" style="position: relative" onselectstart="return false" oncontextmenu="return false">
         <svg class="ycBlockSvg"
              :width="size.width"
              :height="size.height"
@@ -288,14 +288,42 @@
   z-index: 20000;
 }
 
-.ycBlockDropDownDiv .ycBlockDropDownMenuItemHover {
-    background-color: rgba(0, 0, 0, 0.2);
+.ycBlockWidgetDiv .ycBlockContextMenu {
+  background: #fff;
+  border-color: #ccc #666 #666 #ccc;
+  border-style: solid;
+  border-width: 1px;
+  cursor: default;
+  font: normal 13px "Helvetica Neue", Helvetica, sans-serif;
+  margin: 0;
+  outline: none;
+  padding: 4px 0;
+  position: absolute;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 20000;
+  border-radius: 4px;
+}
+
+.ycBlockDropDownDiv .ycBlockDropDownMenuItemHover,
+.ycBlockWidgetDiv .ycBlockContextMenuItemHover {
+  background-color: rgba(0, 0, 0, 0.2);
 }
 
 .ycBlockDropDownMenuItem {
   color: #fff;
   font: normal 13px "Helvetica Neue", Helvetica, sans-serif;
   font-weight: bold;
+  list-style: none;
+  margin: 0;
+  min-height: 18px;
+  padding: 4px 7em 4px 28px;
+  white-space: nowrap;
+}
+
+.ycBlockContextMenuItem {
+  color: #333;
+  font: normal 13px "Helvetica Neue", Helvetica, sans-serif;
   list-style: none;
   margin: 0;
   min-height: 18px;
@@ -311,15 +339,15 @@
   margin-left: -24px;
 }
 
-.ycBlockDropDownDiv .ycBlockMenuItemCheckBox, 
+.ycBlockDropDownDiv .ycBlockMenuItemCheckBox,
 .ycBlockDropDownDiv .ycBlockMenuItemIcon {
-    background-repeat: no-repeat;
-    height: 16px;
-    left: 6px;
-    position: absolute;
-    right: auto;
-    vertical-align: middle;
-    width: 16px;
+  background-repeat: no-repeat;
+  height: 16px;
+  left: 6px;
+  position: absolute;
+  right: auto;
+  vertical-align: middle;
+  width: 16px;
 }
 
 .ycBlockDropDownArrow {
@@ -349,11 +377,10 @@
 </style>
 
 <script>
-import Scratch from "../scratch/index"
-import yuchg from '../base'
-import logger from '../logger'
-logger.setLevel('debug')
-
+import Scratch from "../scratch/index";
+import yuchg from "../base";
+import logger from "../logger";
+logger.setLevel("debug");
 
 export default {
   name: "Scratch",
@@ -406,35 +433,36 @@ export default {
       resizeEditor();
     }
 
-    let buttons = []
+    let buttons = [];
     if (yuchg.isObject(this.loadbtn)) {
       buttons.push({
-        id: 'load',
+        id: "load",
         img: this.loadbtn.img,
         action: this.loadbtn.action
-      })
-    } else if (yuchg.isFunction(this.loadbtn)) {  // 返回格式为 { img: '', action: func()}
-      let btn = this.loadbtn()
+      });
+    } else if (yuchg.isFunction(this.loadbtn)) {
+      // 返回格式为 { img: '', action: func()}
+      let btn = this.loadbtn();
       buttons.push({
-        id: 'load',
+        id: "load",
         img: btn.img,
         action: btn.action
-      })
+      });
     }
 
     if (yuchg.isObject(this.savebtn)) {
       buttons.push({
-        id: 'save',
+        id: "save",
         img: this.savebtn.img,
         action: this.savebtn.action
-      })
+      });
     } else if (yuchg.isFunction(this.savebtn)) {
-       let btn = this.savebtn()
+      let btn = this.savebtn();
       buttons.push({
-        id: 'save',
+        id: "save",
         img: btn.img,
         action: btn.action
-      })
+      });
     }
 
     that.editor.setOption({
