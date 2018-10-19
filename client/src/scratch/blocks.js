@@ -8,7 +8,9 @@ import Utils from './utils'
 import Argument from './argus'
 import { thresholdScott } from 'd3-array';
 
+// 投放区域外边框
 const ycDropMargin = 20
+
 // 块实例
 class BlockInstance {
   constructor(proto, state) {
@@ -61,8 +63,8 @@ class BlockInstance {
    */
   sequenceHeight() {
     let height = this.layoutHeight()
+    const next = this.nextBlock()
 
-    let next = this.nextBlock()
     if (next) {
       height += next.sequenceHeight()
     }
@@ -87,6 +89,7 @@ class BlockInstance {
 
     $elem.attr('data-child', newType)
   }
+
   /**
    * 调试输出
    */
@@ -132,12 +135,11 @@ class BlockInstance {
   }
 
   /**
-   * 
+   * 原型的图形类型
    */
   protoShape() {
     return this.__proto ? this.__proto.def.shape : 'unknown'
   }
-
 
   // 获取对应的DOM根元素
   element() {
@@ -155,12 +157,9 @@ class BlockInstance {
       return false
     }
 
-    let uid = instance.uid
     let found = false
-    let $dom = $(this.element())
-
-    $dom.find('g.ycBlockDraggable').each(function () {
-      if ($(this).attr('data-uid') === uid) {
+    $(this.element()).find('g.ycBlockDraggable').each(function () {
+      if ($(this).attr('data-uid') === instance.uid) {
         found = true
         return false
       }
@@ -170,17 +169,16 @@ class BlockInstance {
   }
 
   /**
-   * 
+   * 设置位置变换
    */
   setTranslate(x, y) {
-    if(!yuchg.isNumber(x) || !yuchg.isNumber(y)) {
+    if (!yuchg.isNumber(x) || !yuchg.isNumber(y)) {
       logger.warn('BlockInstance setTranslate failed: x or y is not a number')
       return
     }
     this.state.transform.x = x
     this.state.transform.y = y
-    let $dom = $(this.element())
-    $dom.attr('transform', `translate(${x},${y})`)
+    $(this.element()).attr('transform', `translate(${x},${y})`)
   }
   
   /**
@@ -191,61 +189,66 @@ class BlockInstance {
     return this.regions
   }
 
-   /**
-    * 
-    */
-  updateRegion_top(regions) {
-    let m = this.element().getCTM()
-    const shape = this.protoShape()
-    let $path = $(this.element()).children('path.ycBlockBackground')
-    let bbox = $path[0].getBBox()
-
+  /**
+   * 
+   * 获取在Canvas上的坐标
+   */
+  canvasPosition() {
+    const m = this.element().getCTM()
     // 获取panel的偏移
-    let canvasOffset = this.panel().viewPortOffset()
+    const canvasOffset = this.panel().viewPortOffset()
+    return {
+      x: (Number(m.e) - canvasOffset.x) / Number(m.a),
+      y: (Number(m.f) - canvasOffset.y) / Number(m.d) - ycDropMargin
+    }
+  }
 
-    if (shape === 'cap') {
+  /**
+  * 计算top投放区域
+  */
+  updateRegion_top(regions) {
+    if (this.protoShape() === 'cap') {
       logger.debug('Instance _updateregion_top failed: cap can not stack in top')
       return
     }
 
-    logger.debug('updateRegion_top', canvasOffset)
+    const $path = $(this.element()).children('path.ycBlockBackground')
+    const bbox = $path[0].getBBox()
+    const canvasPos = this.canvasPosition()
 
     regions.stacks.top = Utils.boundRect(
-      (Number(m.e) - canvasOffset.x) / Number(m.a),
-      (Number(m.f) - canvasOffset.y) / Number(m.d) - ycDropMargin,
+      canvasPos.x,
+      canvasPos.y - ycDropMargin,
       bbox.width,
       ycDropMargin
     )
   }
 
   updateRegion_bottom(regions) {
-    let m = this.element().getCTM()
     const shape = this.protoShape()
-    let $path = $(this.element()).children('path.ycBlockBackground')
-    let bbox = $path[0].getBBox()
+    const $path = $(this.element()).children('path.ycBlockBackground')
+    const bbox = $path[0].getBBox()
     const size = this.state.size
-
-    // 获取panel的偏移
-    let canvasOffset = this.__proto.def.__panel.viewPortOffset()
+    const canvasPos = this.canvasPosition()
 
     if (shape === 'slot') {
       regions.stacks.bottom = Utils.boundRect(
-        (Number(m.e) - canvasOffset.x) / Number(m.a),
-        (Number(m.f) - canvasOffset.y) / Number(m.d),
+        canvasPos.x,
+        canvasPos.y,
         bbox.width,
         bbox.height + ycDropMargin
       )
     } else if (shape === 'cap') {
       regions.stacks.bottom = Utils.boundRect(
-        (Number(m.e) - canvasOffset.x) / Number(m.a),
-        (Number(m.f) - canvasOffset.y) / Number(m.d),
+        canvasPos.x,
+        canvasPos.y,
         bbox.width,
         size.height + bbox.y + ycDropMargin
       )
     } else if (shape === 'cup' || shape === 'cuptwo') {
       regions.stacks.bottom = Utils.boundRect(
-        (Number(m.e) - canvasOffset.y) / Number(m.a),
-        (Number(m.f) - canvasOffset.y) / Number(m.d) + bbox.height - size.bottomHeight,
+        canvasPos.x,
+        canvasPos.y + bbox.height - size.bottomHeight,
         bbox.width,
         size.bottomHeight + ycDropMargin
       )
@@ -253,14 +256,11 @@ class BlockInstance {
   }
 
   updateRegion_resolve(regions) {
-    let m = this.element().getCTM()
     const shape = this.protoShape()
-    let $path = $(this.element()).children('path.ycBlockBackground')
-    let bbox = $path[0].getBBox()
+    const $path = $(this.element()).children('path.ycBlockBackground')
+    const bbox = $path[0].getBBox()
     const size = this.state.size
-
-    // 获取panel的偏移
-    let canvasOffset = this.__proto.def.__panel.viewPortOffset()
+    const canvasPos = this.canvasPosition()
 
     let validshapes = ['cup', 'cuptwo']
     if (validshapes.indexOf(shape) < 0) {
@@ -269,19 +269,19 @@ class BlockInstance {
     }
 
     regions.stacks.resolve = Utils.boundRect(
-      (Number(m.e) - canvasOffset.x) / Number(m.a),
-      (Number(m.f) - canvasOffset.y) / Number(m.d),
+      canvasPos.x,
+      canvasPos.y,
       bbox.width,
       size.height
     )
   }
 
   updateRegion_reject(regions) {
-    let m = this.element().getCTM()
     const shape = this.protoShape()
-    let $path = $(this.element()).children('path.ycBlockBackground')
-    let bbox = $path[0].getBBox()
+    const $path = $(this.element()).children('path.ycBlockBackground')
+    const bbox = $path[0].getBBox()
     const size = this.state.size
+    const canvasPos = this.canvasPosition()
 
     let validshapes = ['cup', 'cuptwo']
     if (validshapes.indexOf(shape) < 0) {
@@ -289,13 +289,10 @@ class BlockInstance {
       return
     }
 
-    // 获取panel的偏移
-    let canvasOffset = this.panel().viewPortOffset()
-
     if (shape === 'cuptwo') {
       regions.stacks.reject = Utils.boundRect(
-        (Number(m.e) - canvasOffset.x) / Number(m.a),
-        (Number(m.f) - canvasOffset.y) / Number(m.d) + size.height + size.resolveHeight,
+        canvasPos.x,
+        canvasPos.y + size.height + size.resolveHeight,
         bbox.width,
         size.centerHeight + size.cornerRadius * 2
       )
@@ -324,10 +321,10 @@ class BlockInstance {
           if (sec.__assign) {
             // 获取已赋值参数实例尺寸
           } else {
-            let argu = Argument.argument(sec)
+            const argu = Argument.argument(sec)
             if (argu) {
               // 获取参数位置
-              let canvasOffset = this.panel().viewPortOffset()
+              const canvasOffset = this.panel().viewPortOffset()
               this.regions.arguments[i] = {
                 shape: argu.data('shape'),
                 rect: argu.boundRect(-canvasOffset.x, -canvasOffset.y)
@@ -363,7 +360,7 @@ class BlockInstance {
   // 上一个Block
   prevBlock() {
     const instances = this.panel().instances
-    let $prev = $(this.element()).parent('g.ycBlockDraggable')
+    const $prev = $(this.element()).parent('g.ycBlockDraggable')
     if ($prev.length > 0) {
       let uid = $prev.attr('data-uid')
       return instances[uid]
@@ -377,7 +374,7 @@ class BlockInstance {
   pop() {
     let prev = this.prevBlock()
     let next = null
-    let $dom = $(this.element())
+    const $dom = $(this.element())
 
     const childType = this.childType()
     if (childType === 'argument') { // 参数不用pop自身的子节点
@@ -413,11 +410,6 @@ class BlockInstance {
     }
   }
 
-  clearNext() {
-    let $dom = $(this.element())
-    $dom.children('g.ycBlockDraggable').detach()
-  }
-
   // 在序列后面插入instance
   next(instance) {
     if (!instance) {
@@ -427,11 +419,8 @@ class BlockInstance {
 
     instance.childType('')
 
-    let next = this.nextBlock()
-    let $dom = $(this.element())
-    let $instElem = $(instance.element())
-
-    $instElem.appendTo($dom)
+    const next = this.nextBlock()
+    $(instance.element()).appendTo(this.element())
     if (next) {
       instance.last(next)
     }
@@ -439,31 +428,27 @@ class BlockInstance {
 
   // 添加到序列末尾
   last(instance) {
-
     if (!instance) {
       logger.warn('BlockInstance append failed: instance is null')
       return null
     }
 
-    let $dom = $(this.element())
-    let next = this.nextBlock()
-
+    const next = this.nextBlock()
     if (next) {
       next.last(instance)
     } else {
-      $dom.append(instance.element())
+      $(this.element()).append(instance.element())
     }
   }
 
   /**
-   * 
+   * 获取resolve子节点
    */
   resolveBlock() {
     const instances = this.panel().instances
     let next = null
     $(this.element()).children('g.ycBlockDraggable[data-child="resolve"]').each(function() {
-      let $this = $(this)
-      let uid = $this.attr('data-uid')
+      let uid = $(this).attr('data-uid')
       next = instances[uid]
       return false
     })
@@ -477,8 +462,7 @@ class BlockInstance {
     const instances = this.panel().instances
     let next = null
     $(this.element()).children('g.ycBlockDraggable[data-child="reject"]').each(function() {
-      let $this = $(this)
-      let uid = $this.attr('data-uid')
+      let uid = $(this).attr('data-uid')
       next = instances[uid]
       return false
     })
@@ -495,11 +479,8 @@ class BlockInstance {
     }
 
     instance.childType('resolve')
-    let next = this.resolveBlock()
-    let $dom = $(this.element())
-    let $instElem = $(instance.element())
-
-    $instElem.appendTo($dom)
+    const next = this.resolveBlock()
+    $(instance.element()).appendTo(this.element())
     if (next) {
       next.childType('')
       instance.last(next)
@@ -516,10 +497,7 @@ class BlockInstance {
     }
     instance.childType('reject')
     let next = this.rejectBlock()
-    let $dom = $(this.element())
-    let $instElem = $(instance.element())
-
-    $instElem.appendTo($dom)
+    $(instance.element()).appendTo(this.element())
     if (next) {
       next.childType('')
       instance.last(next)
@@ -528,12 +506,10 @@ class BlockInstance {
 
   // 移除并返回nextBlock（没有删除）
   removeNext(recursive = false) {
-    let $dom = $(this.element())
-    let next = this.nextBlock()
-    logger.debug('remove', next, $dom)
+    const next = this.nextBlock()
     if (next) {
       if (!recursive) {
-        let nextnext = next.nextBlock()
+        const nextnext = next.nextBlock()
         if (nextnext) {
           $(nextnext.element()).insertBefore(next.element())
         }
@@ -617,13 +593,17 @@ class BlockInstance {
 
   // 清空
   clear() {
-    // 删除子节点children
-
-    // 删除next
-    let next = this.nextBlock()
-    if (next) {
-      this.__proto.def.__panel.removeBlock(next.uid)
-    }
+    // 删除子节点
+    let panel = this.panel()
+    $(this.element()).children('g.ycBlockDraggable').each(function() {
+      const $this = $(this)
+      if ($this.attr('data-id') === 'insertmarker') {
+        return true
+      }
+      let uid = $this.attr('data-uid')
+      panel.removeBlock(uid)
+    })
+ 
     this.__proto.instances.delete(this.uid)
     $(this.dom).remove()
     this.dom = null
@@ -633,7 +613,7 @@ class BlockInstance {
    * 
    */
   cloneData() {
-    let clone = $.extend(true, {}, this.state.data)
+    const clone = $.extend(true, {}, this.state.data)
     // 过滤sections
     if (clone.sections) {
       for (let sec of clone.sections) {
@@ -649,12 +629,12 @@ class BlockInstance {
 
   // 编码
   encode() {
-    let next = this.nextBlock()
-    let prev = this.prevBlock()
-    let resolve = this.rejectBlock()
-    let reject = this.rejectBlock()
+    const next = this.nextBlock()
+    const prev = this.prevBlock()
+    const resolve = this.rejectBlock()
+    const reject = this.rejectBlock()
 
-    let data = {
+    const data = {
       protoId: this.protoId(),
       state: {
         data: this.cloneData(),
@@ -699,7 +679,7 @@ class BlockMarkerInstance extends BlockInstance {
   }
 
   empty() {
-    let $dom = $(this.element())
+    const $dom = $(this.element())
     $dom.attr('visibility', 'hidden')
     $dom.children('path').remove()
     $dom.children().detach()

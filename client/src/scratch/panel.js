@@ -1282,7 +1282,6 @@ class Panel {
     return inst
   }
 
-
   showContextMenu(option) {
     if (!option || !yuchg.isArray(option.items) || option.items.length === 0) {
       this.hideWidget()
@@ -1307,11 +1306,11 @@ class Panel {
         $(this).addClass('ycBlockContextMenuItemHover')
       }).on('mouseout', function () {
         $(this).removeClass('ycBlockContextMenuItemHover')
-      }).on('mousedown', function(){
+      }).on('mousedown', function () {
         event.stopPropagation()
-
-        if(event.button === 0) {
+        if (event.button === 0) {
           // 响应
+          item.action()
         }
         panel.hideWidget()
       })
