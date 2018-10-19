@@ -22,3 +22,4 @@ Vue主要用于实现SPA框架，Scratch编辑器能够很容易脱离Vue环境�
 - (3）在项目根目录运行 npm install， 在client/目录下运行npm install
 
 - (4) 在控制台运行Vue ui，选择项目目录为client/目录，通过UI控制台运行服务即可
+![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/demo.png)
