@@ -722,24 +722,39 @@ class BlockInstance {
   }
 
   /**
-   * 
+   * 克隆Resolve
    */
   cloneResolve(source) {
-
+    const resolve = source.resolveBlock()
+    if (!resolve) {
+      return
+    }
+    const resolveClone = resolve.cloneSelf(true)
+    this.include(resolveClone, 'resolve')
   }
 
    /**
-   * 
+   * 克隆Reject
    */
   cloneReject(source) {
-
+    const reject = source.rejectBlock()
+    if (!reject) {
+      return
+    }
+    const rejectClone = reject.cloneSelf(true)
+    this.include(rejectClone, 'reject')
   }
 
   /**
-   * 
+   * 克隆Next
   */
-  cloneNext(source, next = false) {
-
+  cloneNext(source, seq = false) {
+    const next = source.nextBlock()
+    if (!next) {
+      return
+    }
+    const nextClone = next.cloneSelf(seq)
+    this.include(nextClone, '')
   }
 
   /**
