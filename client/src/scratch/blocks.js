@@ -627,7 +627,6 @@ class BlockInstance {
         })
       }
     }
-
   }
 
   // 清空
@@ -649,30 +648,144 @@ class BlockInstance {
   }
 
   /**
+   * 
+   * @param {*} source 
+   */
+  stateData() {
+    if (!this.state.data) {
+      this.state.data = {}
+    }
+    return this.state.data
+  }
+
+  /**
+   * 
+   */
+  include(instance, child) {
+    if (!instance) {
+      return
+    }
+
+    if (yuchg.isString(child)) {
+      instance.childType(child)
+    }
+    $(this.element()).append(instance.element())
+  }
+
+  /**
+   * 克隆参数，确保source与自己是同类型Block
+   */
+  cloneArgument(source) {
+    if (!source) {
+      logger.warn(`BlockInstance cloneArgument failed: source is null `)
+      return
+    }
+
+    if (source.protoId() !== this.protoId()) {
+      logger.warn(`BlockInstance cloneArgument failed: source protoId [${source.protoId()}] is not same - `, this.protoId())
+      return
+    }
+
+    const sourceData = source.stateData()
+    if (!sourceData.sections) {
+      return
+    }
+  
+    const sections = this.stateData().sections
+    const dest = this
+    sourceData.sections.forEach(function(sec, i) {
+      // 检查类型是否匹配
+      if (sec.type !== 'argument') {
+        return true
+      }
+
+      if (sections[i].type !== 'argument') {
+        logger.warn(`BlockInstance cloneArgument failed: section [${i}] is not argument - `, sections[i].type)
+        return false
+      }
+
+      if (sec.datatype !== sections[i].datatype) {
+        logger.warn(`BlockInstance cloneArgument failed: section [${i}] datatype [${sections[i].datatype}] is not same as - `, sec.datatype)
+        return false
+      }
+
+      $.extend(true, sections[i].data, sec.data)
+
+      // 复制参数Block
+      if (sec.__assign) {
+        const secclone = sec.__assign.cloneSelf(true)
+        sections[i].__assign = secclone
+        dest.include(secclone, 'argument')
+      }
+    })
+  }
+
+  /**
+   * 
+   */
+  cloneResolve(source) {
+
+  }
+
+   /**
+   * 
+   */
+  cloneReject(source) {
+
+  }
+
+  /**
+   * 
+  */
+  cloneNext(source, next = false) {
+
+  }
+
+  /**
    * 克隆自己
    */
-  cloneSelf() {
+  cloneSelf(seq = false) {
     // 根据类型复制自己
+    const clone = this.panel().addBlock({
+      type: this.protoId()
+    })
 
+    // 复制childtype
+    clone.childType(this.childType())
 
+    // 复制参数值
+    clone.cloneArgument(this)
+    // 复制resolve
+    clone.cloneResolve(this)
+    // 复制reject
+    clone.cloneReject(this)
+
+    // 复制next节点
+    if (seq) {
+      clone.cloneNext(this, true)
+    }
+
+    clone.update()
+    return clone
   }
 
   /**
    * 
    */
   cloneData() {
-    const clone = $.extend(true, {}, this.state.data)
-    // 过滤sections
-    if (clone.sections) {
-      for (let sec of clone.sections) {
-        // 替换assign
-        sec.dom = null
-        if (sec.__assign) {
-           sec.__assign = sec.__assign.encode()
-        }
-      }
-    }
-    return clone
+    // const clone = $.extend(true, {}, this.state.data)
+    // // 过滤sections
+    // if (clone.sections) {
+    //   for (let sec of clone.sections) {
+    //     // 替换assign
+    //     sec.dom = null
+    //     if (sec.__assign) {
+    //        sec.__assign = sec.__assign.encode()
+    //     }
+    //   }
+    // }
+    // return clone
+    return {}
   }
 
   // 编码
@@ -689,10 +802,10 @@ class BlockInstance {
         transform: this.state.transform
       },
       child: {
-        next: next ? next.encode() : null,
-        prev: prev ? prev.encode() : null,
-        resolve: resolve ? resolve.encode() : null,
-        reject: reject ? reject.encode() : null
+        // next: next ? next.encode() : null,
+        // prev: prev ? prev.encode() : null,
+        // resolve: resolve ? resolve.encode() : null,
+        // reject: reject ? reject.encode() : null
       }
     }
     return data
