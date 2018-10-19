@@ -424,8 +424,8 @@ class Panel {
         let $marker = $(that.marker.element())
         let oldhostInst = that.marker.hostInstance
 
-        logger.debug('marker oldhost======', oldhostInst ? oldhostInst.instance.__proto.def.id + '' + oldhostInst.insert : null)
-        logger.debug('marker newhost======', hostInst ? hostInst.instance.__proto.def.id + '' + hostInst.insert : null)
+        logger.debug('marker oldhost======', oldhostInst ? oldhostInst.instance.__proto.def.id + '--' + oldhostInst.insert : null)
+        logger.debug('marker newhost======', hostInst ? hostInst.instance.__proto.def.id + '--' + hostInst.insert : null)
 
         if (selectInst.__proto.isEmbedBlock()) { // 参数变换
           $marker.attr('visibility', 'hidden')
@@ -525,8 +525,13 @@ class Panel {
                     prev: true
                   })
                 }
+                oldhostInst.instance.update()
+              } else {
+                oldhostInst.instance.update(null, {
+                  force: true,
+                  prev: true
+                })
               }
-              oldhostInst.instance.update()
             } else { // 从oldhost移动到newhost上  
               if (oldhostInst.instance !== hostInst.instance || oldhostInst.insert !== hostInst.insert) {
                 // 取出Marker
