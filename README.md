@@ -20,6 +20,17 @@ Vue主要用于实现SPA框架，Scratch编辑器能够很容易脱离Vue环境�
 MarkDown流程图
 ![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/flow.png)
 
+ ```
+    st=>start: 开始:> http://www.baidu.com
+    e=>end: 结束
+    c1=>condition: 条件
+    op=>operation: 程序
+    sub=>subroutine: 子程序
+    io=>inputoutput: 输出
+    st->c1(yes,right)->op(right)->sub(right)->io->e
+    c1(no)->e
+ ```
+
 ## Demo运行步骤
 +  (1）安装Node环境，全局安装Vue-CLI
 +  (2）从Github Clone本项目源码
