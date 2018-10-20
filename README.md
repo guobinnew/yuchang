@@ -17,6 +17,20 @@ Vue主要用于实现SPA框架，Scratch编辑器能够很容易脱离Vue环境�
 机器学习Keras
 ![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/keras.png)
 
+```
+    from keras.models import Sequential
+    from keras.layers.core import Dense, Activation
+    model = Sequential()
+    model.add(Dense(128, input_shape=(16,)))
+    model.add(Activation('relu'))
+    model.add(Dense(128))
+    model.add(Activation('relu'))
+    model.add(Dense(10))
+    model.add(Activation('softmax'))
+    model.summary()
+```
+
+
 MarkDown流程图
 ![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/flow.png)
 
@@ -27,7 +41,7 @@ MarkDown流程图
     op=>operation: 程序
     sub=>subroutine: 子程序
     io=>inputoutput: 输出
-    st->c1(yes,right)->op(right)->sub(right)->io->e
+    st->c1(yes,right)->op(bottom)->sub(bottom)->io(bottom)->e
     c1(no)->e
  ```
 
