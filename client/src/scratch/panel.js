@@ -1179,7 +1179,7 @@ class Panel {
       let $menu = $('<div class="ycBlockDropDownMenu" role="menu" aria-haspopup="true" tabindex="0" style="user-select: none;">')
       // 添加菜单项
       option.values.forEach((item, i) => {
-        let $menuitem = $(`<div class="ycBlockDropDownMenuItem" role="menuitemcheckbox" style="user-select: none;" data-value="${item.value}"></div>`)
+        let $menuitem = $(`<div class="ycBlockDropDownMenuItem" role="menuitemcheckbox" style="user-select: none;" data-index="${i}" data-value="${item.value}"></div>`)
         let $menucontent = $(`<div class="ycBlockDropDownMenuItemContent" style="user-select: none;"><div class="ycBlockMenuItemCheckBox" style="user-select: none;"></div>${item.name}</div>`)
         if (i === option.select) {
           $menucontent.addClass('ycBlockSelected')
@@ -1193,8 +1193,9 @@ class Panel {
         }).on('mousedown', function () {
           event.stopPropagation()
           // 更新索引
-          let i = $(this).attr('data-value')
-          callback && callback(Number(i))
+          let i = $(this).attr('data-index')
+          let v = $(this).attr('data-value')
+          callback && callback(Number(i), Number(v))
           panel.hideDropdownWidget()
         })
         $menuitem.append($menucontent)

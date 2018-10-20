@@ -14,6 +14,9 @@ Vue主要用于实现SPA框架，Scratch编辑器能够很容易脱离Vue环境�
 中文诗歌
 ![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/chinese.png)
 
+机器学习Keras
+![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/keras.png)
+
 ## Demo运行步骤
 - (1）安装Node环境，全局安装Vue-CLI
 
