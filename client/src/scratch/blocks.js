@@ -695,18 +695,19 @@ class BlockInstance {
     const sections = this.stateData().sections
     const dest = this
     sourceData.sections.forEach(function(sec, i) {
+      const destsec = sections[i]
       // 检查类型是否匹配
       if (sec.type !== 'argument') {
         return true
       }
 
-      if (sections[i].type !== 'argument') {
-        logger.warn(`BlockInstance cloneArgument failed: section [${i}] is not argument - `, sections[i].type)
+      if (destsec.type !== 'argument') {
+        logger.warn(`BlockInstance cloneArgument failed: section [${i}] is not argument - `, destsec.type)
         return false
       }
 
-      if (sec.datatype !== sections[i].datatype) {
-        logger.warn(`BlockInstance cloneArgument failed: section [${i}] datatype [${sections[i].datatype}] is not same as - `, sec.datatype)
+      if (sec.datatype !== destsec.datatype) {
+        logger.warn(`BlockInstance cloneArgument failed: section [${i}] datatype [${destsec.datatype}] is not same as - `, sec.datatype)
         return false
       }
 
@@ -788,48 +789,135 @@ class BlockInstance {
   /**
    * 
    */
-  cloneData() {
-    // const clone = $.extend(true, {}, this.state.data)
-    // // 过滤sections
-    // if (clone.sections) {
-    //   for (let sec of clone.sections) {
-    //     // 替换assign
-    //     sec.dom = null
-    //     if (sec.__assign) {
-    //        sec.__assign = sec.__assign.encode()
-    //     }
-    //   }
-    // }
-    // return clone
-    return {}
+  cloneStateData() {
+
+    const clone = {}
+    const sourceData = this.stateData()
+    // 克隆sections数据
+    if (!sourceData.sections) {
+      return
+    }
+
+    clone.sections = []
+    sourceData.sections.forEach(function(sec, i) {
+      const excepts = ['dom', '__width']
+      let secclone = {}
+      for (let [key, val] of Object.entries(sec)) {
+        if (excepts.indexOf(key) >= 0) {
+          continue
+        }
+
+        if (key === 'data') {
+          secclone.data = $.extend(true, {}, sec.data)
+        } else if (key === '__assign') {
+          if (val) {
+            secclone.__assign = val.encode()
+          }
+        } else {
+          logger.debug('clonedata =====', key, val)
+          secclone[key] = yuchg.cloneObject(val)
+        }
+      }
+      clone.sections.push(secclone)
+    })
+
+    return clone
   }
 
   // 编码
   encode() {
     const next = this.nextBlock()
-    const prev = this.prevBlock()
-    const resolve = this.rejectBlock()
+    const resolve = this.resolveBlock()
     const reject = this.rejectBlock()
 
     const data = {
       protoId: this.protoId(),
       state: {
-        data: this.cloneData(),
+        data: this.cloneStateData(),
         transform: this.state.transform
       },
       child: {
-        // next: next ? next.encode() : null,
-        // prev: prev ? prev.encode() : null,
-        // resolve: resolve ? resolve.encode() : null,
-        // reject: reject ? reject.encode() : null
+        next: next ? next.encode() : null,
+        resolve: resolve ? resolve.encode() : null,
+        reject: reject ? reject.encode() : null
       }
     }
     return data
   }
 
+  /**
+   * 解析state数据
+   * @param {} data 
+   */
+  decodeStateData(data) {
+    if (!data) {
+      return
+    }
+    const panel = this.panel()
+    const sourceData = this.stateData()
+    // 克隆sections数据
+    if (!data.sections) {
+      return
+    }
+
+    logger.debug(sourceData, data)
+    data.sections.forEach((sec, i) => {
+      let sourcesec = sourceData.sections[i]
+
+      // 检查类型匹配
+      if (sourcesec.type !== sec.type) {
+        logger.warn(`BlockInstance decodeStateData failed: section [${i}] type [${sourcesec.type}] is not same - `, sec.type)
+        return false
+      }
+
+      if (sec.type === 'argument' && sec.datatype !== sourcesec.datatype) {
+        logger.warn(`BlockInstance cloneArgument failed: section [${i}] datatype [${sourcesec.datatype}] is not same as - `, sec.datatype)
+        return false
+      }
+
+      for (let [key, val] of Object.entries(sec)) {
+        if (key === 'data') {
+          sourcesec.data = $.extend(true, {}, val)
+        } else if (key === '__assign') {
+          if (val) {
+            sourcesec.__assign = panel.createBlock(val)
+            this.include(sourcesec.__assign, 'argument')
+          }
+        } else {
+          logger.debug('clonedata =====', key, val)
+          sourcesec[key] = yuchg.cloneObject(val)
+        }
+      }
+    })
+  }
+
   // 解码
   decode(data) {
     // 更新状态
+    const panel = this.panel()
+
+    // 更新参数状态
+    this.decodeStateData(data.state.data)
+
+    // 更新resolve
+    if (data.child.resolve) {
+      let resolve = panel.createBlock(data.child.resolve)
+      this.include(resolve, 'resolve')
+    }
+
+    // 更新reject
+    if (data.child.reject) {
+      let reject = panel.createBlock(data.child.reject)
+      this.include(reject, 'reject')
+    }
+
+    // 更新next
+    if (data.child.next) {
+      let next = panel.createBlock(data.child.next)
+      this.include(next, '')
+    }
+
+    this.update()
   }
 }
 

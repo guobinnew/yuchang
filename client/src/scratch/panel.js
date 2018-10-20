@@ -1504,6 +1504,23 @@ class Panel {
     return JSON.stringify(data)
   }
 
+
+  /**
+   * 
+   * @param {*} data 
+   */
+   createBlock(data) {
+    let instance = this.addBlock({
+      type: data.protoId,
+      state: {
+        transform: data.state.transform
+      }
+    })
+    // 
+    instance.decode(data)
+    return instance
+   }
+
   /**
    * 从内部格式加载
    */
@@ -1531,16 +1548,7 @@ class Panel {
 
         // 加载数据
         for (let block of data.blocks) {
-          // 根据protoId创建实例
-          let instance = this.addBlock({
-            type: block.protoId,
-            state: {
-              transform: block.state.transform
-            }
-          })
-
-          // 
-          instance.decode(block)
+          this.createBlock(block)
         }
       }
     }
