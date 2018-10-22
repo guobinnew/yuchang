@@ -59,26 +59,44 @@ Block具有一个可见的外观图形，目前主要有7种：
 -  cap  能用于Event
 
 <div align=center>
-  <img width="150" height="150" src="https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-cap.png"/>
+  <img width="150" src="https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-cap.png"/>
 </div>
 
 -  hat   能用于Event
-![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-hat.png)
+
+<div align=center>
+  <img width="150" src="https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-hat.png"/>
+</div>
 
 -  slot  能用于Action
-![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-slot.png)
+
+<div align=center>
+  <img width="150" src="https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-slot.png"/>
+</div>
 
 -  round 能用于Variant，Express
-![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-round.png)
+
+<div align=center>
+  <img width="150" src="https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-round.png"/>
+</div>
 
 -  diamond 能用于Variant，Express
-![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-diamond.png)
+
+<div align=center>
+  <img width="150" src="https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-diamond.png"/>
+</div>
 
 -  cup 能用于Control
-![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-cup.png)
+
+<div align=center>
+  <img width="150" src="https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-cup.png"/>
+</div>
 
 -  cuptwo  能用于Control
-![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-cuptwo.png)
+
+<div align=center>
+  <img width="150" src="https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-cuptwo.png"/>
+</div>
 
 ### Block定义
 
