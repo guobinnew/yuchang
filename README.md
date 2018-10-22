@@ -57,7 +57,10 @@ Block具有一个Type属性，用来表示Block具备什么样的行为。目前
 
 Block具有一个可见的外观图形，目前主要有7种：
 -  cap  能用于Event
-![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-cap.png)
+
+<div align=center>
+  <img width="150" height="150" src="https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-cap.png"/>
+</div>
 
 -  hat   能用于Event
 ![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-hat.png)
