@@ -27,6 +27,59 @@ class BlockInstance {
   }
 
   /**
+   * 到处接口函数
+   */
+  exportItems() {
+    return this.__proto.def.export ? this.__proto.def.export : []
+  }
+
+  /**
+   * 获取section的Value，
+   * 如果时Text， 返回text
+   * 如果时Argument， 返回value
+   * @param {*} i 
+   */
+  sectionValue(i) {
+    const data = this.stateData()
+    if (!yuchg.isArray(data.sections)) {
+      logger.warn('BlockInstance sectionValue failed: no section data')
+      return null
+    }
+
+    if (data.sections.length <= i) {
+      logger.warn('BlockInstance sectionValue failed: index out of bound - ', data.sections.length)
+      return null
+    }
+
+    const sec = data.sections[i]
+    if (sec.type === 'text') {
+      return sec.text
+    } else if (sec.type === 'argument') {
+      if (sec.datatype === 'enum') {
+        logger.debug('sectionValue', i, sec)
+        return sec.data.values[sec.data.currentIndex].name
+      } else {
+        return sec.data.value
+      }
+    }
+
+    return null
+  }
+
+  /**
+   * 导出 
+   */
+  export(fmt) {
+    let output = null
+    for (let exp of this.exportItems()) {
+      if (exp.fmt === fmt) {
+        output = exp.action.call(this)
+      }
+    }
+    return output
+  }
+
+  /**
    * 原型Id
    */
   protoId() {

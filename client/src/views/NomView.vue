@@ -172,7 +172,7 @@
             $(".workspace").each(function () {
               const m = this.getCTM();
               $(this).attr("transform", "translate(0,0) scale(1.0)")
-            });
+            })
             return
           }
           else if (index == 3) {
@@ -188,7 +188,7 @@
           }
 
           $(".workspace").each(function () {
-            const m = this.getCTM();
+            const m = this.getCTM()
             currentOffset.x = Number(m.e)
             currentOffset.y =  Number(m.f)
             $(this).attr("transform", "translate(" + currentOffset.x + "," + currentOffset.y + ") " + "scale(" + currentZoomFactor + ")")
@@ -219,14 +219,14 @@
             currentOffset.x = Number(m.e) + deltaX
             currentOffset.y = Number(m.f) + deltaY
             $(this).attr("transform", "translate(" + currentOffset.x + "," + currentOffset.y + ") " + "scale(" + currentZoomFactor + ")")
-          });
+          })
         }
       }).on('mouseup', function (e) {
         startDrag = false
-      });
+      })
 
 
-      var defs = svg.append("defs");
+      var defs = svg.append("defs")
 
       var arrowMarker = defs.append("marker")
         .attr("id", "arrow")
@@ -236,9 +236,9 @@
         .attr("viewBox", "0 0 12 12")
         .attr("refX", "8")
         .attr("refY", "6")
-        .attr("orient", "auto");
+        .attr("orient", "auto")
 
-      var arrow_path = "M2,2 L10,6 L2,10 L2,2";
+      var arrow_path = "M2,2 L10,6 L2,10 L2,2"
 
       arrowMarker.append("path")
         .attr("d", arrow_path)
@@ -261,31 +261,31 @@
       var simulation = null
 
       // group类型 1: 模型  2: 接口  3: 输入端口  4 输出端口  5 模型聚合  6 版本
-      var color = d3.scaleOrdinal(d3.schemeSet3);
+      var color = d3.scaleOrdinal(d3.schemeSet3)
 
       function groupName(group) {
         var name = ""
         switch (group) {
           case 1:
-            name = "模型";
+            name = "模型"
             break;
           case 2:
-            name = "接口";
+            name = "接口"
             break;
           case 3:
-            name = "输入";
+            name = "输入"
             break;
           case 4:
-            name = "输出";
+            name = "输出"
             break;
           case 5:
-            name = "集合";
+            name = "集合"
             break;
           case 6:
-            name = "版本";
+            name = "版本"
             break;
           default:
-            name = "未知";
+            name = "未知"
         }
         return name
       }
@@ -299,11 +299,11 @@
       }
 
       function radialPoint(x, y) {
-        return [(y = +y) * Math.cos(x -= Math.PI / 2), y * Math.sin(x)];
+        return [(y = +y) * Math.cos(x -= Math.PI / 2), y * Math.sin(x)]
       }
 
       function radialRootPoint(x, y) {
-        return [80 * Math.cos(x -= Math.PI / 2), 60 * Math.sin(x)];
+        return [80 * Math.cos(x -= Math.PI / 2), 60 * Math.sin(x)]
       }
 
       function getRadian(x1, y1, x2, y2) {//获得人物中心和鼠标坐标连线，与y轴正半轴之间的夹角
@@ -326,7 +326,7 @@
       }
 
       function dragstarted(d) {
-        if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+        if (!d3.event.active) simulation.alphaTarget(0.3).restart()
         d.fx = d.x
         d.fy = d.y
       }
@@ -337,7 +337,7 @@
       }
 
       function dragended(d) {
-        if (!d3.event.active) simulation.alphaTarget(0);
+        if (!d3.event.active) simulation.alphaTarget(0)
         d.fx = null
         d.fy = null
       }
@@ -397,7 +397,7 @@
           }))
           .force("charge", d3.forceManyBody())
           .force("collide", d3.forceCollide(100))
-          .force("center", d3.forceCenter(that.width / 2, that.height / 2));
+          .force("center", d3.forceCenter(that.width / 2, that.height / 2))
 
         var link = ws.append("g")
           .attr("class", "links")
@@ -448,34 +448,34 @@
 
         var circles = model_node.append("circle")
           .attr("r", function (d) {
-            return d.value && d.value > 1 ? 20 + d.value * 5 : 20;
+            return d.value && d.value > 1 ? 20 + d.value * 5 : 20
           })
           .call(d3.drag()
             .on("start", dragstarted)
             .on("drag", dragged)
-            .on("end", dragended));
+            .on("end", dragended))
 
         var rects = interface_node.append("rect")
           .attr("x", function (d) {
-            return d.value && d.value > 1 ? -d.value * 4 : -8;
+            return d.value && d.value > 1 ? -d.value * 4 : -8
           })
           .attr("y", function (d) {
-            return d.value && d.value > 1 ? -d.value * 4 : -8;
+            return d.value && d.value > 1 ? -d.value * 4 : -8
           })
           .attr("width", function (d) {
-            return d.value && d.value > 1 ? d.value * 8 : 16;
+            return d.value && d.value > 1 ? d.value * 8 : 16
           })
           .attr("height", function (d) {
-            return d.value && d.value > 1 ? d.value * 8 : 16;
+            return d.value && d.value > 1 ? d.value * 8 : 16
           })
           .call(d3.drag()
             .on("start", dragstarted)
             .on("drag", dragged)
-            .on("end", dragended));
+            .on("end", dragended))
 
         var lables = node.append("text")
           .text(function (d) {
-            return d.name;
+            return d.name
           })
           .attr("text-anchor", function (d) {
             return d.group == 1 ? "middle" : "start"
@@ -489,15 +489,15 @@
 
         node.append("title")
           .text(function (d) {
-            return d.id;
-          });
+            return d.id 
+          }) 
 
         simulation
           .nodes(graph.nodes)
-          .on("tick", ticked);
+          .on("tick", ticked) 
 
         simulation.force("link")
-          .links(graph.links);
+          .links(graph.links) 
 
         function ticked() {
           link.attr("d", function (d) {
@@ -513,7 +513,7 @@
 
           node
             .attr("transform", function (d) {
-              return "translate(" + d.x + "," + d.y + ")";
+              return "translate(" + d.x + "," + d.y + ")" 
             })
         }
       }
@@ -560,21 +560,21 @@
 
         var data = d3.stratify()
           .id(function (d) {
-            return d.uid;
+            return d.uid 
           })
           .parentId(function (d) {
-            return d.parent;
+            return d.parent 
           })
-          (graph.nodes);
+          (graph.nodes) 
 
         var tree = d3.tree()
           .size([2 * Math.PI, 300])
           .separation(function (a, b) {
             return (a.parent == b.parent ? 1 : 2)
-          });
+          }) 
 
 
-        var root = tree(data);
+        var root = tree(data) 
 
         var link = ws.selectAll(".link")
           .data(root.links())
@@ -596,11 +596,11 @@
 
         nrootlink.attr("d", d3.linkRadial()
           .angle(function (d) {
-            return d.x;
+            return d.x 
           })
           .radius(function (d) {
-            return d.y;
-          }));
+            return d.y 
+          })) 
 
         var node = ws.selectAll(".node")
           .data(root.descendants())
@@ -626,7 +626,7 @@
             return cls
           })
           .attr("transform", function (d) {
-            return "translate(" + radialPoint(d.x, d.y) + ")";
+            return "translate(" + radialPoint(d.x, d.y) + ")" 
           })
           .on('mouseover', function (d) {
             d3.select(this).selectAll('circle').classed('selected', true)
@@ -703,51 +703,51 @@
 
         rnode.append("rect")
           .attr("x", function (d) {
-            return -5;
+            return -5 
           })
           .attr("y", function (d) {
-            return -5;
+            return -5 
           })
           .attr("width", function (d) {
-            return 10;
+            return 10 
           })
           .attr("height", function (d) {
-            return 10;
+            return 10 
           })
 
 
         node.append("text")
           .attr("dy", "-0.31em")
           .attr("x", function (d) {
-            return (d.id == 0 || d.data.group == 1 || d.data.group == 5) ? 0 : d.x < Math.PI ? 6 : -6;
+            return (d.id == 0 || d.data.group == 1 || d.data.group == 5) ? 0 : d.x < Math.PI ? 6 : -6 
           })
           .attr("text-anchor", function (d) {
-            return (d.id == 0 || d.data.group == 1 || d.data.group == 5) ? "middle" : d.x < Math.PI ? "start" : "end";
+            return (d.id == 0 || d.data.group == 1 || d.data.group == 5) ? "middle" : d.x < Math.PI ? "start" : "end" 
           })
           .attr("transform", function (d) {
-            return (d.id == 0 || d.data.group == 1 || d.data.group == 5) ? "" : "rotate(" + (d.x < Math.PI ? d.x - Math.PI / 2 : d.x + Math.PI / 2) * 180 / Math.PI + ")";
+            return (d.id == 0 || d.data.group == 1 || d.data.group == 5) ? "" : "rotate(" + (d.x < Math.PI ? d.x - Math.PI / 2 : d.x + Math.PI / 2) * 180 / Math.PI + ")" 
           })
           //.attr("filter", "url(#solid)")
           .text(function (d) {
-            return d.data.group == 5 ? "" : groupName(d.data.group);
-          });
+            return d.data.group == 5 ? "" : groupName(d.data.group) 
+          }) 
         node.append("text")
           .attr("dy", function (d) {
             return d.data.group == 5 ? "0.31em" : "1.0em"
           })
           .attr("x", function (d) {
-            return (d.id == 0 || d.data.group == 1 || d.data.group == 5 ) ? 0 : d.x < Math.PI ? 6 : -6;
+            return (d.id == 0 || d.data.group == 1 || d.data.group == 5 ) ? 0 : d.x < Math.PI ? 6 : -6 
           })
           .attr("text-anchor", function (d) {
-            return (d.id == 0 || d.data.group == 1 || d.data.group == 5 ) ? "middle" : d.x < Math.PI ? "start" : "end";
+            return (d.id == 0 || d.data.group == 1 || d.data.group == 5 ) ? "middle" : d.x < Math.PI ? "start" : "end" 
           })
           .attr("transform", function (d) {
-            return (d.id == 0 || d.data.group == 1 || d.data.group == 5 ) ? "" : "rotate(" + (d.x < Math.PI ? d.x - Math.PI / 2 : d.x + Math.PI / 2) * 180 / Math.PI + ")";
+            return (d.id == 0 || d.data.group == 1 || d.data.group == 5 ) ? "" : "rotate(" + (d.x < Math.PI ? d.x - Math.PI / 2 : d.x + Math.PI / 2) * 180 / Math.PI + ")" 
           })
           //.attr("filter", "url(#solid)")
           .text(function (d) {
-            return d.data.name;
-          });
+            return d.data.name
+          })
 
       }
 

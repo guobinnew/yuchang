@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-        <Scratch flex=1  :savebtn="save" :loadbtn="load"/>
+        <Scratch flex=1  :savebtn="save" :loadbtn="load" :export="openExportDialog"/>
         <input type="file" />
         <el-dialog title="保存脚本" :visible.sync="dialogVisible" height="200px">
           <el-form :model="form">
@@ -8,7 +8,7 @@
               <el-col :span="20">
                 <el-input v-model="form.name" autocomplete="off"></el-input>
               </el-col>
-              <el-col class="yuchang-ext" :span="4">.yu</el-col>
+              <el-col class="yuchang-ext" :span="4">{{form.ext}}</el-col>
             </el-form-item>
           </el-form>
           <div slot="footer" class="dialog-footer">
@@ -35,18 +35,19 @@
 </style>
 
 <script>
-import Scratch from "../components/Scratch.vue";
-import yuchg from "../base";
-import logger from "../logger";
-import $ from "jquery";
-import saveAs from "file-saver";
+import Scratch from "../components/Scratch.vue"
+import yuchg from "../base"
+import logger from "../logger"
+import $ from "jquery"
+import saveAs from "file-saver"
 
 export default {
   data: function() {
     return {
       dialogVisible: false,
       form: {
-        name: 'test'
+        name: 'test',
+        ext: '.yu'
       },
       dialogCallback: null
     }
@@ -59,38 +60,39 @@ export default {
       return {
         img: "/img/open.svg",
         action: this.selectFile
-      };
+      }
     },
     save: function() {
       return {
         img: "/img/save.svg",
         action: this.openSaveDialog
-      };
+      }
     }
   },
   methods: {
     selectFile(panel) {
-      const $dom = $(this.$el);
+      const $dom = $(this.$el)
       $dom
         .children("input")
         .on("change", () => {
-          let _panel = panel;
-          let file = $dom.children("input").val();
+          let _panel = panel
+          let file = $dom.children("input").val()
           if (event.target.files.length === 0) {
-            return;
+            return
           }
 
-          var reader = new FileReader();
+          var reader = new FileReader()
           reader.onload = function() {
-            _panel.load(this.result);
-          };
-          reader.readAsText(event.target.files[0]);
-          $dom.children("input").val("");
+            _panel.load(this.result)
+          }
+          reader.readAsText(event.target.files[0])
+          $dom.children("input").val("")
         })
-        .click();
+        .click()
     },
     openSaveDialog(panel) {
       // 弹出输入名称对话框
+      this.form.ext = '.yu'
       this.dialogVisible = true
       this.dialogCallback = this.saveFile.bind(this, panel)
     },
@@ -100,16 +102,38 @@ export default {
         this.dialogCallback()
       }
     },
+    openExportDialog(panel, ext, data) {
+      // 弹出输入名称对话框
+      this.form.ext = ext
+      this.dialogVisible = true
+      this.dialogCallback = this.exportFile.bind(this, panel, data)
+    },
     saveFile(panel) {
-      const $dom = $(this.$el);
-      let data = panel.save();
-
-      let file = new File([data], this.form.name + ".yu", {
+      const $dom = $(this.$el)
+      let data = panel.save()
+      let file = new File([data], this.form.name + this.form.ext, {
         type: "text/plain;charset=utf-8"
-      });
-      saveAs(file);
+      })
+      saveAs(file)
+    },
+    exportFile(panel, data) {
+      const $dom = $(this.$el)
+
+      let output = '' 
+      if (yuchg.isObject(data) || yuchg.isArray(data)) {
+        output = JSON.stringify(data)
+      } else if (yuchg.isString(data)) {
+        output = data
+      } else {
+        output = '' + data
+      }
+
+      let file = new File([output], this.form.name + this.form.ext, {
+        type: "text/plain;charset=utf-8"
+      })
+      saveAs(file)
     }
   },
   mounted: function() {}
-};
+}
 </script>

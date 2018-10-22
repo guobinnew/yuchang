@@ -67,8 +67,8 @@ class Panel {
     }
 
     this.selected = null
-    this.currentZoomFactor = 1.0
     this.zoomRate = 1.2
+    this.currentZoomFactor = 1.0 / this.zoomRate
     this.startDrag = false
 
     this.flyoutgrapPoint = {
@@ -81,7 +81,7 @@ class Panel {
     }
     this.flyoutselected = null
     this.flyoutstartDrag = false
-    this.flyoutZoomFactor = 0.675
+    this.flyoutZoomFactor = 0.5
     this.flyoutHeight = 0
 
     this.option = {
@@ -113,6 +113,8 @@ class Panel {
       ]
     }
 
+    this.setCanvasTransfrom(this.dom.canvasList, 'scale(' + this.currentZoomFactor + ')')
+   
     // 鼠标事件
     $(this.dom.root).on('mousedown', () => {
       this.hideDropdownWidget()
@@ -904,6 +906,7 @@ class Panel {
   }
 
   setOption(option) {
+    logger.debug('$$$$$$$$$$$$$', option)
     // 清空之前的定义
     this.option.blocks.defs = null
     // 合并Buttons
@@ -912,6 +915,7 @@ class Panel {
     // 合并
     $.extend(true, this.option, option)
     this.option.buttons = buttons
+    logger.debug('$$$$$$$$$$$$$', option)
 
     // 提取Block包定义
     for (let p of this.option.blocks.packages.values()) {
@@ -1275,32 +1279,52 @@ class Panel {
         // 弹出上下文菜单
         if (!selectInst.__proto.isInternal()) {
 
+          // 生成菜单项
+          let menuitems = [
+            {
+              id: 'copy',
+              name: '复制',
+              action: () => {
+                panel.cloneBlock(selectUid, true)
+              }
+            },
+            {
+              id: 'copyself',
+              name: '复制自己',
+              action: () => {
+                panel.cloneBlock(selectUid)
+              }
+            },
+            {
+              id: 'delete',
+              name: '删除',
+              action: () => {
+                panel.removeBlock(selectUid)
+              }
+            }
+          ]
+
+          // 生成导出菜单项
+          for (let item of selectInst.exportItems()) {
+            const ext = item.ext
+            const fmt = item.fmt
+            if (item.menuItem === true) {
+              menuitems.push({
+                id: 'export@' + fmt,
+                name: item.menuName ? item.menuName : ('导出' + fmt),
+                action: () => {
+                  let data = selectInst.export(fmt)
+                  logger.debug('MENU ACTION', data)
+                  panel.option.exportCallback && panel.option.exportCallback(panel, ext, data)
+                }
+              })
+            }
+          }
+
           panel.showContextMenu({
             x: event.pageX - X,
             y: event.pageY - Y,
-            items: [
-              {
-                id: 'copy',
-                name: '复制',
-                action: () => {
-                  panel.cloneBlock(selectUid, true)
-                }
-              },
-              {
-                id: 'copyself',
-                name: '复制自己',
-                action: () => {
-                  panel.cloneBlock(selectUid)
-                }
-              },
-              {
-                id: 'delete',
-                name: '删除',
-                action: () => {
-                  panel.removeBlock(selectUid)
-                }
-              }
-            ]
+            items: menuitems
           })
         }
       }

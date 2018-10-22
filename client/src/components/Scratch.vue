@@ -377,14 +377,16 @@
 </style>
 
 <script>
-import Scratch from "../scratch/index";
-import yuchg from "../base";
-import logger from "../logger";
-logger.setLevel("debug");
+import Scratch from "../scratch/index"
+import yuchg from "../base"
+import logger from "../logger"
+import $ from 'jquery'
+
+logger.setLevel("debug")
 
 export default {
   name: "Scratch",
-  props: ["width", "height", "flex", "loadbtn", "savebtn"],
+  props: ["width", "height", "flex", "loadbtn", "savebtn", "export"],
   data: function() {
     return {
       id: "scratch",
@@ -396,58 +398,58 @@ export default {
         width: 250
       },
       editor: null
-    };
+    }
   },
   computed: {
     flyoutBackground: function() {
       return `M 0,0 h ${this.flyout.width} a 0 0 0 0 1 0 0 v ${
         this.size.height
-      } a 0 0 0 0 1 0 0 h ${-this.flyout.width} z`;
+      } a 0 0 0 0 1 0 0 h ${-this.flyout.width} z`
     }
   },
   created: function() {
     if (this.width != undefined) {
-      this.size.width = parseInt(this.width);
+      this.size.width = parseInt(this.width)
     }
 
     if (this.height != undefined) {
-      this.size.height = parseInt(this.height);
+      this.size.height = parseInt(this.height)
     }
   },
   mounted: function() {
     let that = this;
-    that.editor = Scratch.init(that.$el);
+    that.editor = Scratch.init(that.$el)
 
-    let _flex = parseInt(that.flex);
+    let _flex = parseInt(that.flex)
     if (_flex === 1) {
       // 随窗口动态改变大小
       var resizeEditor = function() {
-        that.size.width = that.$el.clientWidth;
-        that.size.height = that.$el.clientHeight;
-      };
+        that.size.width = that.$el.clientWidth
+        that.size.height = that.$el.clientHeight
+      }
 
       window.onresize = function() {
-        resizeEditor();
-      };
+        resizeEditor()
+      }
 
-      resizeEditor();
+      resizeEditor()
     }
 
-    let buttons = [];
+    let buttons = []
     if (yuchg.isObject(this.loadbtn)) {
       buttons.push({
         id: "load",
         img: this.loadbtn.img,
         action: this.loadbtn.action
-      });
+      })
     } else if (yuchg.isFunction(this.loadbtn)) {
       // 返回格式为 { img: '', action: func()}
-      let btn = this.loadbtn();
+      let btn = this.loadbtn()
       buttons.push({
         id: "load",
         img: btn.img,
         action: btn.action
-      });
+      })
     }
 
     if (yuchg.isObject(this.savebtn)) {
@@ -455,19 +457,20 @@ export default {
         id: "save",
         img: this.savebtn.img,
         action: this.savebtn.action
-      });
+      })
     } else if (yuchg.isFunction(this.savebtn)) {
-      let btn = this.savebtn();
+      let btn = this.savebtn()
       buttons.push({
         id: "save",
         img: btn.img,
         action: btn.action
-      });
+      })
     }
 
     that.editor.setOption({
-      buttons: buttons
-    });
+      buttons: buttons,
+      exportCallback: this.export
+    })
   },
   methods: {}
 };

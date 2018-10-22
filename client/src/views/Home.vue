@@ -16,11 +16,11 @@
 </style>
 <script>
   import $ from 'jquery'
-  import * as THREE from 'three';
+  import * as THREE from 'three'
   import GLTFLoader  from 'three-gltf-loader'
   import OrbitControls from 'three-orbitcontrols'
 
-  const scene = new THREE.Scene();
+  const scene = new THREE.Scene()
 
 export default {
   name: 'home',
@@ -48,7 +48,7 @@ export default {
 
     renderer = new THREE.WebGLRenderer({
       antialias: true
-    });
+    })
 
 
     renderer.setPixelRatio(window.devicePixelRatio)
@@ -56,33 +56,33 @@ export default {
 
     renderer.gammaOutput = true
     renderer.gammaFactor = 2.2
-    //container.appendChild( renderer.domElement );
+    //container.appendChild( renderer.domElement ) 
     $container.append(renderer.domElement)
 
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xbfe3dd);
-    camera = new THREE.PerspectiveCamera(40, that.width / that.height, 1, 1000);
-    camera.position.set(8, 6, -8);
-    controls = new OrbitControls(camera, renderer.domElement);
-    controls.target.set(0, 0.5, 0);
-    controls.enablePan = false;
-    scene.add(new THREE.AmbientLight(0x404040));
-    pointLight = new THREE.PointLight(0xffffff, 1);
-    pointLight.position.copy(camera.position);
-    scene.add(pointLight);
+    scene = new THREE.Scene() 
+    scene.background = new THREE.Color(0xbfe3dd) 
+    camera = new THREE.PerspectiveCamera(40, that.width / that.height, 1, 1000) 
+    camera.position.set(8, 6, -8) 
+    controls = new OrbitControls(camera, renderer.domElement) 
+    controls.target.set(0, 0.5, 0) 
+    controls.enablePan = false 
+    scene.add(new THREE.AmbientLight(0x404040)) 
+    pointLight = new THREE.PointLight(0xffffff, 1) 
+    pointLight.position.copy(camera.position) 
+    scene.add(pointLight) 
 
-    var loader = new GLTFLoader();
+    var loader = new GLTFLoader() 
     loader.load('models/gltf/qtAnimation.glb', function (gltf) {
-      var model = gltf.scene;
-      model.position.set(0, 0, 0);
-      model.scale.set(0.05, 0.05, 0.05);
-      scene.add(model);
-      mixer = new THREE.AnimationMixer(model);
+      var model = gltf.scene 
+      model.position.set(0, 0, 0) 
+      model.scale.set(0.05, 0.05, 0.05) 
+      scene.add(model) 
+      mixer = new THREE.AnimationMixer(model) 
       console.log(gltf.animations.length)
-      mixer.clipAction(gltf.animations[0]).play();
-      animate();
+      mixer.clipAction(gltf.animations[0]).play() 
+      animate() 
     }, undefined, function (e) {
-      console.error(e);
+      console.error(e) 
     })
 
     window.onresize = function () {
