@@ -1579,6 +1579,9 @@ class BlockStack extends Block {
                 background: background,
                 value: this.__section.data.value,
                 callback: (v) => {
+                  if (this.__section.datatype === 'number' && v === '') {
+                    v = 0
+                  }
                   this.__section.data.value = v
                   // 更新整个Block
                   this.__instance.update(null, {

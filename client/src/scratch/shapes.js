@@ -1040,12 +1040,10 @@ const ShapeUtils = {
         const $this = $(this)
         const log = logPrefix(this, ycEvents.change)
 
-        if (v) {
-          if (!yuchg.isString(v)) {
-            logger.warn(log + 'value is not string')
-          } else {
-            $this.html('' + v)
-          }
+        if (yuchg.isString(v)) {
+          $this.html('' + v)
+        } else {
+          logger.warn(log + 'value is not string')
         }
       })
       return text

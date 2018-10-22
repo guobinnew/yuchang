@@ -1140,6 +1140,7 @@ class Panel {
         newValue = newValue.replace(/[^\d.]/g, '')
       }
       $(this).val(newValue)
+      logger.debug('Input CB', newValue)
       // 动态刷新大小
       callback && callback(newValue)
       // 调整控件大小
