@@ -1,40 +1,51 @@
 # yuchang
+
 模仿Scratch的基于Vue的可视化脚本编辑工具，支持自定义语法，导出为JSON格式、JS代码，主要特点：
+
 + （1）完全通过JSON定义脚本Block，可自由扩展，甚至创建一套全新Block，可以实现各种可视化脚本应用，不仅仅用于编程
+  
 + （2）支持导出插件，可自行实现将可视化模型导出为想要的文件，例如JSON、JS代码、Word、HTML等
 
 Vue主要用于实现SPA框架，Scratch编辑器能够很容易脱离Vue环境，应用到其他Web应用中
 ![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/mainui.png)
 
 ## Command模块
+
 为了方便脚本重用，引入Command（命令），可以将一个脚本序列定义为一个Command，然后在其他地方执行它
 ![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/command.png)
 
 ## Block定义格式
+
 Block定义文件位于项目目录/client/src/scratch/blockDefs/packages目录下。Block按包（package）进行管理，
 每个包为一个独立目录，其中base目录为基础Block，其余目录为扩展Block。
 
 ### 类目定义
+
 每个Block指定一个类目，类目目前主要用来定义颜色属性，类目定义文件位于项目目录/client/src/scratch/blockDefs/categorires.js
 ，可以自行进行扩展。
 
 类目定义格式为：
-```
-  'internal': {   // 类目ID
-    name: '内部',  // 名称
-    display: 'none',  // 是否可见
-    state: {
-      background: {   // 背景颜色定义
-        stroke: '#000000',
-        fill: '#000000',
-        opacity: '0.2'
+
+```json
+  {
+    'internal': {   // 类目ID
+      name: '内部',  // 名称
+      display: 'none',  // 是否可见
+      state: {
+        background: {   // 背景颜色定义
+          stroke: '#000000',
+          fill: '#000000',
+          opacity: '0.2'
+        }
       }
     }
   }
 ```
 
 ### Block类型
+
 Block具有一个Type属性，用来表示Block具备什么样的行为。目前Type 主要分为：
+
 -  Action（动作）
 -  Express（表达式）
 -  Control （控制）
@@ -43,6 +54,7 @@ Block具有一个Type属性，用来表示Block具备什么样的行为。目前
 -  Markter （标记）主要供内部使用
 
 ### Block外观类型
+
 Block具有一个可见的外观图形，目前主要有7种：
 -  cap  能用于Event
 ![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-cap.png)
@@ -66,9 +78,10 @@ Block具有一个可见的外观图形，目前主要有7种：
 ![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-cuptwo.png)
 
 ### Block定义
+
 每个包目录导出一个Block数组，数组的每个元素为一个Block定义。
 Block 定义格式为：
-```
+```json
  {
     id: 'move',    // ID
     shape: 'slot',   // 图形形状
@@ -94,18 +107,18 @@ Block 定义格式为：
           }
         ]
       }
-    },
+    }
 ```
 
-
 ## 自行扩展Block
+
 中文诗歌
 ![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/chinese.png)
 
 机器学习Keras
 ![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/keras.png)
 
-```
+```python
     from keras.models import Sequential
     from keras.layers.core import Dense, Activation
     model = Sequential()
@@ -118,11 +131,10 @@ Block 定义格式为：
     model.summary()
 ```
 
-
 MarkDown流程图
 ![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/flow.png)
 
- ```
+ ```markdown
     st=>start: 开始:> http://www.baidu.com
     e=>end: 结束
     c1=>condition: 条件
@@ -134,6 +146,7 @@ MarkDown流程图
  ```
 
 ## Demo运行步骤
+
 +  (1）安装Node环境，全局安装Vue-CLI
 +  (2）从Github Clone本项目源码
 +  (3）在项目根目录运行 npm install， 在client/目录下运行npm install
