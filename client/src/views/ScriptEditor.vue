@@ -103,7 +103,6 @@ export default {
     saveFile(panel) {
       const $dom = $(this.$el);
       let data = panel.save();
-      logger.debug("encode data stringify: ", data);
 
       let file = new File([data], this.form.name + ".yu", {
         type: "text/plain;charset=utf-8"

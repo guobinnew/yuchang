@@ -10,6 +10,94 @@ Vue主要用于实现SPA框架，Scratch编辑器能够很容易脱离Vue环境�
 为了方便脚本重用，引入Command（命令），可以将一个脚本序列定义为一个Command，然后在其他地方执行它
 ![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/command.png)
 
+## Block定义格式
+Block定义文件位于项目目录/client/src/scratch/blockDefs/packages目录下。Block按包（package）进行管理，
+每个包为一个独立目录，其中base目录为基础Block，其余目录为扩展Block。
+
+### 类目定义
+每个Block指定一个类目，类目目前主要用来定义颜色属性，类目定义文件位于项目目录/client/src/scratch/blockDefs/categorires.js
+，可以自行进行扩展。
+
+类目定义格式为：
+```
+  'internal': {   // 类目ID
+    name: '内部',  // 名称
+    display: 'none',  // 是否可见
+    state: {
+      background: {   // 背景颜色定义
+        stroke: '#000000',
+        fill: '#000000',
+        opacity: '0.2'
+      }
+    }
+  }
+```
+
+### Block类型
+Block具有一个Type属性，用来表示Block具备什么样的行为。目前Type 主要分为：
+-  Action（动作）
+-  Express（表达式）
+-  Control （控制）
+-  Variant （变量）
+-  Event （事件）
+-  Markter （标记）主要供内部使用
+
+### Block外观类型
+Block具有一个可见的外观图形，目前主要有7种：
+-  cap  能用于Event
+![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-cap.png)
+
+-  hat   能用于Event
+![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-hat.png)
+
+-  slot  能用于Action
+![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-slot.png)
+
+-  round 能用于Variant，Express
+![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-round.png)
+
+-  diamond 能用于Variant，Express
+![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-diamond.png)
+
+-  cup 能用于Control
+![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-cup.png)
+
+-  cuptwo  能用于Control
+![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-cuptwo.png)
+
+### Block定义
+每个包目录导出一个Block数组，数组的每个元素为一个Block定义。
+Block 定义格式为：
+```
+ {
+    id: 'move',    // ID
+    shape: 'slot',   // 图形形状
+    category: 'motion',  // 类目
+    draggable: true,  // 是否可拖动
+    state: {  // 状态定义
+      data: {  // 数据项定义
+        sections: [  // 每个数据单元为一个section
+          {
+            type: 'text',  //  Text section类型
+            text: '移动'  // 显示的文字
+          },
+          {
+            type: 'argument',  // 可输入的参数 section
+            datatype: 'number',  // 数据类型，分为string， number, boolean, enum
+            data: {
+              value: 1  // 参数值
+            }
+          },
+          {
+            type: 'text',
+            text: '步'
+          }
+        ]
+      }
+    },
+```
+
+
 ## 自行扩展Block
 中文诗歌
 ![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/chinese.png)
