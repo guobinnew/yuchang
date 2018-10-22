@@ -95,7 +95,6 @@ const Utils = {
       bottom: rect.bottom + offsety
     }
   }
-
 }
 
 export default Utils

@@ -57,7 +57,7 @@ class BlockInstance {
     } else if (sec.type === 'argument') {
       if (sec.datatype === 'enum') {
         logger.debug('sectionValue', i, sec)
-        return sec.data.values[sec.data.currentIndex].name
+        return sec.data.values[sec.data.currentIndex]
       } else {
         return sec.data.value
       }

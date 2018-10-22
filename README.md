@@ -102,7 +102,8 @@ Block具有一个可见的外观图形，目前主要有7种：
 
 每个包目录导出一个Block数组，数组的每个元素为一个Block定义。
 Block 定义格式为：
-```json
+
+```
  {
     id: 'move',    // ID
     shape: 'slot',   // 图形形状
@@ -139,7 +140,7 @@ Block 定义格式为：
 机器学习Keras
 ![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/keras.png)
 
-```python
+```
     from keras.models import Sequential
     from keras.layers.core import Dense, Activation
     model = Sequential()
@@ -155,15 +156,18 @@ Block 定义格式为：
 MarkDown流程图
 ![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/flow.png)
 
- ```markdown
-    st=>start: 开始:> http://www.baidu.com
-    e=>end: 结束
-    c1=>condition: 条件
-    op=>operation: 程序
-    sub=>subroutine: 子程序
-    io=>inputoutput: 输出
-    st->c1(yes,right)->op(bottom)->sub(bottom)->io(bottom)->e
-    c1(no)->e
+ ```
+    st8=>start: 开始:> https://www.baidu.com
+    op9=>operation: 程序
+    c10=>condition: 条件
+    op11=>operation: 程序
+    e12=>end: 结束
+    op13=>operation: 程序
+    op14=>operation: 程序
+    st8->op9(bottom)->c10
+    c10(no)->op14(bottom)->op11
+    c10(yes, right)->op13(bottom)->op11
+    op11(bottom)->e12
  ```
 
 ## Demo运行步骤

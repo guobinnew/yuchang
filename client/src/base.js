@@ -233,10 +233,4 @@ yuchg.concatArray = function(arr1, arr2) {
   return Array.from(new Set(arr))
 }
 
-// 唯一Id
-let _ycUniqueId = 1
-yuchg.uniqueId = function() {
-  return _ycUniqueId++
-}
-
 export default yuchg
