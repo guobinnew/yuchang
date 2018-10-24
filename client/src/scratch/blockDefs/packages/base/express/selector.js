@@ -10,7 +10,7 @@ export default [
         padding: 4
       },
       data: {
-        datatype: 'object',
+        datatype: 'string',
         sections: [
           {
             type: 'argument',

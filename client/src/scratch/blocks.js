@@ -1623,8 +1623,9 @@ class BlockStack extends Block {
               this.__panel.showDropdownWidget({
                 dom: this,
                 type: this.__section.datatype,
-                x: Number(m.e) + bbox.width / 2 * Number(m.a),
-                y: Number(m.f) + bbox.height * Number(m.d),
+                center: Number(m.e) + bbox.width / 2 * Number(m.a),
+                bottom: Number(m.f) + bbox.height * Number(m.d),
+                top: Number(m.f),
                 background: background,
                 select: this.__section.data.currentIndex,
                 values: this.__section.data.values,

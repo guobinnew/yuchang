@@ -114,6 +114,7 @@ class Panel {
     }
 
     this.setCanvasTransfrom(this.dom.canvasList, 'scale(' + this.currentZoomFactor + ')')
+    this.setCanvasTransfrom(this.dom.flyoutcanvasList, 'scale(' + this.flyoutZoomFactor + ')')
    
     // 鼠标事件
     $(this.dom.root).on('mousedown', () => {
@@ -1140,7 +1141,6 @@ class Panel {
         newValue = newValue.replace(/[^\d.]/g, '')
       }
       $(this).val(newValue)
-      logger.debug('Input CB', newValue)
       // 动态刷新大小
       callback && callback(newValue)
       // 调整控件大小
@@ -1175,8 +1175,8 @@ class Panel {
     $content.children().remove()
 
     let panel = this
-    $parent.attr('style', ' transition: transform 0.25s ease 0s, opacity 0.25s ease 0s; transform: translate(0px, 20px);')
     // 根据option设置边框颜色
+    $parent.attr('style', 'transition: opacity 0.25s ease 0s;')
     $parent.css('border-color', option.background.stroke)
     $parent.css('background-color', option.background.fill)
 
@@ -1210,16 +1210,31 @@ class Panel {
     }
 
     let $menu = createPopMenu(option)
-    $content.append($menu)
+     $content.append($menu)
+     let $arrow = $parent.children('.ycBlockDropDownArrow')
 
+    // 判断菜单是否被遮挡
     let menuWidth = $parent.outerWidth() / 2
-    $parent.css('top', option.y)
-    $parent.css('left', option.x - menuWidth)
+    let menuHeight = $parent.outerHeight()
+    let ws = $(this.dom.svg).find('.ycBlockWorkspace')
+    let cbox = ws[0].getBBox()
 
     // 根据屏幕位置，调整菜单
-    let $arrow = $parent.children('.ycBlockDropDownArrow')
-    $arrow.addClass('ycBlockArrowTop')
-    $arrow.attr('style', `transform: translate(${menuWidth - 9}px, -9px) rotate(45deg);`)
+    if (option.bottom + menuHeight > cbox.height) { // 调整为顶部显示
+      $parent.css('transform', 'translate(0px, -20px)')
+      $parent.css('top', option.top - menuHeight)
+      $parent.css('left', option.center - menuWidth)
+      $arrow.removeClass('ycBlockArrowTop')
+      $arrow.addClass('ycBlockArrowBottom')
+      $arrow.attr('style', `transform: translate(${menuWidth - 9}px, ${menuHeight - 9}px) rotate(45deg);`)
+    } else {
+      $parent.css('transform', 'translate(0px, 20px)')
+      $parent.css('top', option.bottom)
+      $parent.css('left', option.center - menuWidth)
+      $arrow.removeClass('ycBlockArrowBottom')
+      $arrow.addClass('ycBlockArrowTop')
+      $arrow.attr('style', `transform: translate(${menuWidth - 9}px, -9px) rotate(45deg);`)
+    }
 
     $parent.css('opacity', '1')
     $parent.css('display', 'block')
