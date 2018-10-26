@@ -6,6 +6,8 @@
   
 + （2）支持导出插件，可自行实现将可视化模型导出为想要的文件，例如JSON、JS代码、Word、HTML等
 
+CSDN博文: https://blog.csdn.net/wangnan8015/article/details/83276471
+
 Vue主要用于实现SPA框架，Scratch编辑器能够很容易脱离Vue环境，应用到其他Web应用中
 ![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/mainui.png)
 
