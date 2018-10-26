@@ -6,11 +6,8 @@ const BrowserWindow = electron.BrowserWindow
 
 const path = require('path')
 const url = require('url')
-
-// 启动后台服务
-var backend = require('./server')
 // 启动前台服务
-var frontend = require('./dist/wrapper')
+var frontend = require('./server/wrapper')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
