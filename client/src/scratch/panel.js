@@ -1210,8 +1210,8 @@ class Panel {
     }
 
     let $menu = createPopMenu(option)
-     $content.append($menu)
-     let $arrow = $parent.children('.ycBlockDropDownArrow')
+    $content.append($menu)
+    let $arrow = $parent.children('.ycBlockDropDownArrow')
 
     // 判断菜单是否被遮挡
     let menuWidth = $parent.outerWidth() / 2

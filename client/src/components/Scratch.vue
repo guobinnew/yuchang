@@ -69,10 +69,10 @@
             </defs>
             <path class="ycBlockFlyoutBackground" :d="flyoutBackground"></path>
             <g class="ycBlockWorkspace" clip-path="url(#ycBlockMenuClipPath)">
-                <g class="ycBlockCanvas" transform="translate(0,0) scale(0.675)">
+                <g class="ycBlockCanvas">
                     <rect fill-opacity="0" x="12" y="1960" height="56" width="96"></rect>
                 </g>
-                <g class="ycBlockBubbleCanvas" transform="translate(0,0) scale(0.675)">
+                <g class="ycBlockBubbleCanvas">
                 </g>
             </g>
         </svg>
