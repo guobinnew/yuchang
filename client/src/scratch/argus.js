@@ -1,5 +1,4 @@
 import $ from 'jquery'
-import * as d3 from "d3"
 import yuchg from '../base'
 import logger from '../logger'
 import ShapeUtils from './shapes'

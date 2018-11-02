@@ -1,4 +1,7 @@
 import yuchg from '../base'
+import {
+  utils
+} from 'mocha';
 
 // 缺省文字字体大小
 const ycFontSize = 12 // ASCII
@@ -6,7 +9,7 @@ const ycUnicodeFontSize = 16 // UNICODE
 
 const Utils = {
   // 计算文字长度
-  computeTextLength: function(txt) {
+  computeTextLength: function (txt) {
     // 根据文字计算长度
     if (!yuchg.isString(txt) || txt === '') {
       return 0
@@ -20,12 +23,12 @@ const Utils = {
 
   // 包围盒相交
   // v代表垂直距离，h代表水平距离
-  isIntersects: function(box1, box2, vdist = 0, hdist = 0) {
+  isIntersects: function (box1, box2, vdist = 0, hdist = 0) {
     let nbox1 = Utils.normalizeBoundbox(box1)
     let nbox2 = Utils.normalizeBoundbox(box2)
     let v = yuchg.isNumber(vdist) ? Math.max(vdist, 0) : 0
     let h = yuchg.isNumber(hdist) ? Math.max(hdist, 0) : 0
-     
+
     // AABB相交检测
     if (
       nbox1.left > (nbox2.right + h) ||
@@ -41,11 +44,11 @@ const Utils = {
   /**
    * 
    */
-  isContains: function(box, point, vdist = 0, hdist = 0) {
+  isContains: function (box, point, vdist = 0, hdist = 0) {
     let nbox = Utils.normalizeBoundbox(box)
     let v = yuchg.isNumber(vdist) ? Math.max(vdist, 0) : 0
     let h = yuchg.isNumber(hdist) ? Math.max(hdist, 0) : 0
-     
+
     // AABB相交检测
     if (
       point.x > (nbox.right + h) ||
@@ -94,6 +97,47 @@ const Utils = {
       right: rect.right + offsetx,
       bottom: rect.bottom + offsety
     }
+  },
+
+  /**
+   * 清空子节点
+   * @param {*} elem 
+   */
+  domClearChildren(elem) {
+    while (elem.firstChild) {
+      elem.removeChild(elem.firstChild)
+    }
+  },
+
+  /**
+   * 返回直接子节点元素
+   * @param {*} sel 
+   */
+  domChildrenByTagName(elem, tag) {
+    var objChild = []
+    var objs = elem.getElementsByTagName(tag)
+    for (let obj of objs) {
+      if (obj.nodeType !== 1) {
+        continue
+      }
+      var temp = objs.parentNode
+      if (temp.nodeType === 1) {
+        if (temp === elem) {
+          objChild.push(obj)
+        }
+      } else if (temp.parentNode === obj) {
+        objChild.push(obj)
+      }
+    }
+    return objChild
+  },
+
+  /**
+   * 返回第一级子节点
+   * @param {*} obj 
+   */
+  domChildren(elem) {
+    return utils.domQuerySelectByTagName(elem, '*')
   }
 }
 

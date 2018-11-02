@@ -1,5 +1,4 @@
 import $ from 'jquery'
-import * as d3 from "d3"
 import uuidv4 from 'uuid/v4'
 import yuchg from '../base'
 import logger from '../logger'
