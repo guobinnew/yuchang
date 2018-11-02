@@ -131,7 +131,7 @@ class Argument {
       if (!yuchg.isString(v)) {
         logger.warn(`Argument createContainer failed: ${i} is not string --`, v)
       } else {
-        $elem.attr('data-' + i, v)
+        elem.setAttribute('data-' + i, v)
       }
     }
 
@@ -242,11 +242,11 @@ class Argument {
   }
 
   show() {
-    $(this.section.dom).attr('visibility', 'visible')
+    this.section.dom.setAttribute('visibility', 'visible')
   }
 
   hide() {
-    $(this.section.dom).attr('visibility', 'hidden')
+    this.section.dom.setAttribute('visibility', 'hidden')
   }
 
   /**

@@ -28,7 +28,7 @@ Block定义文件位于项目目录/client/src/scratch/blockDefs/packages目录�
 
 类目定义格式为：
 
-```json
+```
   {
     'internal': {   // 类目ID
       name: '内部',  // 名称

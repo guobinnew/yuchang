@@ -380,7 +380,6 @@
 import Scratch from "../scratch/index"
 import yuchg from "../base"
 import logger from "../logger"
-import $ from 'jquery'
 
 logger.setLevel("debug")
 

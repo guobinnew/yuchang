@@ -29,7 +29,6 @@ const ycEvents = {
 const ycEventFunctions = {}
 ycEventFunctions[ycEvents.resize] = function (event, opt) {
   event.stopPropagation()
-  const $this = $(this)
   const log = logPrefix(this, ycEvents.resize)
 
   if (!opt) {
@@ -40,19 +39,18 @@ ycEventFunctions[ycEvents.resize] = function (event, opt) {
   if (!yuchg.isNumber(opt.width)) {
     logger.warn(log + `width is not number`)
   } else {
-    $this.attr('width', opt.width)
+    this.setAttribute('width', opt.width)
   }
 
   if (!yuchg.isNumber(opt.height)) {
     logger.warn(log + `height is not number`)
   } else {
-    $this.attr('width', opt.height)
+    this.setAttribute('height', opt.height)
   }
 }
 
 ycEventFunctions[ycEvents.position] = function (event, opt) {
   event.stopPropagation()
-  const $this = $(this)
   const log = logPrefix(this, ycEvents.position)
 
   if (!opt) {
@@ -76,12 +74,11 @@ ycEventFunctions[ycEvents.position] = function (event, opt) {
       ty = opt.translatey
     }
   }
-  $this.attr('transform', `translate(${tx}, ${ty})`)
+  this.setAttribute('transform', `translate(${tx}, ${ty})`)
 }
 
 ycEventFunctions[ycEvents.positionText] = function (event, opt) {
   event.stopPropagation()
-  const $this = $(this)
   const log = logPrefix(this, ycEvents.positionText)
 
   if (!opt) {
@@ -93,7 +90,7 @@ ycEventFunctions[ycEvents.positionText] = function (event, opt) {
     if (!yuchg.isNumber(opt.x)) {
       logger.warn(log + `x is not number`)
     } else {
-      $this.attr('x', opt.x)
+      this.setAttribute('x', opt.x)
     }
   }
 
@@ -101,7 +98,7 @@ ycEventFunctions[ycEvents.positionText] = function (event, opt) {
     if (!yuchg.isNumber(opt.y)) {
       logger.warn(log + `y is not number`)
     } else {
-      $this.attr('y', opt.y)
+      this.setAttribute('y', opt.y)
     }
   }
 
@@ -121,13 +118,11 @@ ycEventFunctions[ycEvents.positionText] = function (event, opt) {
       ty = opt.translatey
     }
   }
-  $this.attr('transform', `translate(${tx}, ${ty})`)
+  this.setAttribute('transform', `translate(${tx}, ${ty})`)
 }
 
 ycEventFunctions[ycEvents.background] = function (event, opt) {
   event.stopPropagation()
-
-  const $this = $(this)
   const log = logPrefix(this, ycEvents.background)
 
   if (!opt) {
@@ -139,7 +134,7 @@ ycEventFunctions[ycEvents.background] = function (event, opt) {
     if (!yuchg.isString(opt.stroke)) {
       logger.warn(log + `stroke is not string`)
     } else {
-      $this.attr('stroke', opt.stroke)
+      this.setAttribute('stroke', opt.stroke)
     }
   }
 
@@ -147,7 +142,7 @@ ycEventFunctions[ycEvents.background] = function (event, opt) {
     if (!yuchg.isString(opt.fill)) {
       logger.warn(log + `fill is not string`)
     } else {
-      $this.attr('fill', opt.fill)
+      this.setAttribute('fill', opt.fill)
     }
   }
 
@@ -155,14 +150,13 @@ ycEventFunctions[ycEvents.background] = function (event, opt) {
     if (!yuchg.isNumber(+opt.opacity)) {
       logger.warn(log + `opacity is not number`)
     } else {
-      $this.attr('fill-opacity', opt.opacity)
+      this.setAttribute('fill-opacity', opt.opacity)
     }
   }
 }
 
 ycEventFunctions[ycEvents.changeImage] = function (event, opt) {
   event.stopPropagation()
-  const $this = $(this)
   const log = logPrefix(this, ycEvents.changeImage)
 
   if (!opt) {
@@ -174,7 +168,7 @@ ycEventFunctions[ycEvents.changeImage] = function (event, opt) {
     if (!yuchg.isString(opt.url)) {
       logger.warn(log + `url is not string`)
     } else {
-      $this[0].href.baseVal = opt.url
+      this.href.baseVal = opt.url
     }
   }
 }
@@ -259,11 +253,11 @@ const ShapeUtils = {
 
       const d = '`m 0,0 c 25, ${ -size.bulgeHeight } 71,${ -size.bulgeHeight } ${ size.bulgeWidth },0 H ${ size.width - size.cornerRadius } a 4,4 0 0,1 4,4 v ${size.contentHeight}  a 4,4 0 0,1 -4,4 H ${ size.caveRight }   c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 H 4 a 4,4 0 0,1 -4,-4 z`'
       const _dfunc = new Function('size', 'return ' + d)
-      $elem.attr('d', _dfunc(boundbox))
+      path.setAttribute('d', _dfunc(boundbox))
 
-      option.stroke && $elem.attr('stroke', option.stroke)
-      option.fill && $elem.attr('fill', option.fill)
-      option.opacity && $elem.attr('fill-opacity', option.opacity)
+      option.stroke && path.setAttribute('stroke', option.stroke)
+      option.fill && path.setAttribute('fill', option.fill)
+      option.opacity && path.setAttribute('fill-opacity', option.opacity)
 
       $elem.addClass('ycBlockPath ycBlockBackground' + (option.classes ? (' ' + option.classes) : ''))
 
@@ -281,8 +275,7 @@ const ShapeUtils = {
         opt.contentHeight = checkParameter(opt.contentHeight, yuchg.isNumber)
 
         boundbox = _size(boundbox, opt)
-        const $this = $(this)
-        $this.attr('d', _dfunc(boundbox))
+        this.setAttribute('d', _dfunc(boundbox))
         this.__boundbox = boundbox
       })
 
@@ -348,11 +341,11 @@ const ShapeUtils = {
       boundbox = _size(boundbox, option)
       const d = '`m 0, 0 a 20,20 0 0,1 20,-20 H ${ size.width - size.cornerRadius } a 20,20 0 0,1 20,20 v ${ size.contentHeight } a 4,4 0 0,1 -4,4 H ${ size.caveRight } c -2,0 -3,1 -4,2 l -4,4 c -1,1 -2,2 -4,2 h -12 c -2,0 -3,-1 -4,-2 l -4,-4 c -1,-1 -2,-2 -4,-2 H 4 a 4,4 0 0,1 -4,-4 z`'
       const _dfunc = new Function('size', 'return ' + d)
-      $elem.attr('d', _dfunc(boundbox))
+      path.setAttribute('d', _dfunc(boundbox))
 
-      option.stroke && $elem.attr('stroke', option.stroke)
-      option.fill && $elem.attr('fill', option.fill)
-      option.opacity && $elem.attr('fill-opacity', option.opacity)
+      option.stroke && path.setAttribute('stroke', option.stroke)
+      option.fill && path.setAttribute('fill', option.fill)
+      option.opacity && path.setAttribute('fill-opacity', option.opacity)
 
       $elem.addClass('ycBlockPath ycBlockBackground' + (option.classes ? (' ' + option.classes) : ''))
 
@@ -370,8 +363,7 @@ const ShapeUtils = {
         opt.contentHeight = checkParameter(opt.contentHeight, yuchg.isNumber)
 
         boundbox = _size(boundbox, opt)
-        const $this = $(this)
-        $this.attr('d', _dfunc(boundbox))
+        this.setAttribute('d', _dfunc(boundbox))
         this.__boundbox = boundbox
       })
 
@@ -452,11 +444,11 @@ const ShapeUtils = {
       ]
 
       const _dfunc = new Function('size', 'return ' + d + (option.end ? end[1] : end[0]))
-      $elem.attr('d', _dfunc(boundbox))
+      path.setAttribute('d', _dfunc(boundbox))
 
-      option.stroke && $elem.attr('stroke', option.stroke)
-      option.fill && $elem.attr('fill', option.fill)
-      option.opacity && $elem.attr('fill-opacity', option.opacity)
+      option.stroke && path.setAttribute('stroke', option.stroke)
+      option.fill && path.setAttribute('fill', option.fill)
+      option.opacity && path.setAttribute('fill-opacity', option.opacity)
       $elem.addClass('ycBlockPath ycBlockBackground' + (option.classes ? (' ' + option.classes) : ''))
 
       // 绑定事件
@@ -481,8 +473,7 @@ const ShapeUtils = {
 
         boundbox = _size(boundbox, opt)
 
-        const $this = $(this)
-        $this.attr('d', _dfunc(boundbox))
+        this.setAttribute('d', _dfunc(boundbox))
         this.__boundbox = boundbox
       })
 
@@ -566,13 +557,12 @@ const ShapeUtils = {
       ]
 
       const _dfunc = new Function('size', 'return ' + d + (option.end ? end[1] : end[0]))
-      $elem.attr('d', _dfunc(boundbox))
+      path.setAttribute('d', _dfunc(boundbox))
 
-      option.stroke && $elem.attr('stroke', option.stroke)
-      option.fill && $elem.attr('fill', option.fill)
-      option.opacity && $elem.attr('fill-opacity', option.opacity)
+      option.stroke && path.setAttribute('stroke', option.stroke)
+      option.fill && path.setAttribute('fill', option.fill)
+      option.opacity && path.setAttribute('fill-opacity', option.opacity)
       $elem.addClass('ycBlockPath ycBlockBackground' + (option.classes ? (' ' + option.classes) : ''))
-
 
       // 绑定事件
       const bindEvents = [ycEvents.background]
@@ -601,9 +591,7 @@ const ShapeUtils = {
         }
 
         boundbox = _size(boundbox, opt)
-
-        const $this = $(this)
-        $this.attr('d', _dfunc(boundbox))
+        this.setAttribute('d', _dfunc(boundbox))
         this.__boundbox = boundbox
       })
 
@@ -672,11 +660,11 @@ const ShapeUtils = {
         ' H 4 a 4,4 0 0,1 -4,-4 z`'
       ]
       const _dfunc = new Function('size', 'return ' + d + (option.end ? end[1] : end[0]))
-      $elem.attr('d', _dfunc(boundbox))
+      path.setAttribute('d', _dfunc(boundbox))
 
-      option.stroke && $elem.attr('stroke', option.stroke)
-      option.fill && $elem.attr('fill', option.fill)
-      option.opacity && $elem.attr('fill-opacity', option.opacity)
+      option.stroke && path.setAttribute('stroke', option.stroke)
+      option.fill && path.setAttribute('fill', option.fill)
+      option.opacity && path.setAttribute('fill-opacity', option.opacity)
       $elem.addClass('ycBlockPath ycBlockBackground' + (option.classes ? (' ' + option.classes) : ''))
 
       // 绑定事件
@@ -696,8 +684,8 @@ const ShapeUtils = {
         opt.contentWidth = checkParameter(opt.contentWidth, yuchg.isNumber)
         opt.contentHeight = checkParameter(opt.contentHeight, yuchg.isNumber)
         boundbox = _size(boundbox, opt)
-        const $this = $(this)
-        $this.attr('d', _dfunc(boundbox))
+ 
+        this.setAttribute('d', _dfunc(boundbox))
         this.__boundbox = boundbox
       })
 
@@ -756,11 +744,11 @@ const ShapeUtils = {
 
       const d = '`m 0,0 m ${size.radius},0 H ${size.radius + size.contentWidth} a ${size.radius} ${size.radius} 0 0 1 0 ${size.radius * 2} H ${size.radius} a ${size.radius} ${size.radius} 0 0 1 0 ${size.radius * -2} z`'
       const _dfunc = new Function('size', 'return ' + d)
-      $elem.attr('d', _dfunc(boundbox))
+      path.setAttribute('d', _dfunc(boundbox))
 
-      option.stroke && $elem.attr('stroke', option.stroke)
-      option.fill && $elem.attr('fill', option.fill)
-      option.opacity && $elem.attr('fill-opacity', option.opacity)
+      option.stroke && path.setAttribute('stroke', option.stroke)
+      option.fill && path.setAttribute('fill', option.fill)
+      option.opacity && path.setAttribute('fill-opacity', option.opacity)
       $elem.addClass('ycBlockPath ycBlockBackground' + (option.classes ? (' ' + option.classes) : ''))
 
       // 绑定事件
@@ -782,8 +770,8 @@ const ShapeUtils = {
         opt.width = checkParameter(opt.width, yuchg.isNumber)
         opt.height = checkParameter(opt.height, yuchg.isNumber)
         boundbox = _size(boundbox, opt)
-        const $this = $(this)
-        $this.attr('d', _dfunc(boundbox))
+
+        this.setAttribute('d', _dfunc(boundbox))
         this.__boundbox = boundbox
       })
 
@@ -841,11 +829,11 @@ const ShapeUtils = {
 
       const d = '`m 0,0 m ${size.side},0 H ${size.side + size.contentWidth} l ${size.side} ${size.side} l ${-size.side} ${size.side} H ${size.side} l ${-size.side} ${-size.side} l ${size.side} ${-size.side} z`'
       const _dfunc = new Function('size', 'return ' + d)
-      $elem.attr('d', _dfunc(boundbox))
+      path.setAttribute('d', _dfunc(boundbox))
 
-      option.stroke && $elem.attr('stroke', option.stroke)
-      option.fill && $elem.attr('fill', option.fill)
-      option.opacity && $elem.attr('fill-opacity', option.opacity)
+      option.stroke && path.setAttribute('stroke', option.stroke)
+      option.fill && path.setAttribute('fill', option.fill)
+      option.opacity && path.setAttribute('fill-opacity', option.opacity)
       $elem.addClass('ycBlockPath ycBlockBackground' + (option.classes ? (' ' + option.classes) : ''))
 
       // 绑定事件
@@ -868,8 +856,7 @@ const ShapeUtils = {
         opt.height = checkParameter(opt.height, yuchg.isNumber)
 
         boundbox = _size(boundbox, opt)
-        const $this = $(this)
-        $this.attr('d', _dfunc(boundbox))
+        this.setAttribute('d', _dfunc(boundbox))
         this.__boundbox = boundbox
       })
       path.__boundbox = boundbox
@@ -886,9 +873,9 @@ const ShapeUtils = {
     marker: function (option) {
       let path = document.createElementNS(ycSvgNS, 'path')
       let $elem = $(path)
-      $elem.attr('stroke', option.stroke)
-      $elem.attr('fill', option.fill)
-      $elem.attr('fill-opacity', option.opacity)
+      path.setAttribute('stroke', option.stroke)
+      path.setAttribute('fill', option.fill)
+      path.setAttribute('fill-opacity', option.opacity)
       $elem.addClass('ycBlockPath ycBlockBackground' + (option.classes ? (' ' + option.classes) : ''))
       return path
     }
@@ -900,29 +887,27 @@ const ShapeUtils = {
     flyoutLabel: function (option) {
       let g = document.createElementNS(ycSvgNS, 'g')
       let $elem = $(g)
-      $elem.attr('display', 'block')
-      $elem.attr('transform', `translate(${option.translatex ? option.translatex : 0}, ${option.translatey ? option.translatey : 0})`)
+      g.setAttribute('display', 'block')
+      g.setAttribute('transform', `translate(${option.translatex ? option.translatex : 0}, ${option.translatey ? option.translatey : 0})`)
       $elem.addClass('ycBlockFlyoutLabel' + (option.classes ? (' ' + option.classes) : ''))
 
       let rect = document.createElementNS(ycSvgNS, 'rect')
-      let $rect = $(rect)
-      $rect.attr('rx', '4')
-      $rect.attr('ry', '4')
-      $rect.attr('width', option.width)
-      $rect.attr('height', option.height)
-      $rect.addClass('ycBlockFlyoutLabelBackground')
-      $elem.append($rect)
+      rect.setAttribute('rx', '4')
+      rect.setAttribute('ry', '4')
+      rect.setAttribute('width', option.width)
+      rect.setAttribute('height', option.height)
+      rect.classList.add('ycBlockFlyoutLabelBackground')
+      g.appendChild(rect)
 
       let text = document.createElementNS(ycSvgNS, 'text')
-      let $text = $(text)
-      $text.attr('x', '0')
-      $text.attr('y', option.height / 2)
-      $text.attr('dy', '0')
-      $text.attr('text-anchor', 'start')
-      $text.attr('dominant-baseline', 'central')
-      $text.addClass('ycBlockFlyoutLabelText')
-      $text.html(option.text ? option.text : '')
-      $elem.append($text)
+      text.setAttribute('x', '0')
+      text.setAttribute('y', option.height / 2)
+      text.setAttribute('dy', '0')
+      text.setAttribute('text-anchor', 'start')
+      text.setAttribute('dominant-baseline', 'central')
+      text.classList.add('ycBlockFlyoutLabelText')
+      text.textContent = (option.text ? option.text : '')
+      g.appendChild(text)
 
       return g
     },
@@ -931,11 +916,11 @@ const ShapeUtils = {
     editableText: function (option) {
       let g = document.createElementNS(ycSvgNS, 'g')
       let $elem = $(g)
-      $elem.attr('transform', `translate(${option.translatex ? option.translatex : 4}, ${option.translatey ? option.translatey : 0})`)
-      $elem.addClass('ycBlockEditableText')
+      g.setAttribute('transform', `translate(${option.translatex ? option.translatex : 4}, ${option.translatey ? option.translatey : 0})`)
+      g.classList.add('ycBlockEditableText')
 
-      let $text = ShapeUtils.base.text(option)
-      $elem.append($text)
+      let text = ShapeUtils.base.text(option)
+      g.appendChild(text)
 
       // 自定义事件
       $elem.on(ycEvents.positionText, function (event, opt) {
@@ -963,7 +948,7 @@ const ShapeUtils = {
             ty = opt.translatey
           }
         }
-        $this.attr('transform', `translate(${tx}, ${ty})`)
+        this.setAttribute('transform', `translate(${tx}, ${ty})`)
 
         // 向下传递
         let $thistext = $this.children('text')
@@ -985,10 +970,10 @@ const ShapeUtils = {
     image: function (option) {
       let g = document.createElementNS(ycSvgNS, 'g')
       let $elem = $(g)
-      $elem.attr('transform', `translate(${option.translatex ? option.translatex : 0}, ${option.translatey ? option.translatey : 0})`)
+      g.setAttribute('transform', `translate(${option.translatex ? option.translatex : 0}, ${option.translatey ? option.translatey : 0})`)
 
       let img = ShapeUtils.base.image(option)
-      $elem.append(img)
+      g.appendChild(img)
 
       // 绑定事件
       const bindEvents = [ycEvents.position]
@@ -1018,15 +1003,14 @@ const ShapeUtils = {
         option = {}
       }
       $elem.addClass('ycBlockText' + (option.classes ? (' ' + option.classes) : ''))
-      $elem.attr('text-anchor', option.anchor ? option.anchor : 'middle')
-      $elem.attr('dominant-baseline', option.baseline ? option.baseline : 'central')
-      $elem.attr('dy', '0')
+      text.setAttribute('text-anchor', option.anchor ? option.anchor : 'middle')
+      text.setAttribute('dominant-baseline', option.baseline ? option.baseline : 'central')
+      text.setAttribute('dy', '0')
 
-      $elem.attr('x', option.x ? option.x : 0)
-      $elem.attr('y', option.y ? option.y : 0)
-      $elem.attr('transform', `translate(${option.translatex ? option.translatex : 0}, ${option.translatey ? option.translatey : 0})`)
-
-      $elem.html(option.text ? option.text : '')
+      text.setAttribute('x', option.x ? option.x : 0)
+      text.setAttribute('y', option.y ? option.y : 0)
+      text.setAttribute('transform', `translate(${option.translatex ? option.translatex : 0}, ${option.translatey ? option.translatey : 0})`)
+      text.textContent = option.text ? option.text : ''
 
       // 绑定事件
       const bindEvents = [ycEvents.positionText]
@@ -1067,9 +1051,9 @@ const ShapeUtils = {
     arguGroup: function (option) {
       let g = document.createElementNS(ycSvgNS, 'g')
       let $elem = $(g)
-      option.type && $elem.attr('data-argument-type', option.id)
-      option.shape && $elem.attr('data-shape', option.shape)
-      $elem.attr('transform', `translate(${option.translatex ? option.translatex : 0}, ${option.translatey ? option.translatey : 0})`)
+      option.type && g.setAttribute('data-argument-type', option.id)
+      option.shape && g.setAttribute('data-shape', option.shape)
+      g.setAttribute('transform', `translate(${option.translatex ? option.translatex : 0}, ${option.translatey ? option.translatey : 0})`)
 
       // 绑定事件
       const bindEvents = [ycEvents.position]
@@ -1123,14 +1107,14 @@ const ShapeUtils = {
       let $rect = $(rect)
 
       let radius = option.radius ? option.radius : 4
-      $rect.attr('rx', radius)
-      $rect.attr('ry', radius)
-      $rect.attr('width', option.width ? option.width : 0)
-      $rect.attr('height', option.height ? option.height : 0)
-      option.stroke && $rect.attr('stroke', option.stroke)
-      option.fill && $rect.attr('fill', option.fill)
-      option.opacity && $rect.attr('fill-opacity', option.opacity)
-      $rect.addClass('ycBlockBackground')
+      rect.setAttribute('rx', radius)
+      rect.setAttribute('ry', radius)
+      rect.setAttribute('width', option.width ? option.width : 0)
+      rect.setAttribute('height', option.height ? option.height : 0)
+      option.stroke && rect.setAttribute('stroke', option.stroke)
+      option.fill && rect.setAttribute('fill', option.fill)
+      option.opacity && rect.setAttribute('fill-opacity', option.opacity)
+      rect.classList.add('ycBlockBackground')
 
       // 绑定事件
       const bindEvents = [ycEvents.resize, ycEvents.background]
@@ -1148,17 +1132,17 @@ const ShapeUtils = {
       let img = document.createElementNS(ycSvgNS, 'image')
       let $img = $(img)
 
-      $img.attr('height', option.width ? option.width : 0)
-      $img.attr('width', option.height ? option.height : 0)
-      $img.attr('transform', 'translate(0,0)')
+      img.setAttribute('height', option.width ? option.width : 0)
+      img.setAttribute('width', option.height ? option.height : 0)
+      img.setAttribute('transform', 'translate(0,0)')
       img.href.baseVal = option.url
 
       if (yuchg.isNumber(option.x)) {
-        $img.attr('x', option.x)
+        img.setAttribute('x', option.x)
       }
 
       if (yuchg.isNumber(option.y)) {
-        $img.attr('y', option.y)
+        img.setAttribute('y', option.y)
       }
 
       // 绑定事件

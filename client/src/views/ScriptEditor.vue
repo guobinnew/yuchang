@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <Scratch flex=1  :savebtn="save" :loadbtn="load" :export="openExportDialog"/>
-        <input type="file" />
+        <input id="yuchang-save" type="file" />
         <el-dialog title="保存脚本" :visible.sync="dialogVisible" height="200px">
           <el-form :model="form">
             <el-form-item label="文件名" label-width="80px">
@@ -38,7 +38,6 @@
 import Scratch from "../components/Scratch.vue"
 import yuchg from "../base"
 import logger from "../logger"
-import $ from "jquery"
 import saveAs from "file-saver"
 
 export default {
@@ -71,12 +70,11 @@ export default {
   },
   methods: {
     selectFile(panel) {
-      const $dom = $(this.$el)
-      $dom
-        .children("input")
-        .on("change", () => {
+      const elem = document.querySelector('#yuchang-save')
+
+      elem.addEventListener('change', () => {
           let _panel = panel
-          let file = $dom.children("input").val()
+          let file = elem.value
           if (event.target.files.length === 0) {
             return
           }
@@ -86,7 +84,7 @@ export default {
             _panel.load(this.result)
           }
           reader.readAsText(event.target.files[0])
-          $dom.children("input").val("")
+          elem.value = ''
         })
         .click()
     },
@@ -109,7 +107,6 @@ export default {
       this.dialogCallback = this.exportFile.bind(this, panel, data)
     },
     saveFile(panel) {
-      const $dom = $(this.$el)
       let data = panel.save()
       let file = new File([data], this.form.name + this.form.ext, {
         type: "text/plain;charset=utf-8"
@@ -117,8 +114,6 @@ export default {
       saveAs(file)
     },
     exportFile(panel, data) {
-      const $dom = $(this.$el)
-
       let output = '' 
       if (yuchg.isObject(data) || yuchg.isArray(data)) {
         output = JSON.stringify(data)
