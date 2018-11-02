@@ -73,12 +73,12 @@ class Argument {
    * 计算文字长度
    */
   textWidth(text) {
-    const $parent = $(this.section.dom.__panel.dom.canvas)
+    const parent = this.section.dom.__panel.dom.canvas
     let t = ShapeUtils.base.text({
       text: text
     })
-    $(t).css('visibility', 'hidden')
-    $parent.append(t)
+    t.style.visibility = 'hidden'
+    parent.appendChild(t)
     let w = t.getComputedTextLength()
     t.remove()
     return w
@@ -93,7 +93,7 @@ class Argument {
     if (!key) {
       return null
     }
-    return $(this.section.dom).attr('data-' + key)
+    return this.section.dom.getAttribute('data-' + key)
   } 
 
   /**
@@ -146,7 +146,7 @@ class Argument {
       // 默认类型round
       shape = ShapeUtils.path.roundRect(opt)
     }
-    $elem.append(shape)
+    elem.appendChild(shape)
 
     // 绑定事件
     $elem.on(ShapeUtils.events.background, function (event, opt) {

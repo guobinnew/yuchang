@@ -127,9 +127,9 @@ class BlockInstance {
    * child类型
    */
   childType(newType) {
-    let $elem = $(this.element())
+    let elem = this.element()
     if (newType == null) {
-      return $elem.attr('data-child')
+      return elem.getAttribute('data-child')
     }
 
     const validType = ['', 'argument', 'resolve', 'reject']
@@ -138,7 +138,7 @@ class BlockInstance {
       return
     }
 
-    $elem.attr('data-child', newType)
+    elem.setAttribute('data-child', newType)
   }
 
   /**
@@ -215,7 +215,7 @@ class BlockInstance {
 
     let found = false
     $(this.element()).find('g.ycBlockDraggable').each(function () {
-      if ($(this).attr('data-uid') === instance.uid) {
+      if (this.getAttribute('data-uid') === instance.uid) {
         found = true
         return false
       }
@@ -234,7 +234,7 @@ class BlockInstance {
     }
     this.state.transform.x = x
     this.state.transform.y = y
-    $(this.element()).attr('transform', `translate(${x},${y})`)
+    this.element().setAttribute('transform', `translate(${x},${y})`)
   }
   
   getRegions() {
@@ -416,14 +416,12 @@ class BlockInstance {
     const instances = panel.instances
     let next = null
     $dom.children('g.ycBlockDraggable[data-child=""]').each(function() {
-      let $this = $(this)
-
-      if ($this.attr('data-id') === 'insertmarker') {
+      if (this.getAttribute('data-id') === 'insertmarker') {
         next = panel.marker
         return false
       }
 
-      let uid = $this.attr('data-uid')
+      let uid = this.getAttribute('data-uid')
       next = instances[uid]
       return false
     })
@@ -543,7 +541,7 @@ class BlockInstance {
     const instances = this.panel().instances
     let next = null
     $(this.element()).children('g.ycBlockDraggable[data-child="resolve"]').each(function() {
-      let uid = $(this).attr('data-uid')
+      let uid = this.getAttribute('data-uid')
       next = instances[uid]
       return false
     })
@@ -557,7 +555,7 @@ class BlockInstance {
     const instances = this.panel().instances
     let next = null
     $(this.element()).children('g.ycBlockDraggable[data-child="reject"]').each(function() {
-      let uid = $(this).attr('data-uid')
+      let uid = this.getAttribute('data-uid')
       next = instances[uid]
       return false
     })
@@ -688,11 +686,10 @@ class BlockInstance {
     // 删除子节点
     let panel = this.panel()
     $(this.element()).children('g.ycBlockDraggable').each(function() {
-      const $this = $(this)
-      if ($this.attr('data-id') === 'insertmarker') {
+      if (this.getAttribute('data-id') === 'insertmarker') {
         return true
       }
-      let uid = $this.attr('data-uid')
+      let uid = this.getAttribute('data-uid')
       panel.removeBlock(uid)
     })
  
@@ -1028,7 +1025,7 @@ class BlockMarkerInstance extends BlockInstance {
     $path.attr('fill-opacity', '0.2')
     $dom.children().remove()
     $dom.append($path)
-    $(this.dom).attr('visibility', visible ? 'visible' : 'hidden')
+    this.dom.setAttribute('visibility', visible ? 'visible' : 'hidden')
 
     this.ghostOffset.x = 0
     this.ghostOffset.y = inst.layoutHeight()
@@ -1044,7 +1041,7 @@ class BlockMarkerInstance extends BlockInstance {
     // 更新子元素位置
     let offsety = this.ghostOffset.y
     $dom.children('g.ycBlockDraggable[data-child=""]').each(function () {
-      let selectUid = $(this).attr('data-uid')
+      let selectUid = this.getAttribute('data-uid')
       let selectInst = that.__proto.def.__panel.instances[selectUid]
       selectInst.update({
         transform: {
@@ -1208,7 +1205,6 @@ class Block {
     const elem = ShapeUtils.base.group()
     elem.__proto = this
 
-    const $elem = $(elem)
     const props = ['id', 'shape', 'type', 'category', 'child']
     for (let i of props) {
       let v = this.def[i]
@@ -1216,11 +1212,11 @@ class Block {
         logger.warn(`create Block: ${i} is not string --`, v)
         v = ''
       }
-      $elem.attr('data-' + i, v)
+      elem.setAttribute('data-' + i, v)
     }
 
     if (this.def.draggable === true) {
-      $elem.addClass('ycBlockDraggable')
+      elem.classList.add('ycBlockDraggable')
     }
 
     return elem
@@ -1309,11 +1305,10 @@ class BlockMarker extends Block {
 
   createContainer() {
     let elem = super.createContainer()
-    let $elem = $(elem)
     if (this.def.id === 'insertmarker') {
-      $elem.addClass('ycBlockInsertionMarker')
+      elem.classList.add('ycBlockInsertionMarker')
     }
-    $elem.attr('visibility', 'hidden')
+    elem.setAttribute('visibility', 'hidden')
     return elem
   }
 
@@ -1495,8 +1490,6 @@ class BlockStack extends Block {
 
   createElement() {
     let elem = super.createElement()
-    let $elem = $(elem)
-
     const state = this.def.state
     if (yuchg.isArray(state.data.sections)) {
       // 创建Section
@@ -1506,8 +1499,8 @@ class BlockStack extends Block {
           logger.warn(`Block<${ this.def.id }> createSection failed:`, sec)
         } else {
           sec.dom = child
-          $(sec.dom).attr('data-index', i)
-          $elem.append(child)
+          sec.dom.setAttribute('data-index', i)
+          elem.appendChild(child)
         }
       })
     } else {
@@ -1794,14 +1787,12 @@ class BlockStack extends Block {
     // 更新子元素位置
     offsety = state.size.height
     $dom.children('g.ycBlockDraggable[data-child=""]').each(function () {
-      let $this = $(this)
       let selectInst = null
-      if ($this.attr('data-id') === 'insertmarker') {
+      if (this.getAttribute('data-id') === 'insertmarker') {
         selectInst = def.__panel.marker
       } else {
-        selectInst = def.__panel.instances[$this.attr('data-uid')]
+        selectInst = def.__panel.instances[this.getAttribute('data-uid')]
       }
-
       selectInst.setTranslate(0, offsety)
       offsety += selectInst.layoutHeight()
     })
@@ -1818,7 +1809,7 @@ class BlockStack extends Block {
     const sections = inst.state.data.sections
     const $dom = $(inst.element())
     $dom.children().each(function () {
-      const index = $(this).attr('data-index')
+      const index = this.getAttribute('data-index')
       if (index) {
         const section = sections[index]
         section.dom = this
@@ -1917,15 +1908,14 @@ class BlockControl extends BlockStack {
 
   createElement() {
     const elem = super.createElement()
-    const $elem = $(elem)
     const state = this.def.state
 
     // other
     if (this.def.shape === 'cuptwo' && state.data.other) {
       if (state.data.other.type === 'text') {
         let other = ShapeUtils.base.text(state.data.other)
-        $(other).addClass('ycBlockOther')
-        $elem.append(other)
+        other.classList.add('ycBlockOther')
+        elem.appendChild(other)
       }
     }
 
@@ -1939,8 +1929,8 @@ class BlockControl extends BlockStack {
         sub.height = 0
       }
       let subscript = ShapeUtils.group.image(sub)
-      $(subscript).addClass('ycBlockSubscript')
-      $elem.append(subscript)
+      subscript.classList.add('ycBlockSubscript')
+      elem.appendChild(subscript)
     }
 
     return elem
@@ -2008,12 +1998,11 @@ class BlockControl extends BlockStack {
     // 计算resolve高度
     let resolveHeight = 0
     $dom.children('g.ycBlockDraggable[data-child="resolve"]').each(function () {
-      let $this = $(this)
       let selectInst = null
-      if ($this.attr('data-id') === 'insertmarker') {
+      if (this.getAttribute('data-id') === 'insertmarker') {
         selectInst = def.__panel.marker
       } else {
-        selectInst = def.__panel.instances[$this.attr('data-uid')]
+        selectInst = def.__panel.instances[this.getAttribute('data-uid')]
       }
       resolveHeight += selectInst.sequenceHeight()
     })
@@ -2022,12 +2011,11 @@ class BlockControl extends BlockStack {
     let rejectHeight = 0
     if (def.shape === 'cuptwo') {
       $dom.children('g.ycBlockDraggable[data-child="reject"]').each(function () {
-        let $this = $(this)
         let selectInst = null
-        if ($this.attr('data-id') === 'insertmarker') {
+        if (this.getAttribute('data-id') === 'insertmarker') {
           selectInst = def.__panel.marker
         } else {
-          selectInst = def.__panel.instances[$this.attr('data-uid')]
+          selectInst = def.__panel.instances[this.getAttribute('data-uid')]
         }
         rejectHeight += selectInst.sequenceHeight()
       })
@@ -2114,12 +2102,11 @@ class BlockControl extends BlockStack {
     // 调整Resolve位置
     let resolveOffsety = offsety
     $dom.children('g.ycBlockDraggable[data-child="resolve"]').each(function () {
-      let $this = $(this)
       let selectInst = null
-      if ($this.attr('data-id') === 'insertmarker') {
+      if (this.getAttribute('data-id') === 'insertmarker') {
         selectInst = def.__panel.marker
       } else {
-        selectInst = def.__panel.instances[$this.attr('data-uid')]
+        selectInst = def.__panel.instances[this.getAttribute('data-uid')]
       }
       selectInst.setTranslate(16, resolveOffsety)
       resolveOffsety += selectInst.sequenceHeight()
@@ -2143,12 +2130,11 @@ class BlockControl extends BlockStack {
       // 调整Reject位置
       let rejectOffsety = offsety
       $dom.children('g.ycBlockDraggable[data-child="reject"]').each(function () {
-        let $this = $(this)
         let selectInst = null
-        if ($this.attr('data-id') === 'insertmarker') {
+        if (this.getAttribute('data-id') === 'insertmarker') {
           selectInst = def.__panel.marker
         } else {
-          selectInst = def.__panel.instances[$this.attr('data-uid')]
+          selectInst = def.__panel.instances[this.getAttribute('data-uid')]
         }
         selectInst.setTranslate(16, rejectOffsety)
         rejectOffsety += selectInst.sequenceHeight()
@@ -2169,12 +2155,11 @@ class BlockControl extends BlockStack {
     // 更新next节点
     offsety = state.size.wholeHeight
     $dom.children('g.ycBlockDraggable[data-child=""]').each(function () {
-      let $this = $(this)
       let selectInst = null
-      if ($this.attr('data-id') === 'insertmarker') {
+      if (this.getAttribute('data-id') === 'insertmarker') {
         selectInst = def.__panel.marker
       } else {
-        selectInst = def.__panel.instances[$this.attr('data-uid')]
+        selectInst = def.__panel.instances[this.getAttribute('data-uid')]
       }
 
       selectInst.setTranslate(0, offsety)
