@@ -72,8 +72,7 @@ yuchg.logToConsole_ = function (msg) {
 /**
  * 空函数
  */
-yuchg.nullFunction = function () {
-}
+yuchg.nullFunction = function () {}
 
 /**
  * 抽象方法占位函数
@@ -95,14 +94,14 @@ yuchg.typeOf = function (value) {
         return s
       }
 
-      let className = Object.prototype.toString.call(/** @type {!Object} */(value))
+      let className = Object.prototype.toString.call( /** @type {!Object} */ (value))
       if (className === '[object Window]') {
         return 'object'
       }
 
       // 判断是否为数组类型
       if (className === '[object Array]' ||
-          (typeof value.length === 'number' &&
+        (typeof value.length === 'number' &&
           typeof value.splice !== 'undefined' &&
           typeof value.propertyIsEnumerable !== 'undefined' &&
           !value.propertyIsEnumerable('splice'))) {
@@ -112,8 +111,8 @@ yuchg.typeOf = function (value) {
       // 判断是否为函数类型
       if (className === '[object Function]' ||
         (typeof value.call !== 'undefined' &&
-        typeof value.propertyIsEnumerable !== 'undefined' &&
-        !value.propertyIsEnumerable('call'))) {
+          typeof value.propertyIsEnumerable !== 'undefined' &&
+          !value.propertyIsEnumerable('call'))) {
         return 'function'
       }
     } else {
@@ -188,12 +187,32 @@ yuchg.cloneObject = function (obj) {
 }
 
 /**
+ * 深度合并
+ */
+yuchg.extend = function (obj1, obj2) {
+  if (yuchg.isObject(obj1) && yuchg.isObject(obj2)) {
+    for (let prop in obj2) { //obj1无值,都有取obj2
+      if (!obj1[prop]) {
+        obj1[prop] = obj2[prop]
+      } else { //递归赋值
+        obj1[prop] = yuchg.extend(obj1[prop], obj2[prop])
+      }
+    }
+  } else if (yuchg.isArray(obj1) && yuchg.isArray(obj2)) {
+    // 两个都是数组，进行合并
+    obj1 = obj1.concat(obj2)
+  } else { //其他情况，取obj2的值
+    obj1 = obj2
+  }
+  return obj1
+}
+
+/**
  * 继承对象
  */
 yuchg.inherits = function (childCtor, parentCtor) {
   /** @constructor */
-  function TempCtor () {
-  }
+  function TempCtor() {}
 
   TempCtor.prototype = parentCtor.prototype
   childCtor.superClass_ = parentCtor.prototype
@@ -221,14 +240,14 @@ yuchg.strByteLength = function (str) {
 /**
  * 字符串trim
  */
-yuchg.trimString = function(str) {
+yuchg.trimString = function (str) {
   return str.replace(/^\s+|\s+$/g, '')
 }
 
 /**
  * 合并数组并去重, 返回新数组
  */
-yuchg.concatArray = function(arr1, arr2) {
+yuchg.concatArray = function (arr1, arr2) {
   var arr = arr1.concat(arr2)
   return Array.from(new Set(arr))
 }

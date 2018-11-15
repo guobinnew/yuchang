@@ -148,10 +148,10 @@ class Argument {
     elem.appendChild(shape)
 
     // 绑定事件
-    $elem.on(ShapeUtils.events.background, function (event, opt) {
+    elem.addEventListener(ShapeUtils.events.background, function (event, opt) {
       event.stopPropagation()
-      let $shape = $(this).children('path')
-      $shape.trigger(ShapeUtils.events.background, [opt])
+      let shape = this.querySelector('path')
+      shape.trigger(ShapeUtils.events.background, [opt])
     })
 
     return elem

@@ -1,6 +1,7 @@
 <template>
-    <div class="container">
-        <Scratch flex=1  :savebtn="save" :loadbtn="load" :export="openExportDialog"/>
+    <div class="container" v-resize="onContainerResize">
+        <div id="scratch" class="scratch" :style="{width: size.width + 'px', height: size.height + 'px'}"></div>
+        <!-- <Scratch flex=1  :savebtn="save" :loadbtn="load" :export="openExportDialog"/> -->
         <input id="yuchang-save" type="file" />
         <el-dialog title="保存脚本" :visible.sync="dialogVisible" height="200px">
           <el-form :model="form">
@@ -20,6 +21,8 @@
 </template>
 
 <style scoped>
+@import "../scratch/style.css";
+
 .container {
   overflow: hidden;
   height: 100%;
@@ -29,16 +32,21 @@
   display: none;
 }
 
+.scratch {
+  overflow: hidden;
+}
+
 .yuchang-ext {
   text-align: left;
 }
 </style>
 
 <script>
-import Scratch from "../components/Scratch.vue"
+import Scratch from "../scratch/index"
 import yuchg from "../base"
 import logger from "../logger"
 import saveAs from "file-saver"
+import resize from 'vue-resize-directive'
 
 export default {
   data: function() {
@@ -48,11 +56,16 @@ export default {
         name: 'test',
         ext: '.yu'
       },
-      dialogCallback: null
+      dialogCallback: null,
+      editor: null,
+      size: {
+        width: 0,
+        height: 0
+      }
     }
   },
-  components: {
-    Scratch
+  directives: {
+    resize,
   },
   computed: {
     load: function() {
@@ -127,8 +140,25 @@ export default {
         type: "text/plain;charset=utf-8"
       })
       saveAs(file)
+    },
+    onContainerResize() {
+      this.size.width = this.$el.clientWidth
+      this.size.height = this.$el.clientHeight
+      this.$nextTick( () => {
+        this.editor.resize()
+        console.warn('scratch resize...')
+      })
+      console.warn('resize...')
     }
   },
-  mounted: function() {}
+  mounted: function() {
+    let dom = document.getElementById('scratch')
+    logger.warn(this.$el.offsetTop, this.$el.offsetLeft)
+    logger.warn(dom.offsetTop, dom.offsetLeft)
+    this.editor = Scratch.init(dom)
+    this.editor.setOption({})
+    // 随窗口动态改变大小
+    this.onContainerResize()
+  }
 }
 </script>

@@ -138,7 +138,37 @@ const Utils = {
    */
   domChildren(elem) {
     return utils.domQuerySelectByTagName(elem, '*')
+  },
+
+
+  domNodeName(elem, name) {
+    return elem.nodeName && elem.nodeName.toLowerCase() === name.toLowerCase()
+  },
+
+  /**
+   * 同胞元素
+   * @param {*} n 
+   * @param {*} elem 
+   */
+  domSiblings(elem) {
+    let matched = []
+    let n = (elem.parentNode || {}).firstChild
+    for (; n; n = n.nextSibling) {
+      if (n.nodeType === 1 && n !== elem) {
+        matched.push(n)
+      }
+    }
+    return matched
+  },
+
+  /**
+   * 获取所有孩子节点
+   * @param {*} elem 
+   */
+  domChildren(elem) {
+    return Utils.domSiblings(elem.firstChild)
   }
+
 }
 
 export default Utils

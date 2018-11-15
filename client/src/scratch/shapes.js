@@ -39,13 +39,13 @@ ycEventFunctions[ycEvents.resize] = function (event, opt) {
   if (!yuchg.isNumber(opt.width)) {
     logger.warn(log + `width is not number`)
   } else {
-    this.setAttribute('width', opt.width)
+    this.setAttributeNS(null, 'width', opt.width)
   }
 
   if (!yuchg.isNumber(opt.height)) {
     logger.warn(log + `height is not number`)
   } else {
-    this.setAttribute('height', opt.height)
+    this.setAttributeNS(null, 'height', opt.height)
   }
 }
 
@@ -74,7 +74,7 @@ ycEventFunctions[ycEvents.position] = function (event, opt) {
       ty = opt.translatey
     }
   }
-  this.setAttribute('transform', `translate(${tx}, ${ty})`)
+  this.setAttributeNS(null, 'transform', `translate(${tx}, ${ty})`)
 }
 
 ycEventFunctions[ycEvents.positionText] = function (event, opt) {
@@ -90,7 +90,7 @@ ycEventFunctions[ycEvents.positionText] = function (event, opt) {
     if (!yuchg.isNumber(opt.x)) {
       logger.warn(log + `x is not number`)
     } else {
-      this.setAttribute('x', opt.x)
+      this.setAttributeNS(null, 'x', opt.x)
     }
   }
 
@@ -98,7 +98,7 @@ ycEventFunctions[ycEvents.positionText] = function (event, opt) {
     if (!yuchg.isNumber(opt.y)) {
       logger.warn(log + `y is not number`)
     } else {
-      this.setAttribute('y', opt.y)
+      this.setAttributeNS(null, 'y', opt.y)
     }
   }
 
@@ -118,7 +118,7 @@ ycEventFunctions[ycEvents.positionText] = function (event, opt) {
       ty = opt.translatey
     }
   }
-  this.setAttribute('transform', `translate(${tx}, ${ty})`)
+  this.setAttributeNS(null, 'transform', `translate(${tx}, ${ty})`)
 }
 
 ycEventFunctions[ycEvents.background] = function (event, opt) {
@@ -134,7 +134,7 @@ ycEventFunctions[ycEvents.background] = function (event, opt) {
     if (!yuchg.isString(opt.stroke)) {
       logger.warn(log + `stroke is not string`)
     } else {
-      this.setAttribute('stroke', opt.stroke)
+      this.setAttributeNS(null, 'stroke', opt.stroke)
     }
   }
 
@@ -142,7 +142,7 @@ ycEventFunctions[ycEvents.background] = function (event, opt) {
     if (!yuchg.isString(opt.fill)) {
       logger.warn(log + `fill is not string`)
     } else {
-      this.setAttribute('fill', opt.fill)
+      this.setAttributeNS(null, 'fill', opt.fill)
     }
   }
 
@@ -150,7 +150,7 @@ ycEventFunctions[ycEvents.background] = function (event, opt) {
     if (!yuchg.isNumber(+opt.opacity)) {
       logger.warn(log + `opacity is not number`)
     } else {
-      this.setAttribute('fill-opacity', opt.opacity)
+      this.setAttributeNS(null, 'fill-opacity', opt.opacity)
     }
   }
 }
@@ -829,11 +829,11 @@ const ShapeUtils = {
 
       const d = '`m 0,0 m ${size.side},0 H ${size.side + size.contentWidth} l ${size.side} ${size.side} l ${-size.side} ${size.side} H ${size.side} l ${-size.side} ${-size.side} l ${size.side} ${-size.side} z`'
       const _dfunc = new Function('size', 'return ' + d)
-      path.setAttribute('d', _dfunc(boundbox))
+      path.setAttributeNS(null, 'd', _dfunc(boundbox))
 
-      option.stroke && path.setAttribute('stroke', option.stroke)
-      option.fill && path.setAttribute('fill', option.fill)
-      option.opacity && path.setAttribute('fill-opacity', option.opacity)
+      option.stroke && path.setAttributeNS(null, 'stroke', option.stroke)
+      option.fill && path.setAttributeNS(null,'fill', option.fill)
+      option.opacity && path.setAttributeNS(null,'fill-opacity', option.opacity)
       $elem.addClass('ycBlockPath ycBlockBackground' + (option.classes ? (' ' + option.classes) : ''))
 
       // 绑定事件
@@ -892,19 +892,19 @@ const ShapeUtils = {
       $elem.addClass('ycBlockFlyoutLabel' + (option.classes ? (' ' + option.classes) : ''))
 
       let rect = document.createElementNS(ycSvgNS, 'rect')
-      rect.setAttribute('rx', '4')
-      rect.setAttribute('ry', '4')
-      rect.setAttribute('width', option.width)
-      rect.setAttribute('height', option.height)
+      rect.setAttributeNS(null, 'rx', '4')
+      rect.setAttributeNS(null, 'ry', '4')
+      rect.setAttributeNS(null, 'width', option.width)
+      rect.setAttributeNS(null, 'height', option.height)
       rect.classList.add('ycBlockFlyoutLabelBackground')
       g.appendChild(rect)
 
       let text = document.createElementNS(ycSvgNS, 'text')
-      text.setAttribute('x', '0')
-      text.setAttribute('y', option.height / 2)
-      text.setAttribute('dy', '0')
-      text.setAttribute('text-anchor', 'start')
-      text.setAttribute('dominant-baseline', 'central')
+      text.setAttributeNS(null, 'x', '0')
+      text.setAttributeNS(null, 'y', option.height / 2)
+      text.setAttributeNS(null, 'dy', '0')
+      text.setAttributeNS(null, 'text-anchor', 'start')
+      text.setAttributeNS(null, 'dominant-baseline', 'central')
       text.classList.add('ycBlockFlyoutLabelText')
       text.textContent = (option.text ? option.text : '')
       g.appendChild(text)
@@ -994,6 +994,63 @@ const ShapeUtils = {
     }
   },
   base: {
+    elementNS: function (tag, option) {
+      let elem = document.createElementNS(ycSvgNS, tag)
+      let opt = option
+      if (yuchg.isObject(opt)) {
+        for (let [k, v] of Object.entries(opt)) {
+          if (k === '$children') {
+            for (let child of v) {
+              elem.appendChild(ShapeUtils.base.elementNS(child.tag, child.option))
+            }
+          } else if (k === '$text') {
+            elem.textContent = v
+          } else {
+            logger.warn('element:', k, v)
+            elem.setAttributeNS(null, k, v)
+          }
+        }
+      }
+      return elem
+    },
+
+    element: function (tag, option) {
+      let elem = document.createElement(tag)
+      let opt = option
+      if (yuchg.isObject(opt)) {
+        for (let [k, v] of Object.entries(opt)) {
+          if (k === '$children') {
+            elem.appendChild(ShapeUtils.base.element(v.tag, v.option))
+          } else if (k === '$text') {
+            elem.appendChild(document.createTextNode(v))
+          } else {
+            logger.warn('element:', k, v)
+            elem.setAttribute(k, v)
+          }
+        }
+      }
+      return elem
+    },
+
+    svg: function (option) {
+      let svg = ShapeUtils.base.elementNS('svg', option)
+      svg.setAttribute('version', '1.1')
+      svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+      svg.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+      return svg
+    },
+
+    defs: function (option) {
+      return ShapeUtils.base.elementNS('defs', option)
+    },
+
+    pattern: function (option) {
+      return ShapeUtils.base.elementNS('pattern', option)
+    },
+
+    filter: function (option) {
+      return ShapeUtils.base.elementNS('filter', option)
+    },
     /*
      */
     text: function (option) {

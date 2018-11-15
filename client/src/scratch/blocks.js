@@ -144,9 +144,8 @@ class BlockInstance {
    * 调试输出
    */
   dump() {
-    const $elem = $(this.element())
-    const $path = $elem.children('path.ycBlockBackground')
-    const bbox = $path[0].getBBox()
+    const elem = this.element()
+    const bbox = $(elem).children('path.ycBlockBackground').getBBox()
 
     const next = this.nextBlock()
     const prev = this.prevBlock()
@@ -158,7 +157,7 @@ class BlockInstance {
       protoId: this.protoId(),
       CTM: this.element().getCTM(),
       boundbox: bbox,
-      transform: $elem.attr('transform'),
+      transform: elem.getAttribute('transform'),
       regions: this.getRegions(),
       state: {
         size: this.state.size
