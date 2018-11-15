@@ -146,15 +146,11 @@ export default {
       this.size.height = this.$el.clientHeight
       this.$nextTick( () => {
         this.editor.resize()
-        console.warn('scratch resize...')
       })
-      console.warn('resize...')
     }
   },
   mounted: function() {
     let dom = document.getElementById('scratch')
-    logger.warn(this.$el.offsetTop, this.$el.offsetLeft)
-    logger.warn(dom.offsetTop, dom.offsetLeft)
     this.editor = Scratch.init(dom)
     this.editor.setOption({})
     // 随窗口动态改变大小

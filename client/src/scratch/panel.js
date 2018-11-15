@@ -12,7 +12,7 @@ import Argument from './argus'
  * 查找类目上下文
  * category: string 类目名称
  */
-function acquireCategoryContext (category) {
+function acquireCategoryContext(category) {
   if (BlockDefs.categories) {
     return BlockDefs.categories[category]
   }
@@ -25,7 +25,7 @@ const ycMaxZoom = 2
  * 编辑面板，提供可视化编辑UI
  */
 class Panel {
-  constructor (node) {
+  constructor(node) {
     this.registries = {} // block注册列表
     this.instances = {} // block实例数组
 
@@ -63,8 +63,7 @@ class Panel {
       flyout: {
         width: 250
       },
-      buttons: [
-        {
+      buttons: [{
           id: 'zoomout',
           img: '/img/zoom-out.svg',
           action: () => {
@@ -121,7 +120,7 @@ class Panel {
     this.bindCanvasEvent()
   }
 
-  initSvg () {
+  initSvg() {
     // 添加子节点
     this.dom.svg = ShapeUtils.base.svg()
     this.dom.root.appendChild(this.dom.svg) // setOption时设置宽高
@@ -134,11 +133,9 @@ class Panel {
       height: '160%',
       x: '-30%',
       y: '-40%',
-      $children: [
-        {
+      $children: [{
           tag: 'feGaussianBlur',
-          option: {
-            in: 'SourceGraphic',
+          option: { in: 'SourceGraphic',
             stdDeviation: '2'
           }
         },
@@ -146,15 +143,13 @@ class Panel {
           tag: 'feComponentTransfer',
           option: {
             result: 'outBlur',
-            $children: [
-              {
-                tag: 'feFuncA',
-                option: {
-                  type: 'table',
-                  tableValues: '0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1'
-                }
+            $children: [{
+              tag: 'feFuncA',
+              option: {
+                type: 'table',
+                tableValues: '0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1'
               }
-            ]
+            }]
           }
         },
         {
@@ -167,8 +162,7 @@ class Panel {
         },
         {
           tag: 'feComposite',
-          option: {
-            in: 'outColor',
+          option: { in: 'outColor',
             in2: 'outBlur',
             operator: 'in',
             result: 'outGlow'
@@ -176,8 +170,7 @@ class Panel {
         },
         {
           tag: 'feComposite',
-          option: {
-            in: 'SourceGraphic',
+          option: { in: 'SourceGraphic',
             in2: 'outGlow',
             operator: 'over'
           }
@@ -191,11 +184,9 @@ class Panel {
       height: '160%',
       x: '-30%',
       y: '-40%',
-      $children: [
-        {
+      $children: [{
           tag: 'feGaussianBlur',
-          option: {
-            in: 'SourceGraphic',
+          option: { in: 'SourceGraphic',
             stdDeviation: '4'
           }
         },
@@ -203,15 +194,13 @@ class Panel {
           tag: 'feComponentTransfer',
           option: {
             result: 'outBlur',
-            $children: [
-              {
-                tag: 'feFuncA',
-                option: {
-                  type: 'table',
-                  tableValues: '0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1'
-                }
+            $children: [{
+              tag: 'feFuncA',
+              option: {
+                type: 'table',
+                tableValues: '0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1'
               }
-            ]
+            }]
           }
         },
         {
@@ -224,8 +213,7 @@ class Panel {
         },
         {
           tag: 'feComposite',
-          option: {
-            in: 'outColor',
+          option: { in: 'outColor',
             in2: 'outBlur',
             operator: 'in',
             result: 'outGlow'
@@ -233,8 +221,7 @@ class Panel {
         },
         {
           tag: 'feComposite',
-          options: {
-            in: 'SourceGraphic',
+          options: { in: 'SourceGraphic',
             in2: 'outGlow',
             operator: 'over'
           }
@@ -296,11 +283,9 @@ class Panel {
       height: '140%',
       x: '-20%',
       y: '-20%',
-      $children: [
-        {
+      $children: [{
           tag: 'feGaussianBlur',
-          option: {
-            in: 'SourceGraphic',
+          option: { in: 'SourceGraphic',
             stdDeviation: '6'
           }
         },
@@ -308,21 +293,18 @@ class Panel {
           tag: 'feComponentTransfer',
           option: {
             result: 'offsetBlur',
-            $children: [
-              {
-                tag: 'feFuncA',
-                option: {
-                  type: 'linear',
-                  slope: '0.6'
-                }
+            $children: [{
+              tag: 'feFuncA',
+              option: {
+                type: 'linear',
+                slope: '0.6'
               }
-            ]
+            }]
           }
         },
         {
           tag: 'feComposite',
-          option: {
-            in: 'SourceGraphic',
+          option: { in: 'SourceGraphic',
             in2: 'offsetBlur',
             operator: 'over'
           }
@@ -439,7 +421,7 @@ class Panel {
   /**
    * 缩放画布
    */
-  zoomCanvas (zoom) {
+  zoomCanvas(zoom) {
     if (!zoom) {
       logger.warn('Panel zoomCanvas failed: zoom is null')
       return
@@ -458,7 +440,7 @@ class Panel {
   /**
    * 重置画布
    */
-  resetCanvas () {
+  resetCanvas() {
     this.currentZoomFactor = 1.0
     this.setCanvasTransfrom(this.dom.canvasList, 'translate(0,0) scale(1.0)')
   }
@@ -466,7 +448,7 @@ class Panel {
   /**
    * 绑定事件
    */
-  bindCanvasEvent () {
+  bindCanvasEvent() {
     let panel = this
     this.dom.svg.addEventListener('mousedown', () => {
       if (event.button === 0) {
@@ -1102,7 +1084,7 @@ class Panel {
   /**
    * 获取Viewport偏移量(Canvas坐标)
    */
-  viewPortOffset () {
+  viewPortOffset() {
     let m = this.dom.canvas.getCTM()
     return {
       x: Number(m.e),
@@ -1113,7 +1095,7 @@ class Panel {
   /**
    * 获取编辑面板的视口(SVG坐标)
    */
-  viewPortBoundbox () {
+  viewPortBoundbox() {
     let m = this.dom.canvas.getCTM()
     return {
       left: Number(m.e) * Number(m.a),
@@ -1126,7 +1108,7 @@ class Panel {
   /**
    * 判断坐标点是否在Flyout区域
    */
-  isInFlyoutRegion (x, y) {
+  isInFlyoutRegion(x, y) {
     let bbox = this.dom.flyoutbg.getBBox()
     let ctm = this.dom.flyoutbg.getScreenCTM()
 
@@ -1140,14 +1122,14 @@ class Panel {
   /**
    * 显示坐标信息
    */
-  updateInfo (info) {
+  updateInfo(info) {
     this.dom.info.textContent = `X: ${info.x} Y: ${info.y}`
   }
 
   /**
    * 统一设置canvas变换矩阵（平移，缩放）
    */
-  setCanvasTransfrom (canvas, trans) {
+  setCanvasTransfrom(canvas, trans) {
     canvas.forEach(function (item) {
       item.setAttributeNS(null, 'transform', trans)
     })
@@ -1157,7 +1139,7 @@ class Panel {
    * 处理包定义
    * package: Object block包定义
    */
-  processPackage (pkg) {
+  processPackage(pkg) {
     if (!this.option.blocks.defs) {
       this.option.blocks.defs = {
         variant: {
@@ -1206,7 +1188,7 @@ class Panel {
     }
   }
 
-  setOption (option) {
+  setOption(option) {
     // 清空之前的定义
     this.option.blocks.defs = null
     // 合并Buttons
@@ -1244,7 +1226,7 @@ class Panel {
     this.prepare()
   }
 
-  prepare () {
+  prepare() {
     this.marker = this.createBlockInstance('insertmarker')
     // 初始化toolbox
     this.initCategoryToolbox()
@@ -1255,7 +1237,7 @@ class Panel {
   /**
    *
    */
-  initButtons () {
+  initButtons() {
     while (this.dom.buttons.firstChild) {
       this.dom.buttons.removeChild(this.dom.buttons.firstChild)
     }
@@ -1282,13 +1264,13 @@ class Panel {
     this.dom.buttons.appendChild(fragment)
   }
 
-  initCategoryToolbox () {
+  initCategoryToolbox() {
     const categories = this.option.blocks.categories
     const registries = this.registries
     let zoom = this.flyoutZoomFactor
     let panel = this
 
-    function createMenu (key, offset) {
+    function createMenu(key, offset) {
       let cate = categories[key]
 
       if (!cate) {
@@ -1394,7 +1376,7 @@ class Panel {
     this.flyoutHeight = offsety
   }
 
-  createBlockInstance (type, state) {
+  createBlockInstance(type, state) {
     // 坚持类型是否注册
     if (!this.hasRegistered(type)) {
       logger.warn('block is unregistered: ' + type)
@@ -1409,7 +1391,7 @@ class Panel {
     return inst
   }
 
-  removeBlock (uid) {
+  removeBlock(uid) {
     if (!yuchg.isString(uid)) {
       logger.warn('removeBlock failed: wrond uid - ', uid)
       return
@@ -1424,7 +1406,7 @@ class Panel {
     delete this.instances[uid]
   }
 
-  showInputWidget (option) {
+  showInputWidget(option) {
     if (!option) {
       this.hideWidget()
       return
@@ -1439,15 +1421,16 @@ class Panel {
     let dom = option.dom
 
     parent.classList.add('fieldTextInput')
-    parent.setAttributeNS(null, 'style', 'transition: box-shadow 0.25s ease 0s;box-shadow: rgba(255, 255, 255, 0.3) 0px 0px 0px 4px;')
+    parent.setAttributeNS(null, 'style', `transition: box-shadow 0.25s ease 0s;box-shadow: rgba(255, 255, 255, 0.3) 0px 0px 0px 4px;`)
+    let $parent = $(parent)
     // 根据option设置边框颜色
-    parent.style.borderColor = option.background.stroke
+    $parent.css('border-color', option.background.stroke)
     // 设置缩放比例
-    parent.style.transform = `scale(${panel.currentZoomFactor})`
-    parent.style.top = option.y
-    parent.style.left = option.x
-    parent.style.width = option.width
-    parent.style.height = option.height
+    $parent.css('transform', `scale(${panel.currentZoomFactor})`)
+    $parent.css('top', option.y)
+    $parent.css('left', option.x)
+    $parent.css('width', option.width)
+    $parent.css('height', option.height)
 
     let input = ShapeUtils.base.element('input', {
       class: 'ycBlockHtmlInput',
@@ -1480,7 +1463,7 @@ class Panel {
     input.focus()
   }
 
-  hideWidget () {
+  hideWidget() {
     this.dom.widget.setAttribute('class', 'ycBlockWidgetDiv')
     this.dom.widget.setAttribute('style', '')
     while (this.dom.widget.firstChild) {
@@ -1488,7 +1471,7 @@ class Panel {
     }
   }
 
-  showDropdownWidget (option) {
+  showDropdownWidget(option) {
     if (!option) {
       this.hideDropdownWidget()
       return
@@ -1591,7 +1574,7 @@ class Panel {
     parent.style.display = 'block'
   }
 
-  hideDropdownWidget () {
+  hideDropdownWidget() {
     let parent = this.dom.dropdown
     parent.setAttribute('class', 'ycBlockDropDownDiv')
     parent.setAttribute('style', 'display: none; opacity: 0;')
@@ -1602,7 +1585,7 @@ class Panel {
     }
   }
 
-  addBlock (option, parent) {
+  addBlock(option, parent) {
     if (!option || !option.type) {
       return
     }
@@ -1645,8 +1628,7 @@ class Panel {
         // 弹出上下文菜单
         if (!selectInst.__proto.isInternal()) {
           // 生成菜单项
-          let menuitems = [
-            {
+          let menuitems = [{
               id: 'copy',
               name: '复制',
               action: () => {
@@ -1709,7 +1691,7 @@ class Panel {
     return inst
   }
 
-  showContextMenu (option) {
+  showContextMenu(option) {
     if (!option || !yuchg.isArray(option.items) || option.items.length === 0) {
       this.hideWidget()
       return
@@ -1750,7 +1732,7 @@ class Panel {
       itemElem.addEventListener('mouseover', function () {
         this.classList.add('ycBlockContextMenuItemHover')
       })
-      
+
       itemElem.addEventListener('mouseout', function () {
         this.classList.remove('ycBlockContextMenuItemHover')
       })
@@ -1770,7 +1752,7 @@ class Panel {
     parent.style.display = 'block'
   }
 
-  addBlocks (blocks) {
+  addBlocks(blocks) {
     if (yuchg.isArray(blocks)) {
       // 创建多个Block
       blocks.forEach((elem) => {
@@ -1787,14 +1769,14 @@ class Panel {
    * @param {*} uid
    */
 
-  findBlock (uid) {
+  findBlock(uid) {
     return this.instances[uid]
   }
 
   /**
    * 注册Block
    */
-  registerBlock (def, list) {
+  registerBlock(def, list) {
     let registries = this.registries
     // 提示重复
     if (registries[def.id]) {
@@ -1826,7 +1808,7 @@ class Panel {
   /**
    * 检查Block是否注册
    */
-  hasRegistered (type) {
+  hasRegistered(type) {
     if (this.registries.hasOwnProperty(type) && this.registries[type]) {
       return true
     }
@@ -1838,7 +1820,7 @@ class Panel {
    * seq = true 时，复制整个序列
    */
 
-  cloneBlock (uid, seq = false) {
+  cloneBlock(uid, seq = false) {
     let instance = this.instances[uid]
     if (!instance) {
       logger.warn(`Panel CloneBlock failed: can not find Instance [${uid}]`)
@@ -1854,7 +1836,7 @@ class Panel {
   /**
    * 清空所有Blocks
    */
-  clearBlocks () {
+  clearBlocks() {
     const panel = this
     document.querySelectorAll('.ycBlockCanvas g.ycBlockDraggable').forEach(function (elem) {
       if (elem.getAttribute('data-id') === 'insertmarker') {
@@ -1873,7 +1855,7 @@ class Panel {
    * resize
    * @param {*} type
    */
-  resize (option) {
+  resize(option) {
     let w = this.option.width
     let h = this.option.height
     if (option) {
@@ -1890,13 +1872,13 @@ class Panel {
     this.dom.svg.setAttributeNS(null, 'height', h)
     this.dom.flyout.setAttributeNS(null, 'height', h)
     this.dom.flyoutbg.setAttributeNS(null, 'd', `M 0,0 h ${this.option.flyout.width} a 0 0 0 0 1 0 0 v ${h} a 0 0 0 0 1 0 0 h ${-this.option.flyout.width} z`)
-    
+
     this.dom.flyoutclip.setAttributeNS(null, 'width', this.option.flyout.width)
     this.dom.flyoutclip.setAttributeNS(null, 'height', h)
 
     this.option.width = w
     this.option.height = h
-    
+
   }
 
   /**
@@ -1911,7 +1893,7 @@ class Panel {
   /**
    * 保存为内部格式
    */
-  save () {
+  save() {
     const panel = this
     let data = {
       author: 'Unique',
@@ -1932,7 +1914,7 @@ class Panel {
    *
    * @param {*} data
    */
-  createBlock (data) {
+  createBlock(data) {
     let instance = this.addBlock({
       type: data.protoId,
       state: {
@@ -1947,7 +1929,7 @@ class Panel {
   /**
    * 从内部格式加载
    */
-  load (data) {
+  load(data) {
     // 清空内容
     this.clearBlocks()
 
