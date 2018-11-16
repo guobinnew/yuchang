@@ -1,0 +1,40 @@
+{
+  "name": "yuchg",
+  "version": "1.0.8",
+  "description": "visual script editor",
+  "main": "index.js",
+  "scripts": {
+    "build": "./node_modules/.bin/webpack --config ./build/webpack.config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/guobinnew/yuchang.git"
+  },
+  "dependencies": {
+    "d3": "^5.7.0",
+    "jquery": "^3.3.1",
+    "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-loader": "^8.0.2",
+    "babel-preset-env": "^1.7.0",
+    "clean-webpack-plugin": "^1.0.0",
+    "copy-webpack-plugin": "^4.6.0",
+    "css-loader": "^1.0.0",
+    "extract-text-webpack-plugin": "^3.0.2",
+    "file-loader": "^2.0.0",
+    "html-loader": "^0.5.5",
+    "html-webpack-plugin": "^3.2.0",
+    "uglify-js": "^3.4.9",
+    "url-loader": "^1.1.1",
+    "webpack": "^4.19.0"
+  },
+  "keywords": [
+    "scratch",
+    "script",
+    "editor"
+  ],
+  "author": "Unqiue",
+  "license": "MIT"
+}

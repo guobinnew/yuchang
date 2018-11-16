@@ -20,7 +20,7 @@
 </template>
 
 <style scoped>
-@import "../scratch/style.css";
+ /* @import "yuchg/style.css"; */
 
 .container {
   overflow: hidden;
@@ -37,7 +37,7 @@
 </style>
 
 <script>
-import yuchg from "../scratch/index"
+import yuchg from "../yuchg/index"
 import saveAs from "file-saver"
 import resize from 'vue-resize-directive'
 

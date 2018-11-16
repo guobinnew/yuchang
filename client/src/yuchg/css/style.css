@@ -1,0 +1,279 @@
+.ycBlockText {
+  fill: #fff;
+  font-family: "Helvetica Neue", Helvetica, sans-serif;
+  font-size: 12pt;
+  font-weight: 500;
+}
+
+.ycBlockPath {
+  stroke-width: 1px;
+}
+
+.ycBlockDraggable {
+  cursor: grab;
+  cursor: -webkit-grab;
+  cursor: -moz-grab;
+}
+
+#ycBlockInfo {
+  fill: #333;
+}
+
+.ycBlockDragSurface {
+  pointer-events: none;
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: visible !important;
+  z-index: 50;
+}
+
+.ycBlockWsDragSurface.ycBlockOverflowVisible {
+  overflow: visible;
+}
+
+.ycBlockInsertionMarker > .ycBlockPath {
+  stroke: none;
+}
+
+.ycBlockFlyout {
+  border-right: 1px solid hsla(0, 0%, 0%, 0.15);
+  border-left: 1px solid hsla(0, 0%, 0%, 0.15);
+  box-sizing: content-box;
+  position: absolute;
+  top: 0;
+  right: 60px;
+}
+
+.ycBlockFlyoutBackground {
+  fill: #f9f9f9;
+  fill-opacity: 0.8;
+}
+
+.ycBlockToolbox {
+  border-left: 1px solid hsla(0, 0%, 0%, 0.15);
+  border-bottom: 1px solid hsla(0, 0%, 0%, 0.15);
+  -webkit-box-sizing: content-box;
+  box-sizing: content-box;
+  -ms-overflow-style: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 60px;
+  line-height: 17px;
+  height: 100%;
+}
+
+.ycBlockCategoryMenu {
+  height: 100%;
+  width: 60px;
+  background: #ffffff;
+  color: #575e75;
+  font-size: 0.7rem;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.ycBlockCategoryMenuRow {
+  padding-top: 8px;
+}
+
+.ycBlockCategoryMenuItem {
+  padding: 0.375rem 0px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.ycBlockCategoryItemBubble {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 1px solid;
+  border-radius: 100%;
+  margin: 0 auto 0.125rem;
+}
+
+.ycBlockCategoryMenuItemLabel {
+  font-size: 0.65rem;
+}
+
+.ycBlockFlyoutLabel {
+  cursor: default;
+}
+
+.ycBlockFlyoutLabelBackground {
+  opacity: 0;
+}
+
+.ycBlockFlyoutLabelText {
+  font-family: "Helvetica Neue", Helvetica, sans-serif;
+  font-size: 14pt;
+  fill: #575e75;
+  font-weight: bold;
+}
+
+.ycBlockEditableText {
+  cursor: text;
+}
+
+.ycBlockButtions image {
+  cursor: pointer;
+}
+
+.ycBlockWidgetDiv {
+  display: none;
+  position: absolute;
+  z-index: 99999;
+  direction: ltr;
+  margin-left: 0px;
+  border-radius: 16.5px;
+}
+
+.ycBlockWidgetDiv.fieldTextInput {
+  overflow: hidden;
+  border: 1px solid;
+  box-sizing: border-box;
+  transform-origin: 0 0;
+  -ms-transform-origin: 0 0;
+  -moz-transform-origin: 0 0;
+  -webkit-transform-origin: 0 0;
+}
+
+.ycBlockHtmlInput {
+  border-radius: 16.5px;
+  transition: font-size 0.25s ease 0s;
+  font-size: 12pt;
+  border: none;
+  font-family: "Helvetica Neue", Helvetica, sans-serif;
+  height: 100%;
+  margin: 0;
+  outline: none;
+  box-sizing: border-box;
+  width: 100%;
+  text-align: center;
+  color: #575e75;
+  font-weight: 500;
+}
+
+.ycBlockNonEditableText > text,
+.ycBlockEditableText > text {
+  fill: #575e75;
+}
+
+.ycBlockDropDownDiv {
+  direction: ltr;
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  display: none;
+  border: 1px solid;
+  border-radius: 4px;
+  box-shadow: 0px 0px 8px 1px rgba(0, 0, 0, 0.3);
+  padding: 4px;
+  -webkit-user-select: none;
+  min-height: 26px;
+}
+
+.ycBlockDropDownContent {
+  max-height: 300px;
+  overflow: auto;
+}
+
+.ycBlockDropDownMenu {
+  cursor: default;
+  font: normal 13px "Helvetica Neue", Helvetica, sans-serif;
+  outline: none;
+  z-index: 20000;
+}
+
+.ycBlockWidgetDiv .ycBlockContextMenu {
+  background: #fff;
+  border-color: #ccc #666 #666 #ccc;
+  border-style: solid;
+  border-width: 1px;
+  cursor: default;
+  font: normal 13px "Helvetica Neue", Helvetica, sans-serif;
+  margin: 0;
+  outline: none;
+  padding: 4px 0;
+  position: absolute;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 20000;
+  border-radius: 4px;
+}
+
+.ycBlockDropDownDiv .ycBlockDropDownMenuItemHover,
+.ycBlockWidgetDiv .ycBlockContextMenuItemHover {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.ycBlockDropDownMenuItem {
+  color: #fff;
+  font: normal 13px "Helvetica Neue", Helvetica, sans-serif;
+  font-weight: bold;
+  list-style: none;
+  margin: 0;
+  min-height: 18px;
+  padding: 4px 7em 4px 28px;
+  white-space: nowrap;
+}
+
+.ycBlockContextMenuItem {
+  color: #333;
+  font: normal 13px "Helvetica Neue", Helvetica, sans-serif;
+  list-style: none;
+  margin: 0;
+  min-height: 18px;
+  padding: 4px 7em 4px 28px;
+  white-space: nowrap;
+}
+
+.ycBlockDropDownDiv .ycBlockSelected .ycBlockMenuItemCheckBox,
+.ycBlockDropDownDiv .ycBlockSelected .ycBlockMenuItemIcon {
+  background: url(data:image/png;base64,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) no-repeat -48px -16px !important;
+  position: static;
+  float: left;
+  margin-left: -24px;
+}
+
+.ycBlockDropDownDiv .ycBlockMenuItemCheckBox,
+.ycBlockDropDownDiv .ycBlockMenuItemIcon {
+  background-repeat: no-repeat;
+  height: 16px;
+  left: 6px;
+  position: absolute;
+  right: auto;
+  vertical-align: middle;
+  width: 16px;
+}
+
+.ycBlockDropDownArrow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 16px;
+  height: 16px;
+  z-index: -1;
+  background-color: inherit;
+  border-color: inherit;
+}
+
+.ycBlockArrowTop {
+  border-top: 1px solid;
+  border-left: 1px solid;
+  border-top-left-radius: 4px;
+  border-color: inherit;
+}
+
+.ycBlockArrowBottom {
+  border-bottom: 1px solid;
+  border-right: 1px solid;
+  border-bottom-right-radius: 4px;
+  border-color: inherit;
+}
