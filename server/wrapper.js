@@ -15,7 +15,7 @@
     app.use(favicon(path.join(rootDir,'favicon.ico')))
 
     var server = app.listen(port, function () {
-        console.log('info', '本地前台服务器启动，正在监听端口<' + port + '>...' )
+        console.log('info', 'Launch server at port<' + port + '>...' )
     })
     
     module.exports = {

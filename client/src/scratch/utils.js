@@ -1,7 +1,4 @@
-import yuchg from '../base'
-import {
-  utils
-} from 'mocha';
+import yuchg from './base'
 
 // 缺省文字字体大小
 const ycFontSize = 12 // ASCII
@@ -130,19 +127,6 @@ const Utils = {
       }
     }
     return objChild
-  },
-
-  /**
-   * 返回第一级子节点
-   * @param {*} obj 
-   */
-  domChildren(elem) {
-    return utils.domQuerySelectByTagName(elem, '*')
-  },
-
-
-  domNodeName(elem, name) {
-    return elem.nodeName && elem.nodeName.toLowerCase() === name.toLowerCase()
   },
 
   /**

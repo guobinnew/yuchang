@@ -1,7 +1,6 @@
 <template>
     <div class="container" v-resize="onContainerResize">
-        <div id="scratch" class="scratch" :style="{width: size.width + 'px', height: size.height + 'px'}"></div>
-        <!-- <Scratch flex=1  :savebtn="save" :loadbtn="load" :export="openExportDialog"/> -->
+        <div id="scratch" :style="{width: size.width + 'px', height: size.height + 'px'}"></div>
         <input id="yuchang-save" type="file" />
         <el-dialog title="保存脚本" :visible.sync="dialogVisible" height="200px">
           <el-form :model="form">
@@ -32,19 +31,13 @@
   display: none;
 }
 
-.scratch {
-  overflow: hidden;
-}
-
 .yuchang-ext {
   text-align: left;
 }
 </style>
 
 <script>
-import Scratch from "../scratch/index"
-import yuchg from "../base"
-import logger from "../logger"
+import yuchg from "../scratch/index"
 import saveAs from "file-saver"
 import resize from 'vue-resize-directive'
 
@@ -151,7 +144,7 @@ export default {
   },
   mounted: function() {
     let dom = document.getElementById('scratch')
-    this.editor = Scratch.init(dom)
+    this.editor = yuchg.Scratch.init(dom)
     this.editor.setOption({})
     // 随窗口动态改变大小
     this.onContainerResize()

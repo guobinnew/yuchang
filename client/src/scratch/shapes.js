@@ -1,6 +1,6 @@
 import $ from 'jquery'
-import yuchg from '../base'
-import logger from '../logger'
+import yuchg from './base'
+import logger from './logger'
 
 /**
  *  SVG命名空间
@@ -123,6 +123,7 @@ ycEventFunctions[ycEvents.positionText] = function (event, opt) {
 
 ycEventFunctions[ycEvents.background] = function (event, opt) {
   event.stopPropagation()
+  console.warn('process background', opt)
   const log = logPrefix(this, ycEvents.background)
 
   if (!opt) {
@@ -507,7 +508,7 @@ const ShapeUtils = {
         height: minContentHeight + ycCornerRadius * 2,
         contentWidth: minContentWidth,
         contentHeight: minContentHeight,
-        slotHeight: [emptySlotHeight, emptySlotHeight],  // 含 ycCornerRadius * 2
+        slotHeight: [emptySlotHeight, emptySlotHeight], // 含 ycCornerRadius * 2
         centerHeight: centerHeight,
         bottomHeight: bottomHeight,
         wholeHeight: minContentHeight + emptySlotHeight * 2 + centerHeight + bottomHeight + ycCornerRadius * 6
@@ -684,7 +685,7 @@ const ShapeUtils = {
         opt.contentWidth = checkParameter(opt.contentWidth, yuchg.isNumber)
         opt.contentHeight = checkParameter(opt.contentHeight, yuchg.isNumber)
         boundbox = _size(boundbox, opt)
- 
+
         this.setAttribute('d', _dfunc(boundbox))
         this.__boundbox = boundbox
       })
@@ -832,8 +833,8 @@ const ShapeUtils = {
       path.setAttributeNS(null, 'd', _dfunc(boundbox))
 
       option.stroke && path.setAttributeNS(null, 'stroke', option.stroke)
-      option.fill && path.setAttributeNS(null,'fill', option.fill)
-      option.opacity && path.setAttributeNS(null,'fill-opacity', option.opacity)
+      option.fill && path.setAttributeNS(null, 'fill', option.fill)
+      option.opacity && path.setAttributeNS(null, 'fill-opacity', option.opacity)
       $elem.addClass('ycBlockPath ycBlockBackground' + (option.classes ? (' ' + option.classes) : ''))
 
       // 绑定事件

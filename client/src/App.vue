@@ -5,8 +5,7 @@
                 <div class="yuchang-logo-menu">
                     <img src="./assets/logo.png" width="36" height="36" class="yuchang-middle"/>
                 </div>
-                <el-menu default-active="1-4-1" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose"
-                         :collapse="isCollapse">
+                <el-menu default-active="1-4-1" class="el-menu-vertical-demo" :collapse="isCollapse">
                      <el-menu-item index="1" disabled>
                         <i class="el-icon-location"></i>
                         <span slot="title">导航一</span>
@@ -156,12 +155,6 @@
         if (key == 1) {
           this.$router.push({ name: 'editor' })
         } 
-        console.log(key, keyPath)
-      },
-      handleOpen (key, keyPath) {
-        console.log(key, keyPath)
-      },
-      handleClose (key, keyPath) {
         console.log(key, keyPath)
       }
     }

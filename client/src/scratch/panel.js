@@ -1,7 +1,7 @@
 import $ from 'jquery'
 import * as d3 from 'd3'
-import yuchg from '../base'
-import logger from '../logger'
+import yuchg from './base'
+import logger from './logger'
 import BlockDefs from './blockDefs/index'
 import ShapeUtils from './shapes'
 import Utils from './utils'
@@ -89,6 +89,9 @@ class Panel {
 
     this.dom = {}
     this.dom.root = node
+    this.dom.root.style.overflow = 'hidden'
+    this.dom.root.style.userSelect = 'none'
+
     this.initSvg()
 
     // 鼠标事件
@@ -1422,15 +1425,15 @@ class Panel {
 
     parent.classList.add('fieldTextInput')
     parent.setAttributeNS(null, 'style', `transition: box-shadow 0.25s ease 0s;box-shadow: rgba(255, 255, 255, 0.3) 0px 0px 0px 4px;`)
-    let $parent = $(parent)
     // 根据option设置边框颜色
-    $parent.css('border-color', option.background.stroke)
+    parent.style.borderColor = option.background.stroke
+    console.warn('input', option)
     // 设置缩放比例
-    $parent.css('transform', `scale(${panel.currentZoomFactor})`)
-    $parent.css('top', option.y)
-    $parent.css('left', option.x)
-    $parent.css('width', option.width)
-    $parent.css('height', option.height)
+    parent.style.transform = `scale(${panel.currentZoomFactor})`
+    parent.style.top = option.y + 'px'
+    parent.style.left = option.x + 'px'
+    parent.style.width = option.width + 'px'
+    parent.style.height = option.height + 'px'
 
     let input = ShapeUtils.base.element('input', {
       class: 'ycBlockHtmlInput',
@@ -1456,18 +1459,18 @@ class Panel {
     input.addEventListener('blur', function () {
       let newValue = this.value
       callback && callback(newValue)
-      panel.hideWidget()
+      panel.hideWidget(false)
     })
     parent.appendChild(input)
     parent.style.display = 'block'
     input.focus()
   }
 
-  hideWidget() {
-    this.dom.widget.setAttribute('class', 'ycBlockWidgetDiv')
-    this.dom.widget.setAttribute('style', '')
-    while (this.dom.widget.firstChild) {
-      this.dom.widget.removeChild(this.dom.widget.firstChild)
+  hideWidget(clear = true) {
+    if (this.dom.widget) {
+      this.dom.widget.setAttribute('class', 'ycBlockWidgetDiv')
+      this.dom.widget.setAttribute('style', '')
+      clear && $(this.dom.widget).children().remove()
     }
   }
 

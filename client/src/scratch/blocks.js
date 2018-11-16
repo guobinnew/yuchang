@@ -1,7 +1,7 @@
 import $ from 'jquery'
 import uuidv4 from 'uuid/v4'
-import yuchg from '../base'
-import logger from '../logger'
+import yuchg from './base'
+import logger from './logger'
 import ShapeUtils from './shapes'
 import Utils from './utils'
 import Argument from './argus'
@@ -862,7 +862,6 @@ class BlockInstance {
             secclone.__assign = val.encode()
           }
         } else {
-          logger.debug('clonedata =====', key, val)
           secclone[key] = yuchg.cloneObject(val)
         }
       }
@@ -932,7 +931,6 @@ class BlockInstance {
             this.include(sourcesec.__assign, 'argument')
           }
         } else {
-          logger.debug('clonedata =====', key, val)
           sourcesec[key] = yuchg.cloneObject(val)
         }
       }
@@ -1647,6 +1645,7 @@ class BlockStack extends Block {
   }
 
   adjustBackground(option) {
+    console.warn('adjustBackground', option)
     // 修改Section边框
     const state = option.state
     for (let sec of state.data.sections) {
@@ -1663,6 +1662,7 @@ class BlockStack extends Block {
             opt.fill = state.background.stroke
           }
           $child.trigger(ShapeUtils.events.background, [opt])
+          console.warn('trigger', opt)
         }
       }
     }

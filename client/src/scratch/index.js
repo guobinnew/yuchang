@@ -1,6 +1,8 @@
 import Panel from './panel'
+import yuchg from './base'
+import logger from './logger'
 
-const Scratch = {
+yuchg.Scratch = {
   /**
    * 初始化编辑面板
    * dom: 用于绘制面板的DOM节点
@@ -13,5 +15,6 @@ const Scratch = {
     return new Panel(dom)
   }
 }
+yuchg.Logger = logger
 
-export default Scratch
+export default yuchg

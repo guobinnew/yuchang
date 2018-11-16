@@ -1,5 +1,5 @@
 
-import logger from '../../../../logger'
+import logger from '../../../logger'
 
 // 唯一Id
 let _mdUniqueId = 1

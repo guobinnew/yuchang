@@ -1,6 +1,6 @@
 import $ from 'jquery'
-import yuchg from '../base'
-import logger from '../logger'
+import yuchg from './base'
+import logger from './logger'
 import ShapeUtils from './shapes'
 import Utils from './utils'
 
@@ -122,8 +122,6 @@ class Argument {
   static createContainer(def) {
     // 创建顶层group
     const elem = ShapeUtils.base.group()
-    const $elem = $(elem)
-
     const props = ['shape', 'argument-type']
     for (let i of props) {
       let v = def[i]
@@ -148,10 +146,10 @@ class Argument {
     elem.appendChild(shape)
 
     // 绑定事件
-    elem.addEventListener(ShapeUtils.events.background, function (event, opt) {
+    $(elem).on(ShapeUtils.events.background, function (event, opt) {
       event.stopPropagation()
-      let shape = this.querySelector('path')
-      shape.trigger(ShapeUtils.events.background, [opt])
+      let s = this.querySelector('path')
+      $(s).trigger(ShapeUtils.events.background, [opt])
     })
 
     return elem
@@ -217,8 +215,8 @@ class Argument {
    * 包围盒（canvas坐标下）
    */
   boundRect(offsetx, offsety) {
-    const $path = $(this.section.dom).children('path.ycBlockBackground')
-    const bbox = $path[0].getBBox()
+    const path = this.section.dom.querySelector('path.ycBlockBackground')
+    const bbox = path.getBBox()
     const m = this.section.dom.getCTM()
 
     return Utils.boundRect(
@@ -236,16 +234,16 @@ class Argument {
    * @param {*} enable 
    */
   highlight(enable = true) {
-    const $path = $(this.section.dom).children('path.ycBlockBackground')
-    $path.attr('filter', enable ? 'url(#ycBlockReplacementGlowFilter)' : '')
+    const path = this.section.dom.querySelector('path.ycBlockBackground')
+    path.setAttributeNS(null, 'filter', enable ? 'url(#ycBlockReplacementGlowFilter)' : '')
   }
 
   show() {
-    this.section.dom.setAttribute('visibility', 'visible')
+    this.section.dom.setAttributeNS(null, 'visibility', 'visible')
   }
 
   hide() {
-    this.section.dom.setAttribute('visibility', 'hidden')
+    this.section.dom.setAttributeNS(null, 'visibility', 'hidden')
   }
 
   /**
@@ -277,12 +275,12 @@ class ArgumentText extends Argument {
   }
 
   adjust() {
-    const $dom = $(this.section.dom)
+    const dom = this.section.dom
     const data = this.section.data
 
     // 设置文字
-    let $text = $dom.children('.ycBlockEditableText')
-    $text.trigger(ShapeUtils.events.change, ['' + data.value])
+    let text = dom.querySelector('.ycBlockEditableText')
+    $(text).trigger(ShapeUtils.events.change, ['' + data.value])
 
     // 根据文字计算长度
     let padding = data.size.height / 2
@@ -290,18 +288,18 @@ class ArgumentText extends Argument {
     data.size.width = Math.max(length + padding * 2, data.size.minWidth)
 
     // 调整尺寸
-    let $shape = $dom.children('path')
-    $shape.trigger(ShapeUtils.events.resize, [{
+    let shape = dom.querySelector('path')
+    $(shape).trigger(ShapeUtils.events.resize, [{
       width: data.size.width,
       height: data.size.height
     }])
 
     // 更新大小
-    data.size.width = $shape[0].__boundbox.width
-    data.size.height = $shape[0].__boundbox.height
+    data.size.width = shape.__boundbox.width
+    data.size.height = shape.__boundbox.height
 
     // 调整文字位置
-    $text.trigger(ShapeUtils.events.positionText, [{
+    $(text).trigger(ShapeUtils.events.positionText, [{
       x: data.size.width / 2,
       y: 0,
       translatex: 0,
