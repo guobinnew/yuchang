@@ -1,12 +1,11 @@
 {
   "name": "yuchang",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "debug": "electron . --debug --enable-logging",
-    "publish": "electron-packager ./ yuchang --platform=mas --arch=x64 --app_version=1.0.0 --electron_version=2.0.2  --out=dist/ --overwrite --ignore=node_modules/electron* --ignore=node_mudules/.bin --ignore=.git --ignore=dist --prune",
     "server": "node ./server/wrapper.js",
     "test": "mocha"
   },
