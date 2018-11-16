@@ -22,7 +22,8 @@
     "vue": "^2.5.17",
     "vue-resize-directive": "^1.1.4",
     "vue-router": "^3.0.1",
-    "vuex": "^3.0.1"
+    "vuex": "^3.0.1",
+    "yuchg": "^1.0.7"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.0.3",

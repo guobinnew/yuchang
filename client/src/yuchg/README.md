@@ -8,7 +8,7 @@
 
 CSDN博文: https://blog.csdn.net/wangnan8015/article/details/83276471
 
-![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/mainui.png)
+![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/mainui.png?raw=true)
 
 ## 安装
 ```
@@ -16,6 +16,15 @@ npm install yuchg
 ```
 
 ## Vue框架中使用
+
+将node_modules/yuchg/assets目录资源拷贝到Vue工程的assets目录中（blockDefs中定义的模块需要使用）
+
+main.js
+```
+import 'yuchg/css/style.css'
+```
+
+App.Vue
 ```
 <template>
     <div class="container" v-resize="onResize">
@@ -24,8 +33,6 @@ npm install yuchg
 </template>
 
 <style scoped>
-@import "../scratch/style.css";
-
 .container {
   overflow: hidden;
   height: 100%;
@@ -33,7 +40,7 @@ npm install yuchg
 </style>
 
 <script>
-import yuchg from "../scratch/index"
+import yuchg from "yuchg"
 import resize from 'vue-resize-directive'
 
 export default {
@@ -115,37 +122,37 @@ Block具有一个可见的外观图形，目前主要有7种：
 -  cap  能用于Event
 
 <div align=center>
-  <img width="150" src="https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-cap.png"/>
+  <img width="150" src="https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-cap.png?raw=true"/>
 </div>
 
 -  hat   能用于Event
 
 <div align=center>
-  <img width="150" src="https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-hat.png"/>
+  <img width="150" src="https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-hat.png?raw=true"/>
 </div>
 
 -  slot  能用于Action
 
 <div align=center>
-  <img width="150" src="https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-slot.png"/>
+  <img width="150" src="https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-slot.png?raw=true"/>
 </div>
 
 -  round 能用于Variant，Express
 
 <div align=center>
-  <img width="150" src="https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-round.png"/>
+  <img width="150" src="https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-round.png?raw=true"/>
 </div>
 
 -  diamond 能用于Variant，Express
 
 <div align=center>
-  <img width="150" src="https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-diamond.png"/>
+  <img width="150" src="https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-diamond.png?raw=true"/>
 </div>
 
 -  cup 能用于Control
 
 <div align=center>
-  <img width="150" src="https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-cup.png"/>
+  <img width="150" src="https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-cup.png?raw=true"/>
 </div>
 
 -  cuptwo  能用于Control
@@ -191,10 +198,10 @@ Block 定义格式为：
 ## 自行扩展Block
 
 中文诗歌
-![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/chinese.png)
+![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/chinese.png?raw=true)
 
 机器学习Keras
-![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/keras.png)
+![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/keras.png?raw=true)
 
 ```
     from keras.models import Sequential
@@ -210,7 +217,7 @@ Block 定义格式为：
 ```
 
 MarkDown流程图
-![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/flow.png)
+![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/flow.png?raw=true)
 
  ```
     st8=>start: 开始:> https://www.baidu.com
@@ -232,4 +239,4 @@ MarkDown流程图
 +  (2）从Github Clone本项目源码
 +  (3）在项目根目录运行 npm install， 在client/目录下运行npm install
 +  (4) 在控制台运行Vue ui，选择项目目录为client/目录，通过UI控制台运行服务即可
-![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/demo.png)
+![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/demo.png?raw=true)
