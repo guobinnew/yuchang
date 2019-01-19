@@ -145,7 +145,8 @@ export default {
   mounted: function() {
     let dom = document.getElementById('scratch')
     this.editor = yuchg.Scratch.init(dom)
-    this.editor.setOption({})
+    this.editor.setOption({
+    })
     // 随窗口动态改变大小
     this.onContainerResize()
   }

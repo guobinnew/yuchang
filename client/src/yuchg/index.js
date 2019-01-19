@@ -1,6 +1,5 @@
 import Panel from './panel'
 import yuchg from './base'
-import logger from './logger'
 
 yuchg.Scratch = {
   /**
@@ -15,6 +14,5 @@ yuchg.Scratch = {
     return new Panel(dom)
   }
 }
-yuchg.Logger = logger
 
 export default yuchg
