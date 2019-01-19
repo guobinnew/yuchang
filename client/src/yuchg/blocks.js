@@ -175,7 +175,6 @@ class BlockInstance {
       },
       encode: this.encode()
     }
-    logger.debug('****** Instance Dump ******', output)
   }
 
   // 获取实例类型
@@ -907,7 +906,6 @@ class BlockInstance {
       return
     }
 
-    logger.debug(sourceData, data)
     data.sections.forEach((sec, i) => {
       let sourcesec = sourceData.sections[i]
 
