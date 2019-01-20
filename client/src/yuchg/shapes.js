@@ -375,7 +375,7 @@ const ShapeUtils = {
 
     /*
       C型
-      */
+    */
     cup: function (option) {
       const path = document.createElementNS(ycSvgNS, 'path')
       const $elem = $(path)
