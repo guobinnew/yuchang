@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import $ from 'jquery'
-import * as d3 from 'd3'
 import yuchg from './base'
 import logger from './logger'
 import BlockDefs from './blockDefs/index'
@@ -1330,10 +1329,8 @@ class Panel {
 
       let trans = 'translate(0,' + (-offset * zoom) + ') scale(' + zoom + ')'
       menuitem.addEventListener('click', function () {
-        d3.selectAll('.ycBlockFlyout>.ycBlockWorkspace>g')
-          .transition()
-          .duration(500)
-          .attr('transform', trans)
+        let $flyout = $('.ycBlockFlyout>.ycBlockWorkspace>g')
+        $flyout.attr('transform', trans)
       })
 
       return menurow
