@@ -114,6 +114,7 @@ Block具有一个Type属性，用来表示Block具备什么样的行为。目前
 -  Control （控制）
 -  Variant （变量）
 -  Event （事件）
+-  Command (命令)
 -  Markter （标记）主要供内部使用
 
 ### Block外观类型
@@ -125,7 +126,7 @@ Block具有一个可见的外观图形，目前主要有7种：
   <img width="150" src="https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-cap.png?raw=true"/>
 </div>
 
--  hat   能用于Event
+-  hat   能用于Command
 
 <div align=center>
   <img width="150" src="https://github.com/guobinnew/yuchang/blob/master/screenshots/shape-hat.png?raw=true"/>

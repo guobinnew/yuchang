@@ -5,7 +5,11 @@ const ycFontSize = 12 // ASCII
 const ycUnicodeFontSize = 16 // UNICODE
 
 const Utils = {
-  // 计算文字长度
+
+  /**
+   * 计算文字长度
+   * @param {*} txt 
+   */
   computeTextLength: function (txt) {
     // 根据文字计算长度
     if (!yuchg.isString(txt) || txt === '') {
@@ -18,8 +22,13 @@ const Utils = {
     return length
   },
 
-  // 包围盒相交
-  // v代表垂直距离，h代表水平距离
+  /**
+   * 包围盒相交
+   * @param {*} box1 
+   * @param {*} box2 
+   * @param {*} vdist 垂直距离偏差
+   * @param {*} hdist 水平距离偏差
+   */
   isIntersects: function (box1, box2, vdist = 0, hdist = 0) {
     let nbox1 = Utils.normalizeBoundbox(box1)
     let nbox2 = Utils.normalizeBoundbox(box2)
@@ -39,7 +48,11 @@ const Utils = {
   },
 
   /**
-   * 
+   * 包围盒是否包含点
+   * @param {*} box 
+   * @param {*} point 
+   * @param {*} vdist 
+   * @param {*} hdist 
    */
   isContains: function (box, point, vdist = 0, hdist = 0) {
     let nbox = Utils.normalizeBoundbox(box)
@@ -58,7 +71,10 @@ const Utils = {
     return true
   },
 
-  //
+  /**
+   * 包围盒规范化
+   * @param {*} box 
+   */
   normalizeBoundbox(box) {
     let newbox = Object.assign({}, box)
     if (box.left > box.right) {
@@ -72,7 +88,15 @@ const Utils = {
     return newbox
   },
 
-  // 计算AABB Rect
+  /**
+   * 计算AABB Rect
+   * @param {*} x 
+   * @param {*} y 
+   * @param {*} width 
+   * @param {*} height 
+   * @param {*} zoomx 
+   * @param {*} zoomy 
+   */
   boundRect(x, y, width, height, zoomx, zoomy) {
     let zx = yuchg.isNumber(zoomx) ? zoomx : 1.0
     let zy = yuchg.isNumber(zoomy) ? zoomy : 1.0
@@ -86,6 +110,9 @@ const Utils = {
 
   /**
    * 平移
+   * @param {*} rect 
+   * @param {*} offsetx 
+   * @param {*} offsety 
    */
   translateRect(rect, offsetx, offsety) {
     return {
