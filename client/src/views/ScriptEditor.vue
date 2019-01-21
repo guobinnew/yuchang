@@ -38,6 +38,11 @@
 
 <script>
 import yuchg from "../yuchg/index"
+import yuchgBase from "../yuchg-base/index"
+import yuchgChinese from "../yuchg-chinese/index"
+import yuchgMD from "../yuchg-markdown/index"
+import yuchgML from "../yuchg-ml/index"
+
 import saveAs from "file-saver"
 import resize from 'vue-resize-directive'
 
@@ -146,6 +151,7 @@ export default {
     let dom = document.getElementById('scratch')
     this.editor = yuchg.Scratch.init(dom)
     this.editor.setOption({
+      packages: [yuchgBase, yuchgChinese, yuchgMD, yuchgML]
     })
     // 随窗口动态改变大小
     this.onContainerResize()

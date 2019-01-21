@@ -1,0 +1,18 @@
+{
+  "name": "yuchg-chinese",
+  "version": "0.1.0",
+  "description": "yuchg chinese packages",
+  "main": "index.js",
+  "dependencies": {
+  },
+  "devDependencies": {
+  },
+  "keywords": [
+    "scratch",
+    "script",
+    "editor",
+    "chinese"
+  ],
+  "author": "Unqiue",
+  "license": "MIT"
+}

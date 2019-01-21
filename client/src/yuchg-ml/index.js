@@ -1,8 +1,8 @@
 import categories from './categories'
-import markers from './marker'
+import keras from './keras'
 
 let blocks = []
-blocks = blocks.concat(markers)
+blocks = blocks.concat(keras)
 
 export default {
   categories: categories,

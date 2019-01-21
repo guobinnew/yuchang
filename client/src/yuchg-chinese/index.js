@@ -1,8 +1,8 @@
+import poems from './poem'
 import categories from './categories'
-import markers from './marker'
 
 let blocks = []
-blocks = blocks.concat(markers)
+blocks = blocks.concat(poems)
 
 export default {
   categories: categories,
