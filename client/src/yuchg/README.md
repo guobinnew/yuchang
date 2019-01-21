@@ -11,8 +11,18 @@ CSDN博文: https://blog.csdn.net/wangnan8015/article/details/83276471
 ![image](https://github.com/guobinnew/yuchang/blob/master/screenshots/mainui.png?raw=true)
 
 ## 安装
+
+将原有Block进行重构，分离为一个个独立的包定义，也可以自行进行扩展
+
 ```
 npm install yuchg
+```
+
+按需引入Block包
+```
+npm install yuchg-base
+npm install yuchg-chinese
+...
 ```
 
 ## Vue框架中使用
@@ -41,6 +51,7 @@ App.Vue
 
 <script>
 import yuchg from "yuchg"
+import Base from "yuchg-base"
 import resize from 'vue-resize-directive'
 
 export default {
@@ -68,7 +79,9 @@ export default {
   mounted: function() {
     let dom = document.getElementById('scratch')
     this.editor = yuchg.Scratch.init(dom)
-    this.editor.setOption({})
+    this.editor.setOption({
+      packages: [Base]
+    })
     this.onResize()
   }
 }
@@ -79,8 +92,14 @@ export default {
 
 ## Block定义格式
 
-Block定义文件位于项目目录/client/src/scratch/blockDefs/packages目录下。Block按包（package）进行管理，
-每个包为一个独立目录，其中base目录为基础Block，其余目录为扩展Block。
+Block按包（package）进行管理, 包定义格式可参考yuchg-base。
+每个包中包含类目定义和Block定义
+```
+  {
+    categories: {} 
+    blocks: []
+  }
+```
 
 ### 类目定义
 
