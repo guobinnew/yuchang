@@ -1,0 +1,17 @@
+{
+  "name": "yuchg-base",
+  "version": "0.1.0",
+  "description": "yuchg base packages",
+  "main": "index.js",
+  "dependencies": {
+  },
+  "devDependencies": {
+  },
+  "keywords": [
+    "scratch",
+    "script",
+    "editor"
+  ],
+  "author": "Unqiue",
+  "license": "MIT"
+}

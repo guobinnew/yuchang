@@ -15,22 +15,12 @@
 import $ from 'jquery'
 import yuchg from './base'
 import logger from './logger'
-import BlockDefs from './blockDefs/index'
+import Internal from './blockDefs/index'
 import ShapeUtils from './shapes'
 import Utils from './utils'
-import Blocks from './blocks'
 import Argument from './argus'
 
-/**
- * 查找类目上下文
- * category: string 类目名称
- */
-function acquireCategoryContext(category) {
-  if (BlockDefs.categories) {
-    return BlockDefs.categories[category]
-  }
-  return null
-}
+import Blocks from './blocks'
 
 const ycMinZoom = 0.5
 const ycMaxZoom = 2
@@ -73,7 +63,8 @@ class Panel {
       width: 800,
       height: 600,
       backgroundColor: '#ddd',
-      blocks: BlockDefs,
+      blocks: {},
+      packages: [Internal],
       flyout: {
         width: 250
       },
@@ -96,13 +87,6 @@ class Panel {
           img: 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gU3ZnIFZlY3RvciBJY29ucyA6IGh0dHA6Ly93d3cuc2ZvbnQuY24gLS0+DQo8IURPQ1RZUEUgc3ZnIFBVQkxJQyAiLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4iICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPg0KPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IiB2aWV3Qm94PSIwIDAgMTAwMCAxMDAwIiBlbmFibGUtYmFja2dyb3VuZD0ibmV3IDAgMCAxMDAwIDEwMDAiIHhtbDpzcGFjZT0icHJlc2VydmUiPg0KPG1ldGFkYXRhPiBTdmcgVmVjdG9yIEljb25zIDogaHR0cDovL3d3dy5zZm9udC5jbiA8L21ldGFkYXRhPg0KPGc+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMC4wMDAwMDAsNTExLjAwMDAwMCkgc2NhbGUoMC4xMDAwMDAsLTAuMTAwMDAwKSI+PHBhdGggZD0iTTQ1MzcuNyw0OTk3LjNjLTk0Ny4xLTk2LjYtMTg1MS4xLTQ2Mi4zLTI1ODYuNi0xMDQxLjZjLTE4Ny0xNDUuOS02NTEuMy02MTAuMi03OTcuMi03OTcuMkM2MjMuOSwyNDg0LjYsMjcwLjUsMTY2NC45LDEzNyw3ODcuNmMtNDkuMy0zMjYuNy00OS4zLTEwMjkuMywwLTEzNTZjMTMzLjUtODc3LjMsNDg0LjktMTY5NSwxMDE3LTIzNzAuOWMxNTguMi0yMDMuNCw2MzktNjc4LDgzNi4yLTgyOGM3MDYuOC01MzIuMSwxNDYyLjgtODUyLjYsMjMzMS45LTk4Ni4yYzMyNC42LTQ5LjMsMTAyNy4zLTQ5LjMsMTM1NiwwYzg2NC45LDEzMS41LDE2MjMuMSw0NTIsMjMzMS45LDk4Ni4yYzIxMS42LDE2MC4zLDcwNi44LDY1NS40LDg2Nyw4NjdDOTQxMS0yMTkxLjQsOTczMS41LTE0MzMuMyw5ODYzLTU2OC40YzQ5LjMsMzI4LjcsNDkuMywxMDMxLjQsMCwxMzU2Yy0xMzMuNSw4NjkuMS00NTQuMSwxNjI1LjEtOTg2LjIsMjMzMS45Yy0xNTAsMTk3LjItNjI0LjYsNjc4LTgyOCw4MzYuMmMtNjY5LjgsNTI4LTE0OTkuOCw4ODMuNC0yMzUwLjQsMTAxMi45QzU0MzUuNiw1MDA3LjYsNDc5MC40LDUwMjQsNDUzNy43LDQ5OTcuM3ogTTU0MzMuNSw0NDQ0LjZjODM4LjItODQuMiwxNjQ3LjctNDIxLjIsMjMxMS4zLTk1Ny40YzI0MC40LTE5My4xLDU1NC43LTUxOS44LDczOS42LTc2OC40YzE1MDYtMjAxMy40LDEwMDQuNy00ODYxLTExMDEuMi02MjUxLjlDNTY5NC40LTQ2NDYuNiwzNDUwLjktNDQzNywxOTg0LTMwMjUuNmMtMzgyLjEsMzY3LjctNjUzLjMsNzM3LjYtODg3LjUsMTIxNC4yQzEyMC41LDE2MSw3NjkuOCwyNTMxLjksMjYxNi44LDM3NTIuM0MzNDM0LjUsNDI5Mi42LDQ0NTMuNSw0NTQzLjIsNTQzMy41LDQ0NDQuNnoiLz48cGF0aCBkPSJNMzQyMC4xLDEwOTcuOGMtODAuMS04MC4xLTgwLjEtMzk2LjUsMC00NzYuN2MzNy0zNyw4OC4zLTM5LDE1NzkuOS0zOWMxNDkxLjYsMCwxNTQyLjksMi4xLDE1NzkuOSwzOWM4MC4xLDgwLjEsODAuMSwzOTYuNSwwLDQ3Ni43Yy0zNywzNy05NC41LDM5LTE1NzkuOSwzOUMzNTE0LjYsMTEzNi45LDM0NTcuMSwxMTM0LjgsMzQyMC4xLDEwOTcuOHoiLz48cGF0aCBkPSJNMzQzNC41LTQyNi42Yy0xMDIuNy01OS42LTEwMC43LTQ1Ni4xLDQuMS01MTEuNmMyNC43LTEyLjMsNTc3LjMtMjAuNSwxNTY5LjctMjAuNWMxNDgzLjMsMCwxNTM0LjcsMi4xLDE1NzEuNywzOWM4MC4xLDgwLjEsODAuMSwzOTYuNSwwLDQ3Ni43Yy0zNywzNy05NC41LDM5LTE1NzMuOCwzOUM0MDIyLjEtNDA0LDM0NTcuMS00MTIuMiwzNDM0LjUtNDI2LjZ6Ii8+PC9nPjwvZz4NCjwvc3ZnPg==',
           action: () => {
             this.resetCanvas()
-          }
-        },
-        {
-          id: 'save',
-          img: 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gU3ZnIFZlY3RvciBJY29ucyA6IGh0dHA6Ly93d3cuc2ZvbnQuY24gLS0+DQo8IURPQ1RZUEUgc3ZnIFBVQkxJQyAiLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4iICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPg0KPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IiB2aWV3Qm94PSIwIDAgMTAwMCAxMDAwIiBlbmFibGUtYmFja2dyb3VuZD0ibmV3IDAgMCAxMDAwIDEwMDAiIHhtbDpzcGFjZT0icHJlc2VydmUiPg0KPG1ldGFkYXRhPiBTdmcgVmVjdG9yIEljb25zIDogaHR0cDovL3d3dy5zZm9udC5jbiA8L21ldGFkYXRhPg0KPGc+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMC4wMDAwMDAsNTExLjAwMDAwMCkgc2NhbGUoMC4xMDAwMDAsLTAuMTAwMDAwKSI+PHBhdGggZD0iTTQ1MzcuNyw0OTk3LjNjLTk0Ny4xLTk2LjYtMTg1MS4xLTQ2Mi4zLTI1ODYuNi0xMDQxLjZjLTE4Ny0xNDUuOS02NTEuMy02MTAuMi03OTcuMi03OTcuMkM2MjMuOSwyNDg0LjYsMjcwLjUsMTY2NC45LDEzNyw3ODcuNmMtNDkuMy0zMjYuNy00OS4zLTEwMjkuMywwLTEzNTZjMTMzLjUtODc3LjMsNDg0LjktMTY5NSwxMDE3LTIzNzAuOWMxNTguMi0yMDMuNCw2MzktNjc4LDgzNi4yLTgyOGM3MDYuOC01MzIuMSwxNDYyLjgtODUyLjYsMjMzMS45LTk4Ni4yYzMyNC42LTQ5LjMsMTAyNy4zLTQ5LjMsMTM1NiwwYzg2NC45LDEzMS41LDE2MjMuMSw0NTIsMjMzMS45LDk4Ni4yYzIxMS42LDE2MC4zLDcwNi44LDY1NS40LDg2Nyw4NjdDOTQxMS0yMTkxLjQsOTczMS41LTE0MzMuMyw5ODYzLTU2OC40YzQ5LjMsMzI4LjcsNDkuMywxMDMxLjQsMCwxMzU2Yy0xMzMuNSw4NjkuMS00NTQuMSwxNjI1LjEtOTg2LjIsMjMzMS45Yy0xNTAsMTk3LjItNjI0LjYsNjc4LTgyOCw4MzYuMmMtNjY5LjgsNTI4LTE0OTkuOCw4ODMuNC0yMzUwLjQsMTAxMi45QzU0MzUuNiw1MDA3LjYsNDc5MC40LDUwMjQsNDUzNy43LDQ5OTcuM3ogTTU0MzMuNSw0NDQ0LjZjODM4LjItODQuMiwxNjQ3LjctNDIxLjIsMjMxMS4zLTk1Ny40YzI0MC40LTE5My4xLDU1NC43LTUxOS44LDczOS42LTc2OC40YzE1MDYtMjAxMy40LDEwMDQuNy00ODYxLTExMDEuMi02MjUxLjlDNTY5NC40LTQ2NDYuNiwzNDUwLjktNDQzNywxOTg0LTMwMjUuNmMtMzgyLjEsMzY3LjctNjUzLjMsNzM3LjYtODg3LjUsMTIxNC4yQzEyMC41LDE2MSw3NjkuOCwyNTMxLjksMjYxNi44LDM3NTIuM0MzNDM0LjUsNDI5Mi42LDQ0NTMuNSw0NTQzLjIsNTQzMy41LDQ0NDQuNnoiLz48cGF0aCBkPSJNMzQyMC4xLDEwOTcuOGMtODAuMS04MC4xLTgwLjEtMzk2LjUsMC00NzYuN2MzNy0zNyw4OC4zLTM5LDE1NzkuOS0zOWMxNDkxLjYsMCwxNTQyLjksMi4xLDE1NzkuOSwzOWM4MC4xLDgwLjEsODAuMSwzOTYuNSwwLDQ3Ni43Yy0zNywzNy05NC41LDM5LTE1NzkuOSwzOUMzNTE0LjYsMTEzNi45LDM0NTcuMSwxMTM0LjgsMzQyMC4xLDEwOTcuOHoiLz48cGF0aCBkPSJNMzQzNC41LTQyNi42Yy0xMDIuNy01OS42LTEwMC43LTQ1Ni4xLDQuMS01MTEuNmMyNC43LTEyLjMsNTc3LjMtMjAuNSwxNTY5LjctMjAuNWMxNDgzLjMsMCwxNTM0LjcsMi4xLDE1NzEuNywzOWM4MC4xLDgwLjEsODAuMSwzOTYuNSwwLDQ3Ni43Yy0zNywzNy05NC41LDM5LTE1NzMuOCwzOUM0MDIyLjEtNDA0LDM0NTcuMS00MTIuMiwzNDM0LjUtNDI2LjZ6Ii8+PC9nPjwvZz4NCjwvc3ZnPg==',
-          action: () => {
-            console.log(this.save())
           }
         }
       ]
@@ -1193,19 +1177,26 @@ class Panel {
       }
     }
 
+    let categories = this.option.blocks.categories
     let defs = this.option.blocks.defs
-    if (yuchg.isArray(pkg)) {
-      for (const item of pkg) {
-        let type = item.type
-        if (defs[type]) {
-          defs[type].members = defs[type].members.concat(item)
+    // pkg必须是对象，
+    // {
+    //    categories: {},
+    //    blocks: []
+    // }
+    if (yuchg.isObject(pkg)) {
+      // 处理类目定义
+      if (yuchg.isObject(pkg.categories)) {
+        for (let [type, val] of Object.entries(pkg.categories)) {
+          categories[type] = val
         }
       }
-    } else if (yuchg.isObject(pkg)) {
-      for (let [type, val] of Object.entries(pkg)) {
-        if (yuchg.isArray(val)) {
-          if (defs[type]) {
-            defs[type].members = defs[type].members.concat(val)
+
+      // 处理Block定义
+      if (yuchg.isArray(pkg.blocks)) {
+        for (let block of pkg.blocks) {
+          if (defs[block.type]) {
+            defs[block.type].members.push(block)
           }
         }
       }
@@ -1215,22 +1206,33 @@ class Panel {
   setOption(option) {
     // 清空之前的定义
     this.option.blocks.defs = null
+    this.option.blocks.categories = {}
+
     // 合并Buttons
     let buttons = [].concat(this.option.buttons)
     if (option && yuchg.isArray(option.buttons)) {
       buttons = buttons.concat(option.buttons)
     }
     delete option['buttons']
+
+    // 合并packages
+    let packages = [].concat(this.option.packages)
+    if (option && yuchg.isArray(option.packages)) {
+      packages = packages.concat(option.packages)
+    }
+    delete option['packages']
+
     // 合并
     $.extend(true, this.option, option)
     this.option.buttons = buttons
+    this.option.packages = packages
 
     //
     let rect = this.dom.ws.querySelector('.ycBlockMainBackground')
     rect.style.fill = this.option.backgroundColor
 
     // 提取Block包定义
-    for (let p of this.option.blocks.packages.values()) {
+    for (let p of this.option.packages.values()) {
       this.processPackage(p)
     }
 
@@ -1244,7 +1246,6 @@ class Panel {
     // 注册Block
     for (let [type, val] of Object.entries(defs)) {
       for (let def of val.members.values()) {
-        def.type = type
         this.registerBlock(def, cates)
       }
     }
@@ -1798,6 +1799,17 @@ class Panel {
   }
 
   /**
+   * 查找类目上下文
+   * category: string 类目名称
+   */
+  acquireCategoryContext(category) {
+    if (this.option.blocks.categories) {
+      return this.option.blocks.categories[category]
+    }
+    return null
+  }
+
+  /**
    * 注册Block
    */
   registerBlock(def, list) {
@@ -1808,7 +1820,7 @@ class Panel {
     }
 
     // 获取默认类目信息
-    let cate = acquireCategoryContext(def.category)
+    let cate = this.acquireCategoryContext(def.category)
     if (cate && cate.state) {
       if (!def.state) {
         def.state = {}
@@ -1816,6 +1828,7 @@ class Panel {
       def.state = $.extend(true, def.state, cate.state)
     }
 
+    console.log(def)
     registries[def.id] = Blocks.createPrototype(Object.assign({
       type: def.type,
       __panel: this,
@@ -1923,7 +1936,7 @@ class Panel {
       author: 'Unique',
       blocks: []
     }
-    
+
     panel.dom.canvas.querySelectorAll('g.ycBlockDraggable').forEach(function (elem) {
       if (elem.getAttribute('data-id') === 'insertmarker') {
         return true

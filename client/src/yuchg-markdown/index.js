@@ -1,8 +1,8 @@
 import categories from './categories'
-import markers from './marker'
+import flows from './flow'
 
 let blocks = []
-blocks = blocks.concat(markers)
+blocks = blocks.concat(flows)
 
 export default {
   categories: categories,
